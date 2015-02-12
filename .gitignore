@@ -1,0 +1,13 @@
+/target
+/lib
+/classes
+/checkouts
+/db.sq3
+/.nrepl-port
+pom.xml
+*.jar
+*.class
+.lein-deps-sum
+.lein-failures
+.lein-plugins
+.lein-env
