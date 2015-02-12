@@ -12,7 +12,7 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 [2]: http://maven.apache.org
 [3]: https://github.com/technomancy/leiningen
 
-## build
+## install
 
 ```bash
     bin/install.sh
