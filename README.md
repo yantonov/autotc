@@ -13,11 +13,20 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 [2]: http://maven.apache.org
 [3]: https://github.com/technomancy/leiningen
 
+## build
+
+```bash
+    bin/install.sh
+```
+
 ## Running
 
 To start a web server for the application, run:
 
+```bash
     lein ring server
+```
+
 
 ## License
 
