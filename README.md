@@ -1,5 +1,4 @@
 ## autotc-web
-web ui for autotc
 
 tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
 
