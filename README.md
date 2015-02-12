@@ -7,7 +7,7 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 
 1. [JDK][1];
 2. [Apache maven][2]
-3. [Leiningen][3](http://leiningen.org/) 1.7.0 or above.
+3. [Leiningen][3] 1.7.0. or above.
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.htmla
 [2]: http://maven.apache.org
