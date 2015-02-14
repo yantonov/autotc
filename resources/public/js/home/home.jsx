@@ -172,8 +172,12 @@ var HomePage = React.createClass({
         { serverId: this.state.servers[this.state.selectedServerIndex].id,
             agentIds: this.state.selectedAgents },
             function (response) {
+                console.log(response);
                 alert(successMessage);
-            });
+            })
+        .fail(function(response) {
+            console.log(response);
+        });;
     },
     getServerList: function() {
         $.get('/servers/list', function(response) {

@@ -30,16 +30,24 @@
                                                      .getConfigurations))})))
 
 (defn- exec-action-for-agents [server-id agent-ids session-action]
-  (let [server (db/get-server-by-id server-id)
-        session (TeamCitySession/create server)
-        ids-set (set agent-ids)
-        agents (filter #(contains? ids-set (. % getId))
-                       (-> session
-                           .getProject
-                           .getConfigurations))]
-    (doseq [agent agents]
-      (session-action session agent))
-    (rur/response {:result (count agents)})))
+  (try
+    (let [server (db/get-server-by-id server-id)
+          session (TeamCitySession/create server)
+          ids-set (set agent-ids)
+          agents (filter #(contains? ids-set (. % getId))
+                         (-> session
+                             .getProject
+                             .getConfigurations))]
+      (doseq [agent agents]
+        (try
+          (session-action session agent)
+          (catch Exception e
+            (. (System/err) println (.getMessage e)))))
+      (rur/response {:result (count agents)}))
+    (catch Exception e
+      (let [error (.getMessage e)]
+        (. (System/err) println error)
+        (rur/response {:error error})))))
 
 (defn start-build [server-id agent-ids]
   (exec-action-for-agents server-id
