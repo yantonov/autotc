@@ -134,7 +134,10 @@ var HomePage = React.createClass({
         if (this.state.selectedServerIndex == serverIndex)
             return;
         this.setState({
-            selectedServerIndex: serverIndex
+            selectedServerIndex: serverIndex,
+            selectedAgents: [],
+            manuallySelectedAgents: [],
+            agents: []
         });
         this.loadAgents(this.state.servers[serverIndex]);
     },
