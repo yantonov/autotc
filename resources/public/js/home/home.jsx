@@ -133,6 +133,8 @@ var HomePage = React.createClass({
     onServerSelect: function(serverIndex) {
         if (this.state.selectedServerIndex == serverIndex)
             return;
+        if (this.__interval)
+            clearInterval(this.__interval);
         this.setState({
             selectedServerIndex: serverIndex,
             selectedAgents: [],
@@ -166,6 +168,8 @@ var HomePage = React.createClass({
         $.get('/agents/list/' + server.id, function(response) {
             if (this.isMounted()) {
                 var agents = response.agents;
+                if (!this.__interval)
+                    this.__interval = setInterval(this.loadAgents.bind(this, server), 5000);
                 this.setState({
                     agents: agents,
                     selectedAgents: []
