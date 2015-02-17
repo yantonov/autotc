@@ -53,8 +53,12 @@ var AgentListItem = React.createClass({
     render: function() {
         return (
             <ListGroupItem>
-            <Input type="checkbox" label={this.props.agent.name} checked={this.props.selected} onClick={this.handleSelect} />
+            <input type="checkbox" checked={this.props.selected} onClick={this.handleSelect} />
+            &nbsp;
             <AgentStatus running={this.props.agent.running} status={this.props.agent.status} />
+            &nbsp;
+            <span>{this.props.agent.name}</span>
+
             </ListGroupItem>
         );
     }
@@ -66,7 +70,9 @@ var SelectAllElement = React.createClass({
             return null;
         return (
             <ListGroupItem>
-            <Input type="checkbox" label={'All agents'} onClick={this.props.onSelect} checked={this.props.checked} />
+            <input type="checkbox" onClick={this.props.onSelect} checked={this.props.checked} />
+            &nbsp;
+            All agents
             </ListGroupItem>
         );
     }
