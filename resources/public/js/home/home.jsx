@@ -48,7 +48,7 @@ var SelectAllElement = React.createClass({
             return null;
         return (
             <ListGroupItem>
-            <Input type="checkbox" label={'All agents'} onClick={this.props.onSelect} />
+            <Input type="checkbox" label={'All agents'} onClick={this.props.onSelect} checked={this.props.checked} />
             </ListGroupItem>
         );
     }
@@ -66,11 +66,15 @@ var AgentList = React.createClass({
                 <AgentListItem agent={item} selected={selected} onSelect={this.props.onSelect} />
             );
         }.bind(this));
+
+        var selectAllChecked = this.props.selected.length > 0;
+        var partiallySelected = this.props.selected.length > 0 && this.props.selected.length < this.props.agents.length;
+
         return (
             <div>
             <br/>
             <ListGroup>
-            <SelectAllElement visible={this.props.agents.length > 0} onSelect={this.props.onSelectAll}/>
+            <SelectAllElement visible={this.props.agents.length > 0} onSelect={this.props.onSelectAll} checked={this.props.checked} partiallyChecked={this.props.partiallyChecked} checked={selectAllChecked} partiallySelected={partiallySelected}/>
             {agentList}
             </ListGroup>
             </div>
@@ -98,7 +102,8 @@ var HomePage = React.createClass({
             servers: [],
             selectedServerIndex: null,
             agents: [],
-            selectedAgents: []
+            selectedAgents: [],
+            manuallySelectedAgents: []
         };
     },
     onServerSelect: function(serverIndex) {
@@ -111,6 +116,22 @@ var HomePage = React.createClass({
     },
     componentDidMount: function() {
         this.getServerList();
+    },
+    getServerList: function() {
+        $.get('/servers/list', function(response) {
+            if (this.isMounted()) {
+                var servers = response.servers;
+                if (servers && servers.length > 0)
+                    this.loadAgents(servers[0]);
+                this.setState({
+                    servers: servers,
+                    selectedServerIndex: servers && servers.length > 0 ? 0 : null,
+                    selectedAgents: [],
+                    agents: [],
+                    manuallySelected: []
+                });
+            }
+        }.bind(this));
     },
     loadAgents: function(server) {
         if (server == null)
@@ -132,27 +153,38 @@ var HomePage = React.createClass({
         }.bind(this));
     },
     handleSelectAgent: function(agent) {
-        var alreadySelected = this.state.selectedAgents.indexOf(agent.id) != -1;
-        var newSelectedAgents = this.state.selectedAgents;
-        var agentIndex = this.state.selectedAgents.indexOf(agent.id);
-        if (agentIndex != -1)
-            newSelectedAgents.splice(agentIndex,1);
-        else
-            newSelectedAgents.push(agent.id);
+        var manuallySelected = this.state.selectedAgents.slice();
         this.setState({
-            selectedAgents: newSelectedAgents
+            selectedAgents: this.invertSelection(this.state.selectedAgents.slice(),agent.id),
+            manuallySelectedAgents: this.invertSelection(manuallySelected.slice(),agent.id)
         });
     },
+    invertSelection: function(list,itemId) {
+        var pos = list.indexOf(itemId);
+        var result = list.slice();
+        if (pos != -1)
+            result.splice(pos,1);
+        else
+            result.push(itemId);
+        return result;
+    },
     handleSelectAll: function() {
-        var m = {};
-        for (var i = 0; i < this.state.selectedAgents.length; ++i) {
-            m[this.state.selectedAgents[i]]=true;
-        }
         var result = [];
-        for (var i = 0; i < this.state.agents.length; ++i) {
-            var agent = this.state.agents[i];
-            if (!m[agent.id])
-                result.push(agent.id);
+        if (this.state.selectedAgents.length == 0) {
+            if (this.state.manuallySelectedAgents.length == 0) {
+                result = this.state.agents.map(function(agent) { return agent.id; });
+            }
+            else {
+                result = this.state.manuallySelectedAgents.slice();
+            }
+        }
+        else {
+            if (this.state.selectedAgents.length < this.state.agents.length) {
+                result = this.state.agents.map(function(agent) { return agent.id; });
+            }
+            else {
+                result = [];
+            }
         }
         this.setState({
             selectedAgents: result
@@ -178,23 +210,6 @@ var HomePage = React.createClass({
         .fail(function(response) {
             console.log(response);
         });;
-    },
-    getServerList: function() {
-        $.get('/servers/list', function(response) {
-            if (this.isMounted()) {
-                var servers = response.servers;
-                if (servers && servers.length > 0)
-                    this.loadAgents(servers[0]);
-                this.setState({
-                    servers: servers,
-                    selectedServerIndex: servers && servers.length > 0
-                    ? 0
-                    : null,
-                    selectedAgents: [],
-                    agents: []
-                });
-            }
-        }.bind(this));
     },
     render: function() {
         return (
