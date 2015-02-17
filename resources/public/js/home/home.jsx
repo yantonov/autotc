@@ -29,6 +29,23 @@ var ServerList = React.createClass({
     }
 });
 
+var AgentStatus = React.createClass({
+    getImage: function(status,running) {
+        if (status == "Failure")
+            return running ? 'running_red.gif' : 'stopped_red.gif';
+        if (status == "Success")
+            return running ? 'running_green.gif' : 'stopped_green.gif';
+        return '';
+    },
+    render: function() {
+        var src = '/img/statuses/' + this.getImage(this.props.status,this.props.running);
+        var alt = this.props.status + " " + (this.props.isRunning ? "in progress" : "completed");
+        return (
+            <img src={src} alt={alt} />
+        );
+    }
+});
+
 var AgentListItem = React.createClass({
     handleSelect: function() {
         this.props.onSelect(this.props.agent);
@@ -37,6 +54,7 @@ var AgentListItem = React.createClass({
         return (
             <ListGroupItem>
             <Input type="checkbox" label={this.props.agent.name} checked={this.props.selected} onClick={this.handleSelect} />
+            <AgentStatus running={this.props.agent.running} status={this.props.agent.status} />
             </ListGroupItem>
         );
     }

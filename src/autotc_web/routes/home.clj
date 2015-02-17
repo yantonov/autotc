@@ -15,19 +15,25 @@
             :id (. server getId)))
 
 (defn- tc-agent-to-json [agent]
-  (hash-map :id (. agent getId)
-            :name (. agent toString)))
+  (let [build (. agent getLastBuild)]
+    (hash-map :id (. agent getId)
+              :name (. agent toString)
+              :running (. build isRunning)
+              :status (-> build
+                          .getStatus
+                          .toString))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json
                                (db/read-servers))}))
 
-(defn- get-agents [server-id]
+(defn- agents-for-server [server-id]
   (let [server (db/get-server-by-id server-id)
         session (TeamCitySession/create server)]
-    (rur/response {:agents (map tc-agent-to-json (-> session
-                                                     .getProject
-                                                     .getConfigurations))})))
+    (rur/response {:agents (map tc-agent-to-json
+                                (-> session
+                                    .getProject
+                                    .getConfigurations))})))
 
 (defn- exec-action-for-agents [server-id agent-ids session-action]
   (try
@@ -49,7 +55,7 @@
         (. (System/err) println error)
         (rur/response {:error error})))))
 
-(defn start-build [server-id agent-ids]
+(defn- start-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent] (. session start agent))))
@@ -67,7 +73,7 @@
 (defroutes home-routes
   (GET "/" [] (home))
   (GET "/servers/list" [] (get-servers))
-  (GET "/agents/list/:id" [id] (get-agents id))
+  (GET "/agents/list/:id" [id] (agents-for-server id))
   (POST "/agents/startBuild" [serverId agentIds] (start-build serverId agentIds))
-  (POST "/agents/stopBuild" [serverId agentIds] (stop-build serverId, agentIds))
-  (POST "/agents/rebootAgent" [serverId agentIds] (reboot-agent serverId, agentIds)))
+  (POST "/agents/stopBuild" [serverId agentIds] (stop-build serverId agentIds))
+  (POST "/agents/rebootAgent" [serverId agentIds] (reboot-agent serverId agentIds)))
