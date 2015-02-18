@@ -133,8 +133,7 @@ var HomePage = React.createClass({
     onServerSelect: function(serverIndex) {
         if (this.state.selectedServerIndex == serverIndex)
             return;
-        if (this.__interval)
-            clearInterval(this.__interval);
+        this.__resetTimers();
         this.setState({
             selectedServerIndex: serverIndex,
             selectedAgents: [],
@@ -145,6 +144,15 @@ var HomePage = React.createClass({
     },
     componentDidMount: function() {
         this.getServerList();
+    },
+    componentUnmount: function() {
+        this.__resetTimers();
+    },
+    __resetTimers: function() {
+        if (this.__interval) {
+            clearInterval(this.__interval);
+            delete this.__interval;
+        }
     },
     getServerList: function() {
         $.get('/servers/list', function(response) {
@@ -172,14 +180,14 @@ var HomePage = React.createClass({
                     this.__interval = setInterval(this.loadAgents.bind(this, server), 5000);
                 this.setState({
                     agents: agents,
-                    selectedAgents: []
                 });
             }
         }.bind(this))
         .fail(function() {
             this.setState({
                 agents: [],
-                selectedAgents: []
+                selectedAgents: [],
+                manuallySelectedAgents: []
             });
         }.bind(this));
     },
