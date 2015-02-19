@@ -10,6 +10,7 @@ var ButtonToolbar = ReactBootstrap.ButtonToolbar;
 var Button = ReactBootstrap.Button;
 var Panel = ReactBootstrap.Panel;
 var Glyphicon = ReactBootstrap.Glyphicon;
+var Modal = ReactBootstrap.Modal;
 
 var ServerList = React.createClass({
     onSelect: function(serverIndex) {
@@ -120,6 +121,22 @@ var MultiActionToolbar = React.createClass({
     }
 });
 
+var InfoMessage = React.createClass({
+    render: function() {
+        if (String.isNullOrEmpty(this.props.message))
+            return null;
+        return (
+            <div className="static-modal">
+            <Modal title="" backdrop={false} animation={false}>
+            <div className="modal-body">
+            {this.props.message}
+            </div>
+            </Modal>
+            </div>
+        );
+    }
+});
+
 var HomePage = React.createClass({
     getInitialState: function() {
         return  {
@@ -127,7 +144,8 @@ var HomePage = React.createClass({
             selectedServerIndex: null,
             agents: [],
             selectedAgents: [],
-            manuallySelectedAgents: []
+            manuallySelectedAgents: [],
+            message: null
         };
     },
     onServerSelect: function(serverIndex) {
@@ -244,8 +262,15 @@ var HomePage = React.createClass({
             agentIds: this.state.selectedAgents },
             function (response) {
                 console.log(response);
-                alert(successMessage);
-            })
+                this.setState({
+                    message: successMessage
+                });
+                setTimeout(function() {
+                    this.setState({
+                        message: null
+                    });
+                }.bind(this),5000);
+            }.bind(this))
         .fail(function(response) {
             console.log(response);
         });;
@@ -253,6 +278,7 @@ var HomePage = React.createClass({
     render: function() {
         return (
             <p>
+            <InfoMessage message={this.state.message} />
             <ServerList servers={this.state.servers} selectedServerIndex={this.state.selectedServerIndex} onServerSelect={this.onServerSelect} />
             <Grid>
             <Row className="show-grid">
