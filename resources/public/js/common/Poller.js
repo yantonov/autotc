@@ -66,6 +66,8 @@ var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, 
             func();
         },
         __installTimer: function() {
+            if (this.__destroyed)
+                return;
             var timeout = this.__idleDetector.isIdle() ? this.__idleTimeout : this.__activityTimeout;
             if (this.__currentTimeout && this.__currentTimeout != timeout)
                 this.__uninstallTimer();
@@ -82,6 +84,7 @@ var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, 
             this.__uninstallTimer();
         },
         __uninstallTimer: function() {
+            this.__destroyed = true;
             if (this.__interval) {
                 clearInterval(this.__interval);
                 delete this.__interval;
