@@ -159,7 +159,7 @@ var HomePage = React.createClass({
         });
         this.__resetPollAgentTimers();
         this.setState({
-            timer: new BasedOnActivityIntervalTimer(
+            pollAgentTimer: new BasedOnActivityIntervalTimer(
                 this.loadAgents.bind(this, this.state.servers[serverIndex]),
                 5000,
                 60000,
@@ -210,7 +210,6 @@ var HomePage = React.createClass({
             return;
         $.get('/agents/list/' + server.id, function(response) {
             if (this.isMounted()) {
-                console.log(new Date().toString());
                 this.setState({
                     agents: response.agents
                 });

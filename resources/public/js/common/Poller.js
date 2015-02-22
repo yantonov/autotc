@@ -17,7 +17,9 @@ var IdleDetector = function() {
             this.__listeners.push(listener);
         },
         removeActivityListener: function(listener) {
-            this.__listeners.remove(listener);
+            var pos = this.__listeners.indexOf(listener);
+            if (pos != -1)
+                this.__listeners.remove(pos);
         },
         __onMouseMove: function() {
             this.__saveActivityTime();
@@ -54,13 +56,14 @@ var IdleDetector = function() {
 
 var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, idleDetector) {
     var detector = ({
-        start: function(func, timeout, idleTimeout, idleDetector) {
+        __start: function(func, timeout, idleTimeout, idleDetector) {
             idleDetector.addActivityListener(this.__installTimer.bind(this));
             this.__idleDetector = idleDetector;
             this.__activityTimeout = activityTimeout;
             this.__idleTimeout = idleTimeout;
             this.__func = func;
             this.__installTimer();
+            func();
         },
         __installTimer: function() {
             var timeout = this.__idleDetector.isIdle() ? this.__idleTimeout : this.__activityTimeout;
@@ -75,7 +78,7 @@ var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, 
             }
         },
         stop: function() {
-            this.__idleDetector.removeActivityListener(this.__onActivity.bind(this));
+            this.__idleDetector.removeActivityListener(this.__installTimer.bind(this));
             this.__uninstallTimer();
         },
         __uninstallTimer: function() {
@@ -86,6 +89,6 @@ var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, 
             }
         }
     });
-    detector.start(func, activityTimeout, idleTimeout, idleDetector);
+    detector.__start(func, activityTimeout, idleTimeout, idleDetector);
     return detector;
 };
