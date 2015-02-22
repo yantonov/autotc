@@ -93,13 +93,12 @@ var AgentList = React.createClass({
         }.bind(this));
 
         var selectAllChecked = this.props.selected.length > 0;
-        var partiallySelected = this.props.selected.length > 0 && this.props.selected.length < this.props.agents.length;
 
         return (
             <div>
             <br/>
             <ListGroup>
-            <SelectAllElement visible={this.props.agents.length > 0} onSelect={this.props.onSelectAll} checked={this.props.checked} partiallyChecked={this.props.partiallyChecked} checked={selectAllChecked} partiallySelected={partiallySelected}/>
+            <SelectAllElement visible={this.props.agents.length > 0} onSelect={this.props.onSelectAll} checked={selectAllChecked} />
             {agentList}
             </ListGroup>
             </div>
