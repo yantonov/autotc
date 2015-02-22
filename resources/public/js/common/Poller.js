@@ -19,7 +19,7 @@ var IdleDetector = function() {
         removeActivityListener: function(listener) {
             var pos = this.__listeners.indexOf(listener);
             if (pos != -1)
-                this.__listeners.remove(pos);
+                this.__listeners.splice(pos, 1);
         },
         __onMouseMove: function() {
             this.__saveActivityTime();
@@ -57,7 +57,8 @@ var IdleDetector = function() {
 var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, idleDetector) {
     var detector = ({
         __start: function(func, timeout, idleTimeout, idleDetector) {
-            idleDetector.addActivityListener(this.__installTimer.bind(this));
+            this.__listener = this.__installTimer.bind(this);
+            idleDetector.addActivityListener(this.__listener);
             this.__idleDetector = idleDetector;
             this.__activityTimeout = activityTimeout;
             this.__idleTimeout = idleTimeout;
@@ -80,11 +81,11 @@ var BasedOnActivityIntervalTimer = function(func, activityTimeout, idleTimeout, 
             }
         },
         stop: function() {
-            this.__idleDetector.removeActivityListener(this.__installTimer.bind(this));
+            this.__destroyed = true;
+            this.__idleDetector.removeActivityListener(this.__listener);
             this.__uninstallTimer();
         },
         __uninstallTimer: function() {
-            this.__destroyed = true;
             if (this.__interval) {
                 clearInterval(this.__interval);
                 delete this.__interval;
