@@ -151,25 +151,39 @@ var HomePage = React.createClass({
     onServerSelect: function(serverIndex) {
         if (this.state.selectedServerIndex == serverIndex)
             return;
-        this.__resetTimers();
         this.setState({
             selectedServerIndex: serverIndex,
             selectedAgents: [],
             manuallySelectedAgents: [],
             agents: []
         });
-        this.loadAgents(this.state.servers[serverIndex]);
+        this.__resetPollAgentTimers();
+        this.setState({
+            timer: new BasedOnActivityIntervalTimer(
+                this.loadAgents.bind(this, this.state.servers[serverIndex]),
+                5000,
+                60000,
+                this.state.idleDetector)
+        });
     },
     componentDidMount: function() {
         this.getServerList();
+        var idleDetector = new IdleDetector();
+        idleDetector.attachToDocument();
+        this.setState({
+            idleDetector: idleDetector
+        });
     },
     componentUnmount: function() {
-        this.__resetTimers();
+        this.__resetPollAgentTimers();
+        this.state.idleDetector.detachFromDocument();
     },
-    __resetTimers: function() {
-        if (this.__interval) {
-            clearInterval(this.__interval);
-            delete this.__interval;
+    __resetPollAgentTimers: function() {
+        if (this.state.pollAgentTimer) {
+            this.state.pollAgentTimer.stop();
+            this.setState({
+                pollAgentTimer: null
+            });
         }
     },
     getServerList: function() {
@@ -180,11 +194,14 @@ var HomePage = React.createClass({
                     this.loadAgents(servers[0]);
                 this.setState({
                     servers: servers,
-                    selectedServerIndex: servers && servers.length > 0 ? 0 : null,
                     selectedAgents: [],
                     agents: [],
                     manuallySelected: []
                 });
+                var defaultServerIndex = servers && servers.length > 0 ? 0 : null;
+                if (defaultServerIndex !== null)
+                    this.onServerSelect(defaultServerIndex);
+
             }
         }.bind(this));
     },
@@ -193,11 +210,9 @@ var HomePage = React.createClass({
             return;
         $.get('/agents/list/' + server.id, function(response) {
             if (this.isMounted()) {
-                var agents = response.agents;
-                if (!this.__interval)
-                    this.__interval = setInterval(this.loadAgents.bind(this, server), 5000);
+                console.log(new Date().toString());
                 this.setState({
-                    agents: agents,
+                    agents: response.agents
                 });
             }
         }.bind(this))
