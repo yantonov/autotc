@@ -12,7 +12,7 @@
     (include-js "/js/common/Poller.js")
     (include-js "/js/lib/bootstrap.3.3.2.min.js")
     (include-js "/js/lib/JSXTransformer-0.12.2.js")
-    (include-js "/js/lib/react-0.12.2.min.js")
+    (include-js "/js/lib/react-0.12.2.js")
     (include-js "/js/lib/react-bootstrap.min.js")
     [:link {:rel "shortcut icon"
             :href "/img/favicon.ico"}]]
