@@ -81,6 +81,12 @@ var SelectAllElement = React.createClass({
 
 var AgentList = React.createClass({
     render: function() {
+        if (this.props.showLoader)
+            return (
+                <div>
+                <img src="/img/agent-list-loader.gif" alt="loading" />
+                </div>
+            );
         var selectedMap = {};
         for (var i = 0; i < this.props.selected.length; ++i) {
             selectedMap[this.props.selected[i]] = true;
@@ -144,13 +150,15 @@ var HomePage = React.createClass({
             agents: [],
             selectedAgents: [],
             manuallySelectedAgents: [],
-            message: null
+            message: null,
+            showAgentListLoader: false
         };
     },
     onServerSelect: function(serverIndex) {
         if (this.state.selectedServerIndex == serverIndex)
             return;
         this.setState({
+            showAgentListLoader: true,
             selectedServerIndex: serverIndex,
             selectedAgents: [],
             manuallySelectedAgents: [],
@@ -211,12 +219,14 @@ var HomePage = React.createClass({
         $.get('/agents/list/' + server.id, function(response) {
             if (this.isMounted()) {
                 this.setState({
+                    showAgentListLoader: false,
                     agents: response.agents
                 });
             }
         }.bind(this))
         .fail(function() {
             this.setState({
+                showAgentListLoader: false,
                 agents: [],
                 selectedAgents: [],
                 manuallySelectedAgents: []
@@ -310,7 +320,7 @@ var HomePage = React.createClass({
             <Col xs={12} md={6}>
             <br/>
             <MultiActionToolbar enabled={this.state.selectedAgents.length > 0} visible={this.state.agents.length > 0} onStart={this.handleStartBuild} onStop={this.handleStopBuild} onReboot={this.handleRebootAgent}/>
-            <AgentList agents={this.state.agents} selected={this.state.selectedAgents} onSelect={this.handleSelectAgent} onSelectAll={this.handleSelectAll}/>
+            <AgentList agents={this.state.agents} selected={this.state.selectedAgents} onSelect={this.handleSelectAgent} onSelectAll={this.handleSelectAll} showLoader={this.state.showAgentListLoader}/>
             </Col>
             </Row>
             </Grid>
