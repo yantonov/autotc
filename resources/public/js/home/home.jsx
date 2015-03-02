@@ -262,22 +262,33 @@ var HomePage = React.createClass({
         });
     },
     handleStartBuild: function() {
-        this.execActionForAgents('/agents/startBuild','build triggered');
+        this.execActionForAgents(
+            '/agents/startBuild',
+            'request to trigger build was sent',
+            'build triggered');
     },
     handleStopBuild: function() {
-        this.execActionForAgents('/agents/stopBuild','build stopped');
+        this.execActionForAgents('/agents/stopBuild',
+            'request to stop build was sent',
+            'build stopped');
     },
     handleRebootAgent: function() {
-        this.execActionForAgents('/agents/rebootAgent','reboot triggered');
+        this.execActionForAgents(
+            '/agents/rebootAgent',
+            'request to reboot agent was sent',
+            'reboot triggered');
     },
-    execActionForAgents: function(url, successMessage) {
+    execActionForAgents: function(url, triggerMessage, completeMessage) {
+        this.setState({
+            message: triggerMessage
+        });
         $.post(url,
         { serverId: this.state.servers[this.state.selectedServerIndex].id,
             agentIds: this.state.selectedAgents },
             function (response) {
                 console.log(response);
                 this.setState({
-                    message: successMessage
+                    message: completeMessage
                 });
                 setTimeout(function() {
                     this.setState({
