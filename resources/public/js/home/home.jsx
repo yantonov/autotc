@@ -288,23 +288,28 @@ var HomePage = React.createClass({
             'request to reboot agent was sent',
             'reboot triggered');
     },
-    execActionForAgents: function(url, triggerMessage, completeMessage) {
+    showMessage: function(message) {
+        if (this.__clearMessageTimeout) {
+            clearTimeout(this.__clearMessageTimeout);
+            delete this.__clearMessageTimeout;
+        }
         this.setState({
-            message: triggerMessage
+            message: message
         });
+        this.__clearMessageTimeout = setTimeout(function() {
+            this.setState({
+                message: null
+            });
+        }.bind(this), 5000);
+    },
+    execActionForAgents: function(url, triggerMessage, completeMessage) {
+        this.showMessage(triggerMessage);
         $.post(url,
         { serverId: this.state.servers[this.state.selectedServerIndex].id,
             agentIds: this.state.selectedAgents },
             function (response) {
                 console.log(response);
-                this.setState({
-                    message: completeMessage
-                });
-                setTimeout(function() {
-                    this.setState({
-                        message: null
-                    });
-                }.bind(this),5000);
+                this.showMessage(completeMessage);
             }.bind(this))
         .fail(function(response) {
             console.log(response);
