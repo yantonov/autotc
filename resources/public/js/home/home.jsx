@@ -130,13 +130,24 @@ var InfoMessage = React.createClass({
     render: function() {
         if (String.isNullOrEmpty(this.props.message))
             return null;
+        var dialogStyle={
+            display: "block"
+        };
+        var modalHeaderStyle = {
+            "border-bottom-width": "0px"
+        };
         return (
             <div className="static-modal">
-            <Modal title="" backdrop={false} animation={false}>
-            <div className="modal-body">
-            {this.props.message}
+            <div tabindex="-1" role="dialog" style={dialogStyle} className="modal in">
+            <div className="modal-dialog">
+            <div className="modal-content">
+            <div className="modal-header" style={modalHeaderStyle}>
+            <button type="button" className="close" aria-hidden="true" onClick={this.props.onClose}>×</button>
+            <h4 className="modal-title">{this.props.message}</h4>
             </div>
-            </Modal>
+            </div>
+            </div>
+            </div>
             </div>
         );
     }
@@ -297,10 +308,13 @@ var HomePage = React.createClass({
             message: message
         });
         this.__clearMessageTimeout = setTimeout(function() {
-            this.setState({
-                message: null
-            });
+            this.closeMessage();
         }.bind(this), 5000);
+    },
+    closeMessage: function() {
+        this.setState({
+            message: null
+        });
     },
     execActionForAgents: function(url, triggerMessage, completeMessage) {
         this.showMessage(triggerMessage);
@@ -318,7 +332,7 @@ var HomePage = React.createClass({
     render: function() {
         return (
             <p>
-            <InfoMessage message={this.state.message} />
+            <InfoMessage message={this.state.message} onClose={this.closeMessage}/>
             <ServerList servers={this.state.servers} selectedServerIndex={this.state.selectedServerIndex} onServerSelect={this.onServerSelect} />
             <Grid>
             <Row className="show-grid">
