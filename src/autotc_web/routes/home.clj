@@ -8,7 +8,7 @@
   (:import api.http.teamcity.io.TeamCitySession))
 
 (defn- home []
-  (layout/common [:script {:type "text/jsx" :src "/js/home/home.jsx"}]))
+  (layout/common [:script {:type "text/javascript" :src "/js/combined/home/home.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
   (hash-map :alias (. server getAlias)
