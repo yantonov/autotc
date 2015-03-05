@@ -1,13 +1,24 @@
+# build dir
 /target
-/lib
 /classes
+/resources/public/js/combined/.module-cache
+
+# bin
+/lib
 /checkouts
-/db.sq3
-/.nrepl-port
-pom.xml
 *.jar
 *.class
+
+# data
+/db.sq3
+
+# ide specific files
+/.nrepl-port
 .lein-deps-sum
 .lein-failures
 .lein-plugins
 .lein-env
+
+# combined static
+/resources/public/js/combined/*/*.js
+
