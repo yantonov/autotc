@@ -19,6 +19,3 @@
 .lein-plugins
 .lein-env
 
-# combined static
-/resources/public/js/combined/*/*.js
-
