@@ -8,24 +8,23 @@
                    :subname "db.sq3"})
 
 (defn create-servers-table []
-  (sql/with-connection
-    db
-    (sql/create-table
-     :servers
-     [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
-     [:alias "TEXT"]
-     [:host "TEXT"]
-     [:port "INTEGER"]
-     [:project "TEXT"]
-     [:username "TEXT"]
-     [:password "TEXT"])))
+  (sql/with-db-transaction [t-conn db]
+    (sql/db-do-commands
+     t-conn
+     (sql/create-table-ddl :servers
+                           [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+                           [:alias "TEXT"]
+                           [:host "TEXT"]
+                           [:port "INTEGER"]
+                           [:project "TEXT"]
+                           [:username "TEXT"]
+                           [:password "TEXT"]))))
 
 (defn read-servers-internal []
-  (sql/with-connection
-    db
-    (sql/with-query-results res
-      ["SELECT * FROM servers ORDER BY alias ASC"]
-      (doall res))))
+  (sql/with-db-transaction [t-conn db]
+    (sql/query t-conn
+               ["SELECT * FROM servers ORDER BY alias ASC"]
+               :result-set-fn doall)))
 
 (defn to-tc-server [row]
   (new TeamCityServer
@@ -41,23 +40,21 @@
   (map to-tc-server (read-servers-internal)))
 
 (defn get-server-by-id [id]
-  (sql/with-connection
-    db
-    (sql/with-query-results res
-      ["SELECT * FROM servers where id = ?" id]
-      (to-tc-server (first res)))))
+  (sql/with-db-transaction [t-conn db]
+    (sql/query t-conn
+               ["SELECT * FROM servers where id = ?" id]
+               :result-set-fn (fn [res] (to-tc-server (first res))))))
 
 (defn add-server [alias host port project username password]
-  (sql/with-connection
-    db
-    (sql/insert-values
+  (sql/with-db-transaction [t-conn db]
+    (sql/insert!
+     t-conn
      :servers
      [:alias :host :port :project :username :password]
      [alias host (Integer/parseInt port) project username password])))
 
 (defn delete-server [id]
-  (sql/with-connection
-    db
-    (sql/delete-rows
-     :servers
-     ["id = ?" id])))
+  (sql/with-db-transaction [t-conn db]
+    (sql/delete! t-conn
+                 :servers
+                 ["id = ?" id])))
