@@ -44,12 +44,22 @@
                          (-> session
                              .getProject
                              .getConfigurations))]
-      (doseq [agent agents]
-        (try
-          (session-action session agent)
-          (catch Exception e
-            (. (System/err) println (.getMessage e)))))
-      (rur/response {:result (count agents)}))
+      (rur/response
+       (reduce (fn [result agent]
+                 (try
+                   (do
+                     (session-action session agent)
+                     (assoc result :count (inc (:count result))))
+                   (catch Exception e
+                     (do
+                       (. (System/err) println (.getMessage e))
+                       (assoc result :error
+                              (str (:error result)
+                                   " "
+                                   (.getMessage e)))))))
+               {:count 0
+                :error ""}
+               agents)))
     (catch Exception e
       (let [error (.getMessage e)]
         (. (System/err) println error)
@@ -58,22 +68,40 @@
 (defn- start-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
-                          (fn [session agent] (. session start agent))))
+                          (fn [session agent]
+                            (. session start agent))))
 
 (defn- stop-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
-                          (fn [session agent] (. session stop agent))))
+                          (fn [session agent]
+                            (. session stop agent))))
 
 (defn- reboot-agent [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
-                          (fn [session agent] (. session rebootMachine agent))))
+                          (fn [session agent]
+                            (. session rebootMachine agent))))
+
+(defn- run-custom-build [server-id agent-ids]
+  (exec-action-for-agents server-id
+                          agent-ids
+                          (fn [session agent]
+                            (. session runCustomBuild agent))))
 
 (defroutes home-routes
   (GET "/" [] (home))
   (GET "/servers/list" [] (get-servers))
   (GET "/agents/list/:id" [id] (agents-for-server id))
-  (POST "/agents/startBuild" [serverId agentIds] (start-build serverId agentIds))
-  (POST "/agents/stopBuild" [serverId agentIds] (stop-build serverId agentIds))
-  (POST "/agents/rebootAgent" [serverId agentIds] (reboot-agent serverId agentIds)))
+  (POST "/agents/startBuild"
+        [serverId agentIds]
+        (start-build serverId agentIds))
+  (POST "/agents/stopBuild"
+        [serverId agentIds]
+        (stop-build serverId agentIds))
+  (POST "/agents/rebootAgent"
+        [serverId agentIds]
+        (reboot-agent serverId agentIds))
+  (POST "/agents/runCustomBuild"
+        [serverId agentIds]
+        (run-custom-build serverId agentIds)))
