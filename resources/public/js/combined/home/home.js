@@ -120,7 +120,8 @@ var MultiActionToolbar = React.createClass({displayName: "MultiActionToolbar",
             React.createElement(ButtonToolbar, null, 
             React.createElement(Button, {disabled: !this.props.enabled, onClick: this.props.onStart}, React.createElement(Glyphicon, {glyph: "play"}), " Start"), 
             React.createElement(Button, {disabled: !this.props.enabled, onClick: this.props.onStop}, React.createElement(Glyphicon, {glyph: "stop"}), " Stop"), 
-            React.createElement(Button, {disabled: !this.props.enabled, onClick: this.props.onReboot}, React.createElement(Glyphicon, {glyph: "eject"}), " Reboot")
+            React.createElement(Button, {disabled: !this.props.enabled, onClick: this.props.onReboot}, React.createElement(Glyphicon, {glyph: "eject"}), " Reboot"), 
+            React.createElement(Button, {disabled: !this.props.enabled, onClick: this.props.onRunCustomBuild}, React.createElement(Glyphicon, {glyph: "th"}), " Custom build")
             )
         );
     }
@@ -299,6 +300,12 @@ var HomePage = React.createClass({displayName: "HomePage",
             'request to reboot agent was sent',
             'reboot triggered');
     },
+    handleRunCustomBuild: function() {
+        this.execActionForAgents(
+            '/agents/runCustomBuild',
+            'request to run custom build sent',
+            'custom build has triggered');
+    },
     showMessage: function(message) {
         if (this.__clearMessageTimeout) {
             clearTimeout(this.__clearMessageTimeout);
@@ -338,7 +345,7 @@ var HomePage = React.createClass({displayName: "HomePage",
             React.createElement(Row, {className: "show-grid"}, 
             React.createElement(Col, {xs: 12, md: 6}, 
             React.createElement("br", null), 
-            React.createElement(MultiActionToolbar, {enabled: this.state.selectedAgents.length > 0, visible: this.state.agents.length > 0, onStart: this.handleStartBuild, onStop: this.handleStopBuild, onReboot: this.handleRebootAgent}), 
+            React.createElement(MultiActionToolbar, {enabled: this.state.selectedAgents.length > 0, visible: this.state.agents.length > 0, onStart: this.handleStartBuild, onStop: this.handleStopBuild, onReboot: this.handleRebootAgent, onRunCustomBuild: this.handleRunCustomBuild}), 
             React.createElement(AgentList, {agents: this.state.agents, selected: this.state.selectedAgents, onSelect: this.handleSelectAgent, onSelectAll: this.handleSelectAll, showLoader: this.state.showAgentListLoader})
             )
             )

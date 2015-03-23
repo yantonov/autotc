@@ -121,6 +121,7 @@ var MultiActionToolbar = React.createClass({
             <Button disabled={!this.props.enabled} onClick={this.props.onStart}><Glyphicon glyph='play' /> Start</Button>
             <Button disabled={!this.props.enabled} onClick={this.props.onStop}><Glyphicon glyph='stop' /> Stop</Button>
             <Button disabled={!this.props.enabled} onClick={this.props.onReboot}><Glyphicon glyph='eject' /> Reboot</Button>
+            <Button disabled={!this.props.enabled} onClick={this.props.onRunCustomBuild}><Glyphicon glyph='th' /> Custom build</Button>
             </ButtonToolbar>
         );
     }
@@ -299,6 +300,12 @@ var HomePage = React.createClass({
             'request to reboot agent was sent',
             'reboot triggered');
     },
+    handleRunCustomBuild: function() {
+        this.execActionForAgents(
+            '/agents/runCustomBuild',
+            'request to run custom build sent',
+            'custom build has triggered');
+    },
     showMessage: function(message) {
         if (this.__clearMessageTimeout) {
             clearTimeout(this.__clearMessageTimeout);
@@ -338,7 +345,7 @@ var HomePage = React.createClass({
             <Row className="show-grid">
             <Col xs={12} md={6}>
             <br/>
-            <MultiActionToolbar enabled={this.state.selectedAgents.length > 0} visible={this.state.agents.length > 0} onStart={this.handleStartBuild} onStop={this.handleStopBuild} onReboot={this.handleRebootAgent}/>
+            <MultiActionToolbar enabled={this.state.selectedAgents.length > 0} visible={this.state.agents.length > 0} onStart={this.handleStartBuild} onStop={this.handleStopBuild} onReboot={this.handleRebootAgent} onRunCustomBuild={this.handleRunCustomBuild}/>
             <AgentList agents={this.state.agents} selected={this.state.selectedAgents} onSelect={this.handleSelectAgent} onSelectAll={this.handleSelectAll} showLoader={this.state.showAgentListLoader}/>
             </Col>
             </Row>
