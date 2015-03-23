@@ -121,7 +121,7 @@ var MultiActionToolbar = React.createClass({
             <Button disabled={!this.props.enabled} onClick={this.props.onStart}><Glyphicon glyph='play' /> Start</Button>
             <Button disabled={!this.props.enabled} onClick={this.props.onStop}><Glyphicon glyph='stop' /> Stop</Button>
             <Button disabled={!this.props.enabled} onClick={this.props.onReboot}><Glyphicon glyph='eject' /> Reboot</Button>
-            <Button disabled={!this.props.enabled} onClick={this.props.onRunCustomBuild}><Glyphicon glyph='th' /> Custom build</Button>
+            <Button disabled={!this.props.enabled} onClick={this.props.onRunCustomBuild}><Glyphicon glyph='th' /> Clean&amp;Build</Button>
             </ButtonToolbar>
         );
     }
