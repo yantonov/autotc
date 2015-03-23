@@ -15,6 +15,18 @@
   (hash-map :alias (. server getAlias)
             :id (. server getId)))
 
+(defn- pretty-print-exception [e]
+  (clojure.string/join
+   "\n"
+   (concat [(.getMessage e)]
+           (map (fn [item]
+                  (format "%s %s.%s:%d"
+                          (.getFileName item)
+                          (.getClassName item)
+                          (.getMethodName item)
+                          (.getLineNumber item)))
+                (.getStackTrace e)))))
+
 (defn- tc-agent-to-json [agent]
   (let [build (. agent getLastBuild)]
     (hash-map :id (. agent getId)
@@ -57,12 +69,12 @@
                        (assoc result :error
                               (str (:error result)
                                    " "
-                                   (.getMessage e)))))))
+                                   (pretty-print-exception e)))))))
                {:count 0
                 :error ""}
                agents)))
     (catch Exception e
-      (let [error (.getMessage e)]
+      (let [error (pretty-print-exception e)]
         (. (System/err) println error)
         (rur/response {:error error})))))
 
