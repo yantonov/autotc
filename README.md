@@ -15,7 +15,7 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 ## install dependencies
 
 ```bash
-    bin/install.sh
+    bin/install-dependencies.sh
 ```
 
 ## Running
