@@ -23,7 +23,7 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 To start a web server for the application, run:
 
 ```bash
-    lein ring server
+    bin/run.sh
 ```
 
 
