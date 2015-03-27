@@ -6,6 +6,7 @@
    [:head
     [:title "Welcome to autotc-web"]
     (include-css "/css/bootstrap.min.css")
+    (include-css "/css/style.css")
     (include-js "/js/lib/jquery-2.1.3.min.js")
     (include-js "/js/common/String.js")
     (include-js "/js/common/Console.js")

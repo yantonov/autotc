@@ -34,7 +34,8 @@
               :running (. build isRunning)
               :status (-> build
                           .getStatus
-                          .toString))))
+                          .toString)
+              :statusText (. build getStatusText))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json
