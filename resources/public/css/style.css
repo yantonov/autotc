@@ -2,11 +2,19 @@
     vertical-align: text-bottom;
 }
 
-.agent__name {
+.agent__text {
     display: inline-block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 100px;
+    width: 20%;
     vertical-align: middle;
+}
+
+.agent__name {
+    width: 20%;
+}
+
+.agent__status {
+    width: 70%;
 }
