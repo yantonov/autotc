@@ -1,8 +1,12 @@
-.agent-name {
-    display: inline-block;
-    width: 100px;
+.agent__checkbox {
+    vertical-align: text-bottom;
 }
 
-.agent-status {
-
+.agent__name {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100px;
+    vertical-align: middle;
 }

@@ -54,13 +54,13 @@ var AgentListItem = React.createClass({
     render: function() {
         return (
             <ListGroupItem>
-            <input type="checkbox" checked={this.props.selected} onClick={this.handleSelect} />
+            <input type="checkbox" checked={this.props.selected} onClick={this.handleSelect} className="agent__checkbox" />
             &nbsp;
             <AgentStatus running={this.props.agent.running} status={this.props.agent.status} />
             &nbsp;
-            <span className="agent-name">{this.props.agent.name}</span>
+            <span className="agent__name">{this.props.agent.name}</span>
             &nbsp;
-            <span className="agent-status">[{this.props.agent.statusText}]</span>
+            <span className="agent__status">[{this.props.agent.statusText}]</span>
             </ListGroupItem>
         );
     }

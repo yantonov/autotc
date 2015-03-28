@@ -54,13 +54,13 @@ var AgentListItem = React.createClass({displayName: "AgentListItem",
     render: function() {
         return (
             React.createElement(ListGroupItem, null, 
-            React.createElement("input", {type: "checkbox", checked: this.props.selected, onClick: this.handleSelect}), 
+            React.createElement("input", {type: "checkbox", checked: this.props.selected, onClick: this.handleSelect, className: "agent__checkbox"}), 
             " ", 
             React.createElement(AgentStatus, {running: this.props.agent.running, status: this.props.agent.status}), 
             " ", 
-            React.createElement("span", {className: "agent-name"}, this.props.agent.name), 
+            React.createElement("span", {className: "agent__name"}, this.props.agent.name), 
             " ", 
-            React.createElement("span", {className: "agent-status"}, "[", this.props.agent.statusText, "]")
+            React.createElement("span", {className: "agent__status"}, "[", this.props.agent.statusText, "]")
             )
         );
     }
