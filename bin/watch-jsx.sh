@@ -6,7 +6,7 @@ output=`jsx --help | grep "Usage:"`
 if [ -z "$output" ]; then
     echo "[ERROR] - jsx not found";
     echo "[INFO] - you can install it using node js package manager: "
-    echo "\$> npm install -g react-tool"
+    echo "\$> npm install -g react-tools"
     exit 0
 fi
 
