@@ -11,6 +11,7 @@ var Button = ReactBootstrap.Button;
 var Panel = ReactBootstrap.Panel;
 var Glyphicon = ReactBootstrap.Glyphicon;
 var Modal = ReactBootstrap.Modal;
+var Loader = Halogen.ScaleLoader;
 
 var ServerList = React.createClass({displayName: "ServerList",
     onSelect: function(serverIndex) {
@@ -85,7 +86,7 @@ var AgentList = React.createClass({displayName: "AgentList",
         if (this.props.showLoader)
             return (
                 React.createElement("div", null, 
-                React.createElement("img", {src: "/img/agent-list-loader.gif", alt: "loading"})
+                React.createElement(Loader, {color: "#ddd", size: "16px", margin: "4px"})
                 )
             );
         var selectedMap = {};
