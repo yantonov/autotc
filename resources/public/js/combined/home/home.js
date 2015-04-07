@@ -229,9 +229,17 @@ var HomePage = React.createClass({displayName: "HomePage",
     loadAgents: function(server) {
         if (server == null)
             return;
+        if (this.state.selectedServerIndex >= 0
+            && this.state.servers[this.state.selectedServerIndex]
+            && this.state.servers[this.state.selectedServerIndex].id != server.id)
+            return;
         Console.log(new Date().toString() + ' request agents server=[' + server.id + '/' + server.alias + ']');
         $.get('/agents/list/' + server.id, function(response) {
             if (this.isMounted()) {
+                if (this.state.selectedServerIndex >= 0
+                    && this.state.servers[this.state.selectedServerIndex]
+                    && this.state.servers[this.state.selectedServerIndex].id != server.id)
+                    return;
                 this.setState({
                     showAgentListLoader: false,
                     agents: response.agents
