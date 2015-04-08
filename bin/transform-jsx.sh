@@ -7,6 +7,10 @@ if [ -z "$output" ]; then
     echo "[ERROR] - jsx not found";
     echo "[INFO] - you can install it using node js package manager: "
     echo "\$> npm install -g react-tools"
+    if [ "`uname`" == "Linux" ]; then
+        echo "# on ubuntu this might be helpful"
+        echo "sudo ln -s /usr/bin/nodejs /usr/bin/node"
+    fi
     exit 0
 fi
 
