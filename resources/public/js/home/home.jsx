@@ -37,7 +37,7 @@ var AgentStatus = React.createClass({
             return running ? 'running_red.gif' : 'stopped_red.gif';
         if (status == "Success")
             return running ? 'running_green.gif' : 'stopped_green.gif';
-        return '';
+        return 'unknown.png';
     },
     render: function() {
         var src = '/img/statuses/' + this.getImage(this.props.status,this.props.running);
@@ -53,6 +53,9 @@ var AgentListItem = React.createClass({
         this.props.onSelect(this.props.agent);
     },
     render: function() {
+        var agentStatus = this.props.agent.statusText;
+        if (String.isNullOrEmpty(agentStatus))
+            agentStatus = 'Unknown status. Check agent configuration.';
         return (
             <ListGroupItem>
             <input type="checkbox" checked={this.props.selected} onClick={this.handleSelect} className="agent__checkbox" />
@@ -61,7 +64,7 @@ var AgentListItem = React.createClass({
             &nbsp;
             <span className="agent__text agent__name">{this.props.agent.name}</span>
             &nbsp;
-            <span className="agent__text agent__status">[{this.props.agent.statusText}]</span>
+            <span className="agent__text agent__status">[{agentStatus}]</span>
             </ListGroupItem>
         );
     }
