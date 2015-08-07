@@ -62,7 +62,7 @@ var AgentListItem = React.createClass({
             &nbsp;
             <AgentStatus running={this.props.agent.running} status={this.props.agent.status} />
             &nbsp;
-            <span className="agent__text agent__name">{this.props.agent.name}</span>
+            <span className="agent__text agent__name"><a href={this.props.agent.webUrl}>{this.props.agent.name}</a></span>
             &nbsp;
             <span className="agent__text agent__status">[{agentStatus}]</span>
             </ListGroupItem>

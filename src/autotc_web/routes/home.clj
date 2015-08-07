@@ -31,6 +31,7 @@
   (let [build (. agent getLastBuild)]
     (hash-map :id (. agent getId)
               :name (. agent toString)
+              :webUrl (. agent getWebUrl)
               :running (. build isRunning)
               :status (-> build
                           .getStatus
