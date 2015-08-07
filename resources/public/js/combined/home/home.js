@@ -62,7 +62,7 @@ var AgentListItem = React.createClass({displayName: "AgentListItem",
             " ", 
             React.createElement(AgentStatus, {running: this.props.agent.running, status: this.props.agent.status}), 
             " ", 
-            React.createElement("span", {className: "agent__text agent__name"}, React.createElement("a", {href: this.props.agent.webUrl}, this.props.agent.name)), 
+            React.createElement("span", {className: "agent__text agent__name"}, React.createElement("a", {href: this.props.agent.webUrl, target: "_blank"}, this.props.agent.name)), 
             " ", 
             React.createElement("span", {className: "agent__text agent__status"}, "[", agentStatus, "]")
             )
