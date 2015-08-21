@@ -13,13 +13,10 @@
   :ring {:handler autotc-web.handler/app
          :init autotc-web.handler/init
          :destroy autotc-web.handler/destroy}
-  :profiles
-  {:uberjar {:aot :all}
-   :production
-   {:ring
-    {:open-browser? false,
-     :stacktraces? false,
-     :auto-reload? false}}
-   :dev
-   {:dependencies [[ring-mock "0.1.5"]
-                   [ring/ring-devel "1.4.0"]]}})
+  :profiles {:uberjar {:aot :all}
+             :production
+             {:ring {:open-browser? false,
+                     :stacktraces? false,
+                     :auto-reload? false}}
+             :dev {:dependencies [[ring-mock "0.1.5"]
+                                  [ring/ring-devel "1.4.0"]]}})
