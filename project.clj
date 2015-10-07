@@ -6,10 +6,10 @@
                  [hiccup "1.0.5"]
                  [ring-server "0.4.0"]
                  [api.http/teamcity "0.0.1"]
-                 [org.clojure/java.jdbc "0.4.1"]
-                 [org.xerial/sqlite-jdbc "3.8.11.1"]
+                 [org.clojure/java.jdbc "0.4.2"]
+                 [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]]
-  :plugins [[lein-ring "0.8.12"]]
+  :plugins [[lein-ring "0.9.7"]]
   :ring {:handler autotc-web.handler/app
          :init autotc-web.handler/init
          :destroy autotc-web.handler/destroy}
