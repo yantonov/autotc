@@ -7,6 +7,13 @@ if [ -z "$output" ]; then
     exit 0
 fi
 
+output=`javac 2>&1 >/dev/null | grep "Usage: javac"`
+if [ -z "$output" ]; then
+    echo "[ERROR] - javac not found, install JDK";
+    echo "[INFO] - you can get it here: www.oracle.com/technetwork/java/javase/downloads/index.html"
+    exit 0
+fi
+
 output=`mvn --version | grep "Apache Maven"`
 if [ -z "$output" ]; then
     echo "[ERROR] - mvn not found";
