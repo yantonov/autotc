@@ -1,7 +1,9 @@
 (ns autotc-web.repl
-  (:use autotc-web.handler
-        ring.server.standalone
-        [ring.middleware file-info file]))
+  (:require  [autotc-web.handler :as autotc]
+             [ring.server.standalone :as rings]
+             [ring.middleware.content-type :refer [wrap-content-type]]
+             [ring.middleware.not-modified :refer [wrap-not-modified]]
+             [ring.middleware.file :refer [wrap-file]]))
 
 (defonce server (atom nil))
 
@@ -10,23 +12,24 @@
   ;; the server is forced to re-resolve the symbol in the var
   ;; rather than having its own copy. When the root binding
   ;; changes, the server picks it up without having to restart.
-  (-> #'app
-    ; Makes static assets in $PROJECT_DIR/resources/public/ available.
+  (-> #'autotc/app
+      ;; Makes static assets in $PROJECT_DIR/resources/public/ available.
       (wrap-file "resources")
-    ; Content-Type, Content-Length, and Last Modified headers for files in body
-      (wrap-file-info)))
+      (wrap-content-type) ; Content-type header
+      (wrap-not-modified) ;If-Modified-Since header
+      ))
 
 (defn start-server
   "used for starting the server in development mode from REPL"
   [& [port]]
   (let [port (if port (Integer/parseInt port) 8080)]
     (reset! server
-            (serve (get-handler)
-                   {:port port
-                    :init init
-                    :auto-reload? true
-                    :destroy destroy
-                    :join true}))
+            (rings/serve (get-handler)
+                         {:port port
+                          :init autotc/init
+                          :auto-reload? true
+                          :destroy autotc/destroy
+                          :join true}))
     (println (str "You can view the site at http://localhost:" port))))
 
 (defn stop-server []

@@ -3,8 +3,10 @@
   :url "http://example.com/FIXME"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.4.0"]
-                 [hiccup "1.0.5"]
                  [ring-server "0.4.0"]
+                 [ring/ring-defaults "0.1.5"]
+                 [commons-codec/commons-codec "1.10"] ; it seems its bug in ring-defaults (required dependency)
+                 [hiccup "1.0.5"]
                  [api.http/teamcity "0.0.1"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]

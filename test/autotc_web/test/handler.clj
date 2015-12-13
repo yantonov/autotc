@@ -1,14 +1,15 @@
 (ns autotc-web.test.handler
-  (:use clojure.test
-        ring.mock.request
-        autotc-web.handler))
+  (:require [clojure.test :refer [deftest is testing]]
+            [ring.mock.request :as ringm]
+            [autotc-web.handler :as autotc]))
 
-(deftest test-app
-  (testing "main route"
-    (let [response (app (request :get "/"))]
+(deftest main-route-test
+  (testing "main route response"
+    (let [response (autotc/app (ringm/request :get "/"))]
       (is (= (:status response) 200))
-      (is (.contains (:body response) "autotc"))))
+      (is (.contains (:body response) "autotc")))))
 
-  (testing "not-found route"
-    (let [response (app (request :get "/invalid"))]
+(deftest not-found-route-test
+  (testing "route not found"
+    (let [response (autotc/app (ringm/request :get "/invalid"))]
       (is (= (:status response) 404)))))

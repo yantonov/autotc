@@ -1,7 +1,7 @@
 (ns autotc-web.handler
   (:require [compojure.core :refer [defroutes routes]]
             [ring.middleware.resource :refer [wrap-resource]]
-            [ring.middleware.file-info :refer [wrap-file-info]]
+            [ring.middleware.defaults :as ringdefaults]
             [hiccup.middleware :refer [wrap-base-url]]
             [compojure.handler :as handler]
             [compojure.route :as route]
@@ -26,6 +26,7 @@
   (-> (routes home-routes
               settings-routes
               app-routes)
-      (handler/site)
+      (rmj/wrap-json-response)
       (wrap-base-url)
-      (rmj/wrap-json-response)))
+      (ringdefaults/wrap-defaults (-> ringdefaults/site-defaults
+                                      (assoc-in [:security :anti-forgery] false )))))
