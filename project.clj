@@ -3,8 +3,7 @@
   :url "https://github.com/yantonov/autotc-web"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.170"]
-                 [cljsjs/react "0.14.3-0"]
-                 [cljsjs/react-dom "0.14.3-1"]
+                 [reagent "0.5.1"]
                  [compojure "1.4.0"]
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
@@ -39,5 +38,6 @@
     {:source-paths ["src-cljs"]
      :compiler {
                 :output-to "resources/public/cljs/dev/autotc-web.js"
+                :externs ["externs/externs.js"]
                 :optimizations :whitespace
                 :pretty-print true}}}})
