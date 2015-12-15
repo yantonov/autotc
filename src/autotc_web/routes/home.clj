@@ -11,6 +11,12 @@
   (layout/common [:script {:type "text/javascript"
                            :src "/js/combined/home/home.js"}]))
 
+(defn- home-cljs []
+  (layout/common [:script {:type "text/javascript"
+                           :src "/cljs/dev/autotc-web.js"}]
+                 [:script {:type "text/javascript"
+                           :src "/cljs/home/home.js"}]))
+
 (defn- tc-server-to-json [^TeamCityServer server]
   (hash-map :alias (. server getAlias)
             :id (. server getId)))
@@ -106,6 +112,7 @@
 
 (defroutes home-routes
   (GET "/" [] (home))
+  (GET "/cljs" [] (home-cljs))
   (GET "/servers/list" [] (get-servers))
   (GET "/agents/list/:id" [id] (agents-for-server id))
   (POST "/agents/startBuild"
