@@ -52880,12 +52880,32 @@ reagent.core.component_path = function reagent$core$component_path(c) {
 goog.provide("autotc_web.home.home");
 goog.require("cljs.core");
 goog.require("reagent.core");
-autotc_web.home.home.home_root_component = function autotc_web$home$home$home_root_component() {
-  return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), "test component"], null)], null);
+autotc_web.home.home.info_message = function autotc_web$home$home$info_message() {
+  return reagent.core.create_class.call(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "reagent-render", "reagent-render", -985383853), function(message) {
+    if (message == null) {
+      return null;
+    } else {
+      return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "static-modal"], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "tab-index", 
+      "tab-index", 895755393), "-1", new cljs.core.Keyword(null, "role", "role", -736691072), "dialog", new cljs.core.Keyword(null, "style", "style", -496642736), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "display", "display", 242065432), "block"], null), new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "modal in"], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), 
+      new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "modal-dialog"], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "modal-content"], null), new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, 
+      "div", "div", 1057191632), new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "modal-header", new cljs.core.Keyword(null, "style", "style", -496642736), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "border-bottom-width", "border-bottom-width", -1417262769), "0px"], null)], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "button", "button", 
+      1456579943), new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "type", "type", 1174270348), "button", new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "close", new cljs.core.Keyword(null, "aria-hidden", "aria-hidden", 399337029), "true"], null), "x"], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "h4", "h4", 2004862993), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, 
+      "class-name", "class-name", 945142584), "modal-title"], null), message], null)], null)], null)], null)], null)], null);
+    }
+  }], null));
+};
+autotc_web.home.home.home_page = function autotc_web$home$home$home_page() {
+  return reagent.core.create_class.call(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "get-initial-state", "get-initial-state", -4494070), function() {
+    return new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null, "servers", "servers", 1881102005), cljs.core.PersistentVector.EMPTY, new cljs.core.Keyword(null, "selected-server-index", "selected-server-index", -776797608), null, new cljs.core.Keyword(null, "agents", "agents", -1112413700), cljs.core.PersistentVector.EMPTY, new cljs.core.Keyword(null, "manually-selected-agents", "manually-selected-agents", 861824515), cljs.core.PersistentVector.EMPTY, new cljs.core.Keyword(null, 
+    "message", "message", -406056002), null, new cljs.core.Keyword(null, "show-agent-list-loader", "show-agent-list-loader", -1418295037), false], null);
+  }, new cljs.core.Keyword(null, "reagent-render", "reagent-render", -985383853), function(state) {
+    var message = (new cljs.core.Keyword(null, "message", "message", -406056002)).cljs$core$IFn$_invoke$arity$1(state);
+    return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), "test component content"], null), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.info_message, message], null)], null);
+  }], null));
 };
 autotc_web.home.home.init = function autotc_web$home$home$init() {
   cljs.core.println.call(null, "hello home page");
-  return reagent.core.render_component.call(null, autotc_web.home.home.home_root_component.call(null), document.getElementById("main-content"));
+  return reagent.core.render_component.call(null, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.home_page, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "message", "message", -406056002), null], null)], null), document.getElementById("main-content"));
 };
 goog.exportSymbol("autotc_web.home.home.init", autotc_web.home.home.init);
 goog.provide("autotc_web.app");
