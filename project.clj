@@ -14,7 +14,8 @@
                  ;; cljs
                  [org.clojure/clojurescript "1.7.170"]
                  [reagent "0.5.1"]
-                 [cljsjs/react-bootstrap "0.27.3-0"]]
+                 [cljsjs/react-bootstrap "0.27.3-0"]
+                 [cljs-ajax "0.5.2"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.1"]]
   :ring {:handler autotc-web.handler/app
@@ -39,7 +40,9 @@
     :development
     {:source-paths ["src-cljs"]
      :compiler {
+                :output-dir "resources/public/cljs/dev"
                 :output-to "resources/public/cljs/dev/autotc-web.js"
+                :source-map "resources/public/cljs/dev/autotc-web.js.map"
                 :externs ["externs/externs.js"]
                 :optimizations :whitespace
                 :pretty-print true}}}})
