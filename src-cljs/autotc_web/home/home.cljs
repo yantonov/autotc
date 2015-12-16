@@ -40,15 +40,10 @@
              :on-select on-server-select
              }
         (for [[server index] (map (fn [a b] [a b]) servers (iterate inc 1))]
-          [NavItem {:event-key index
+          [NavItem {:key index
+                    :event-key index
                     :href "#"}
            (:alias server)])]])}))
-
-;; (for [server servers]
-;;   (r/create-element NavItem
-;;                     (clj->js {:event-key index
-;;                               :href "#"})
-;;                     (:alias server)))
 
 (defn home-page []
   (r/create-class
@@ -63,12 +58,13 @@
        :show-agent-list-loader false})
     :render
     (fn [this]
-      (let [state (r/state this)
-            message (:message state)
-            servers (:servers state)]
+      (let [state (r/state this)]
         [:div
-         [info-message message]
-         [server-list servers nil (fn [_] nil)]]))}))
+         [info-message (:message state)]
+         [server-list
+          (:servers state)
+          (:selected-server-index state)
+          (fn [_] nil)]]))}))
 
 (defn ^:export init []
   (println "init home page")
