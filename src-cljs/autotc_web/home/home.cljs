@@ -1,6 +1,10 @@
 (ns autotc-web.home.home
   (:require
+   [cljsjs.react-bootstrap]
    [reagent.core :as r]))
+
+(defonce Nav (r/adapt-react-class js/ReactBootstrap.Nav))
+(defonce NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
 
 (defn info-message []
   (r/create-class
@@ -23,11 +27,35 @@
               "x"]
              [:h4 {:class-name "modal-title"} message]]]]]]))}))
 
+(defn server-list [servers
+                   selected-server-index
+                   on-server-select]
+  (r/create-class
+   {:render
+    (fn [this]
+      [:div
+       nil
+       [Nav {:bs-style "tabs"
+             :active-key selected-server-index
+             :on-select on-server-select
+             }
+        (for [[server index] (map (fn [a b] [a b]) servers (iterate inc 1))]
+          [NavItem {:event-key index
+                    :href "#"}
+           (:alias server)])]])}))
+
+;; (for [server servers]
+;;   (r/create-element NavItem
+;;                     (clj->js {:event-key index
+;;                               :href "#"})
+;;                     (:alias server)))
+
 (defn home-page []
   (r/create-class
    {:get-initial-state
     (fn [_]
-      {:servers []
+      {:servers [{:alias "japan"}
+                 {:alias "metal"}]
        :selected-server-index nil
        :agents []
        :manually-selected-agents []
@@ -36,13 +64,14 @@
     :render
     (fn [this]
       (let [state (r/state this)
-            message (:message state)]
+            message (:message state)
+            servers (:servers state)]
         [:div
-         [:div "test component content"]
-         [info-message message]]))}))
+         [info-message message]
+         [server-list servers nil (fn [_] nil)]]))}))
 
 (defn ^:export init []
-  (println "hello home page")
+  (println "init home page")
   (r/render-component [home-page]
                       (js/document.getElementById "main-content")))
 

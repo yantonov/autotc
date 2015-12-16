@@ -2,8 +2,6 @@
   :description "apply action to multiple teamcity agents"
   :url "https://github.com/yantonov/autotc-web"
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.170"]
-                 [reagent "0.5.1"]
                  [compojure "1.4.0"]
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
@@ -12,7 +10,11 @@
                  [api.http/teamcity "0.0.1"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
-                 [ring/ring-json "0.4.0"]]
+                 [ring/ring-json "0.4.0"]
+                 ;; cljs
+                 [org.clojure/clojurescript "1.7.170"]
+                 [reagent "0.5.1"]
+                 [cljsjs/react-bootstrap "0.27.3-0"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.1"]]
   :ring {:handler autotc-web.handler/app
