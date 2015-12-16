@@ -26,22 +26,23 @@
 (defn home-page []
   (r/create-class
    {:get-initial-state
-    (fn []
+    (fn [_]
       {:servers []
        :selected-server-index nil
        :agents []
        :manually-selected-agents []
        :message nil
        :show-agent-list-loader false})
-    :reagent-render
-    (fn [state]
-      (let [message (:message state)]
+    :render
+    (fn [this]
+      (let [state (r/state this)
+            message (:message state)]
         [:div
          [:div "test component content"]
          [info-message message]]))}))
 
 (defn ^:export init []
   (println "hello home page")
-  (r/render-component [home-page {:message nil}]
+  (r/render-component [home-page]
                       (js/document.getElementById "main-content")))
 
