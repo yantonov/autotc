@@ -37,9 +37,8 @@
        nil
        [Nav {:bs-style "tabs"
              :active-key selected-server-index
-             :on-select on-server-select
-             }
-        (for [[server index] (map (fn [a b] [a b]) servers (iterate inc 1))]
+             :on-select on-server-select}
+        (for [[server index] (map vector servers (iterate inc 1))]
           [NavItem {:key index
                     :event-key index
                     :href "#"}
