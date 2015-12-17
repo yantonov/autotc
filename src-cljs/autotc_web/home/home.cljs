@@ -11,6 +11,9 @@
 (defonce Col (r/adapt-react-class js/ReactBootstrap.Col))
 (defonce ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
 (defonce ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
+(defonce ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
+(defonce Button (r/adapt-react-class js/ReactBootstrap.Button))
+(defonce Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
 
 (defn info-message []
   (r/create-class
@@ -53,10 +56,26 @@
                              on-stop :on-stop
                              on-reboot :on-reboot
                              on-run-custom-build :on-run-custom-build} data]
-  (r/create-class
-   {:render
-    (fn [this]
-      nil)}))
+  (let [disabled (not enabled)]
+    (if visible
+      [ButtonToolbar
+       [Button {:disabled disabled
+                :on-click on-start}
+        [Glyphicon {:glyph "play"}]
+        " Start"]
+       [Button {:disabled disabled
+                :on-click on-stop}
+        [Glyphicon {:glyph "stop"}]
+        " Stop"]
+       [Button {:disabled disabled
+                :on-click on-reboot}
+        [Glyphicon {:glyph "eject"}]
+        " Reboot"]
+       [Button {:disabled disabled
+                :on-click on-run-custom-build}
+        [Glyphicon {:glyph "th"}]
+        (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
+      nil)))
 
 (defn loader []
   [:div {:color "#ddd"
@@ -138,15 +157,15 @@
     [:div
      nil
      [:br]
-     [ListGroup]
-     [select-all-element {:visible (> (count agents) 0)
-                          :on-select on-select-all
-                          :checked select-all-checked}]
-     (for [[a i] (map vector agents (iterate inc 0))]
-       [agent-list-item {:key i
-                         :agent a
-                         :selected false
-                         :on-select on-select-agent}])]))
+     [ListGroup
+      [select-all-element {:visible (> (count agents) 0)
+                           :on-select on-select-all
+                           :checked select-all-checked}]
+      (for [[a i] (map vector agents (iterate inc 0))]
+        [agent-list-item {:key i
+                          :agent a
+                          :selected false
+                          :on-select on-select-agent}])]]))
 
 (defn home-page []
   (r/create-class
@@ -263,17 +282,16 @@
            [Col {:xs 12
                  :md 6}
             [:br]
-            [multi-action-toolbar {:enabled (> (count (:selected-agents state)) 0)
-                                   :visible (> (count (:agents state)) 0)
-                                   ;; :on-start (partial handleStartBuild this)
-                                   ;; :on-stop (partial handleStoBuild this)
-                                   ;; :on-reboot (partial handleRebootAgent this)
-                                   ;; :on-run-custom-build (partial handleRunCustomBuild this)
-                                   }]
+            [multi-action-toolbar {:enabled (not (empty? (:selected-agents state)))
+                                   :visible (not (empty? (:agents state)))
+                                   :on-start (partial handleStartBuild this)
+                                   :on-stop (partial handleStoBuild this)
+                                   :on-reboot (partial handleRebootAgent this)
+                                   :on-run-custom-build (partial handleRunCustomBuild this)}]
             [agent-list {:agents (:agents state)
-                         ;; :selected-agents (:selected-agents state)
-                         ;; :on-select-agent (partial handleSelectAgent this)
-                         ;; :on-select-all (partial handleSelectAll this)
+                         :selected-agents (:selected-agents state)
+                         :on-select-agent (partial handleSelectAgent this)
+                         :on-select-all (partial handleSelectAll this)
                          :show-loader (get state :show-agent-list-loader false)}]]]]]))}))
 
 (defn ^:export init []
