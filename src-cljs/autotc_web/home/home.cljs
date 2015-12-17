@@ -2,7 +2,8 @@
   (:require [cljsjs.react-bootstrap]
             [reagent.core :as r]
             [ajax.core :as ajax]
-            [goog.string :as gstring]))
+            [goog.string :as gstring]
+            [autotc-web.util.poller :as plr]))
 
 (defonce Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (defonce NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -189,9 +190,8 @@
        :show-agent-list-loader false})
     :reset-timer
     (fn [this timer]
-      (let [state (r/state this)]
-        (when-let [timer (:poll-agent-timer state)]
-          (js/clearInterval timer))))
+      (when-let [timer (:poll-agent-timer (r/state this))]
+        (plr/stop timer)))
     :load-agents
     (fn [this server]
       (let [state (r/state this)
@@ -266,11 +266,14 @@
                           :manually-selected-agents #{}
                           :agents []})
             (.resetTimer this)
-            (let [current-server (get (:servers state) server-index)]
-              (r/set-state this
-                           {:poll-agent-timer (js/setInterval
-                                               (fn [] (.loadAgents this current-server))
-                                               5000)}))))))
+            (let [current-server (get (:servers state) server-index)
+                  p (plr/create_poller (fn [] (.loadAgents this current-server))
+                                       3000
+                                       10000)]
+              (do
+                (plr/start p)
+                (r/set-state this
+                             {:poll-agent-timer p})))))))
     :handle-select-agent
     (fn [this agent selected?]
       (let [s (r/state this)
@@ -374,7 +377,6 @@
                          :show-loader (get state :show-agent-list-loader false)}]]]]]))}))
 
 (defn ^:export init []
-  (println "init home page")
   (r/render-component [home-page]
                       (js/document.getElementById "main-content")))
 
