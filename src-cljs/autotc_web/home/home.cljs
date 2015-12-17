@@ -15,6 +15,7 @@
 (defonce ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
 (defonce Button (r/adapt-react-class js/ReactBootstrap.Button))
 (defonce Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
+(defonce Loader (r/adapt-react-class js/Halogen.ScaleLoader))
 
 (defn info-message []
   (r/create-class
@@ -79,10 +80,9 @@
       nil)))
 
 (defn loader []
-  [:div {:color "#ddd"
+  [Loader {:color "#ddd"
          :size "16px"
-         :margin "4px"}
-   "todo: change to halogen loader"])
+         :margin "4px"}])
 
 (defn select-all-element [{visible :visible
                            on-change :on-change
