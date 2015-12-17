@@ -33,19 +33,16 @@
 (defn server-list [servers
                    selected-server-index
                    on-server-select]
-  (r/create-class
-   {:render
-    (fn [this]
-      [:div
-       nil
-       [Nav {:bs-style "tabs"
-             :active-key selected-server-index
-             :on-select on-server-select}
-        (for [[server index] (map vector servers (iterate inc 1))]
-          [NavItem {:key index
-                    :event-key index
-                    :href "#"}
-           (:alias server)])]])}))
+  [:div
+   nil
+   [Nav {:bs-style "tabs"
+         :active-key selected-server-index
+         :on-select on-server-select}
+    (for [[server index] (map vector servers (iterate inc 1))]
+      [NavItem {:key index
+                :event-key index
+                :href "#"}
+       (:alias server)])]])
 
 (defn multi-action-toolbar [{enabled :enabled
                              visible :visible
@@ -97,14 +94,11 @@
         :handler
         (fn [response]
           (let [servers (:servers response)]
-            (do
-              (r/set-state this {:servers servers
-                                 :agents []
-                                 :selected-agents []
-                                 :manually-selected-agents []
-                                 }))
-
-            ))}))
+            (r/set-state this {:servers servers
+                               :agents []
+                               :selected-agents []
+                               :manually-selected-agents []
+                               })))}))
     :component-did-mount
     (fn [this]
       (.getServerList this))
@@ -157,7 +151,8 @@
                                    :on-stop (partial handleStoBuild this)
                                    :on-reboot (partial handleRebootAgent this)
                                    :on-run-custom-build (partial handleRunCustomBuild this)}]
-            [agent-list {:agents (:agents state)
+            [agent-list {:trash (do (println (:servers state)) nil)
+                         :agents (:agents state)
                          :selected-agents (:selected-agents state)
                          :on-select-agent (partial handleSelectAgent this)
                          :on-select-all (partial handleSelectAll this)
