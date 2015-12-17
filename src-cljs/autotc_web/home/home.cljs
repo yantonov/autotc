@@ -151,8 +151,7 @@
                                    :on-stop (partial handleStoBuild this)
                                    :on-reboot (partial handleRebootAgent this)
                                    :on-run-custom-build (partial handleRunCustomBuild this)}]
-            [agent-list {:trash (do (println (:servers state)) nil)
-                         :agents (:agents state)
+            [agent-list {:agents (:agents state)
                          :selected-agents (:selected-agents state)
                          :on-select-agent (partial handleSelectAgent this)
                          :on-select-all (partial handleSelectAll this)
