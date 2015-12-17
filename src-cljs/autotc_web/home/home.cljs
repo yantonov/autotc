@@ -145,6 +145,15 @@
    [:span {:class-name "agent__text agent__status"}
     (str "["(get-agent-status agent) "]")]])
 
+(defn is-agent-selected? [selected-agents agent]
+  (contains? selected-agents (:id agent)))
+
+(defn update-agent-selection [set agent selected?]
+  (let [key (:id agent)]
+    (if selected?
+      (conj set key)
+      (disj set key))))
+
 (defn agent-list [{agents :agents
                    selected-agents :selected-agents
                    on-select-agent :on-select-agent
@@ -166,15 +175,6 @@
                           :agent a
                           :selected (is-agent-selected? selected-agents a)
                           :on-change-selection (fn [checked] (on-select-agent a checked))}])]]))
-
-(defn is-agent-selected? [selected-agents agent]
-  (contains? selected-agents (:id agent)))
-
-(defn update-agent-selection [set agent selected?]
-  (let [key (:id agent)]
-    (if selected?
-      (conj set key)
-      (disj set key))))
 
 (defn home-page []
   (r/create-class
@@ -250,7 +250,7 @@
       (this.getServerList))
     :component-unmount
     (fn [this]
-      (reset-timer this)
+      (this.resetTimer)
       nil)
     :on-server-select
     (fn [this server-index]
@@ -298,6 +298,55 @@
                 (apply hash-set (map :id agents))
                 #{}))]
         (r/set-state this {:selected-agents new-selected-agents})))
+    :handle-start-build
+    (fn [this]
+      (this.execActionForAgents
+       "/agents/startBuild"
+       "request to trigger build was sent"
+       "build triggered"))
+    :handle-stop-build
+    (fn [this]
+      (this.execActionForAgents
+       "/agents/stopBuild"
+       "request to stop build was sent"
+       "build stopped"))
+    :handle-reboot-agent
+    (fn [this]
+      (this.execActionForAgents
+       "/agents/rebootAgent"
+       "request to reboot agent was sent"
+       "reboot triggered"))
+    :handle-run-custom-build
+    (fn [this]
+      (this.execActionForAgents
+       "/agents/runCustomBuild"
+       "request to run custom build was sent"
+       "custom build has triggered"))
+    :show-message
+    (fn [this message]
+      (let [s (r/state this)]
+        (when-let [message-timer (:message-timer s)]
+          (js/clearTimeout message-timer))
+        (r/set-state this {:message message
+                           :message-timer (js/setTimeout this.closeMessage 5000)})))
+    :close-message
+    (fn [this]
+      (r/set-state this {:message nil}))
+    :exec-action-for-agents
+    (fn [this url trigger-message completed-message]
+      (let [s (r/state this)
+            current-server-id (:id (get (:servers s) (:selected-server-index s)))
+            agent-ids (clj->js (map identity (:selected-agents s)))]
+        (do
+          (this.showMessage trigger-message)
+          (ajax/POST url
+                     {:params {"serverId" current-server-id
+                               "agentIds[]" agent-ids}
+                      :format (ajax/url-request-format)
+                      :handler (fn [response]
+                                 (println response)
+                                 (this.showMessage completed-message))
+                      :error-handler (fn [response] (println response))}))))
     :render
     (fn [this]
       (let [state (r/state this)]
@@ -314,10 +363,10 @@
             [:br]
             [multi-action-toolbar {:enabled (not (empty? (:selected-agents state)))
                                    :visible (not (empty? (:agents state)))
-                                   :on-start (partial handleStartBuild this)
-                                   :on-stop (partial handleStopBuild this)
-                                   :on-reboot (partial handleRebootAgent this)
-                                   :on-run-custom-build (partial handleRunCustomBuild this)}]
+                                   :on-start this.handleStartBuild
+                                   :on-stop this.handleStopBuild
+                                   :on-reboot this.handleRebootAgent
+                                   :on-run-custom-build this.handleRunCustomBuild}]
             [agent-list {:agents (:agents state)
                          :selected-agents (:selected-agents state)
                          :on-select-agent this.handleSelectAgent
