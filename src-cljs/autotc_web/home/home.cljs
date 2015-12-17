@@ -84,13 +84,13 @@
    "todo: change to halogen loader"])
 
 (defn select-all-element [{visible :visible
-                           on-select :on-select
+                           on-change :on-change
                            checked :checked} data]
   (if (not visible)
     nil
     [ListGroupItem
      [:input {:type "checkbox"
-              :on-click on-select
+              :on-change (fn [event] (on-change event.target.checked))
               :checked checked}]
      (gstring/unescapeEntities "&nbsp;")
      "All agents"]))
@@ -148,7 +148,7 @@
 (defn agent-list [{agents :agents
                    selected-agents :selected-agents
                    on-select-agent :on-select-agent
-                   handle-select-all :on-select-all
+                   on-select-all :on-select-all
                    show-loader :show-loader} data]
   (if show-loader
     [:div
@@ -159,8 +159,8 @@
      [:br]
      [ListGroup
       [select-all-element {:visible (> (count agents) 0)
-                           :on-select on-select-all
-                           :checked select-all-checked}]
+                           :on-change on-select-all
+                           :checked (= (count agents) (count selected-agents))}]
       (for [[a i] (map vector agents (iterate inc 0))]
         [agent-list-item {:key i
                           :agent a
@@ -283,8 +283,21 @@
                                                                              agent
                                                                              selected?)})))
     :handle-select-all
-    (fn [this]
-      nil)
+    (fn [this checked?]
+      (let [s (r/state this)
+            {agents :agents
+             selected-agents :selected-agents
+             manually-selected-agents :manually-selected-agents} s
+
+            new-selected-agents
+            (if (empty? selected-agents)
+              (if (empty? manually-selected-agents)
+                (apply hash-set (map :id agents))
+                (apply hash-set manually-selected-agents))
+              (if (< (count selected-agents) (count agents))
+                (apply hash-set (map :id agents))
+                #{}))]
+        (r/set-state this {:selected-agents new-selected-agents})))
     :render
     (fn [this]
       (let [state (r/state this)]
