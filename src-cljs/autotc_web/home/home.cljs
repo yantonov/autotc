@@ -126,12 +126,12 @@
 (defn agent-list-item [{key :key
                         agent :agent
                         selected :selected
-                        on-select :on-select} data]
+                        on-change :on-change-selection} data]
   [ListGroupItem
    {:key key}
    [:input {:type "checkbox"
             :checked selected
-            :on-click on-select
+            :on-change (fn [event] (on-change event.target.checked))
             :class-name "agent__checkbox"}]
    (gstring/unescapeEntities "&nbsp;")
    [agent-status {:running (:running agent)
@@ -147,7 +147,7 @@
 
 (defn agent-list [{agents :agents
                    selected-agents :selected-agents
-                   handle-select-agent :on-select-agent
+                   on-select-agent :on-select-agent
                    handle-select-all :on-select-all
                    show-loader :show-loader} data]
   (if show-loader
@@ -164,8 +164,17 @@
       (for [[a i] (map vector agents (iterate inc 0))]
         [agent-list-item {:key i
                           :agent a
-                          :selected false
-                          :on-select on-select-agent}])]]))
+                          :selected (is-agent-selected? selected-agents a)
+                          :on-change-selection (fn [checked] (on-select-agent a checked))}])]]))
+
+(defn is-agent-selected? [selected-agents agent]
+  (contains? selected-agents (:id agent)))
+
+(defn update-agent-selection [set agent selected?]
+  (let [key (:id agent)]
+    (if selected?
+      (conj set key)
+      (disj set key))))
 
 (defn home-page []
   (r/create-class
@@ -174,8 +183,8 @@
       {:servers []
        :selected-server-index nil
        :agents []
-       :selected-agents []
-       :manually-selected-agents []
+       :selected-agents #{}
+       :manually-selected-agents #{}
        :message nil
        :show-agent-list-loader false})
     :reset-timer
@@ -212,8 +221,8 @@
                 :error-handler (fn [response]
                                  (r/set-state this {:agents []
                                                     :show-agent-list-loader false
-                                                    :selected-agents []
-                                                    :manually-selected-agents []}))}))))))
+                                                    :selected-agents #{}
+                                                    :manually-selected-agents #{}}))}))))))
     :get-server-list
     (fn [this]
       (ajax/GET
@@ -229,8 +238,8 @@
                 (.loadAgents this))
               (r/set-state this {:servers servers
                                  :agents []
-                                 :selected-agents []
-                                 :manually-selected-agents []})
+                                 :selected-agents #{}
+                                 :manually-selected-agents #{}})
               (when-let [default-server-index (if (and (not (nil? servers))
                                                        (> (count servers) 0))
                                                 0
@@ -253,8 +262,8 @@
             (r/set-state this
                          {:show-agent-list-loader true
                           :selected-server-index server-index
-                          :selected-agents []
-                          :manually-selected-agents []
+                          :selected-agents #{}
+                          :manually-selected-agents #{}
                           :agents []})
             (.resetTimer this)
             (let [current-server (get (:servers state) server-index)]
@@ -263,8 +272,16 @@
                                                (fn [] (.loadAgents this current-server))
                                                5000)}))))))
     :handle-select-agent
-    (fn [this]
-      nil)
+    (fn [this agent selected?]
+      (let [s (r/state this)
+            selected-agents (:selected-agents s)
+            manually-selected-agents (:manually-selected-agents s)]
+        (r/set-state this {:selected-agents (update-agent-selection selected-agents
+                                                                    agent
+                                                                    selected?)
+                           :manually-selected-agents (update-agent-selection manually-selected-agents
+                                                                             agent
+                                                                             selected?)})))
     :handle-select-all
     (fn [this]
       nil)
@@ -285,13 +302,13 @@
             [multi-action-toolbar {:enabled (not (empty? (:selected-agents state)))
                                    :visible (not (empty? (:agents state)))
                                    :on-start (partial handleStartBuild this)
-                                   :on-stop (partial handleStoBuild this)
+                                   :on-stop (partial handleStopBuild this)
                                    :on-reboot (partial handleRebootAgent this)
                                    :on-run-custom-build (partial handleRunCustomBuild this)}]
             [agent-list {:agents (:agents state)
                          :selected-agents (:selected-agents state)
-                         :on-select-agent (partial handleSelectAgent this)
-                         :on-select-all (partial handleSelectAll this)
+                         :on-select-agent this.handleSelectAgent
+                         :on-select-all this.handleSelectAll
                          :show-loader (get state :show-agent-list-loader false)}]]]]]))}))
 
 (defn ^:export init []
