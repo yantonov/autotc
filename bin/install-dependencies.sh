@@ -51,11 +51,13 @@ cd tmp
 
 git clone https://github.com/yantonov/jcxsp.git
 cd jcxsp
+git checkout v0.0.1
 mvn install
 cd ../
 
 git clone https://github.com/yantonov/tc-api.git
 cd tc-api
+git checkout v0.0.1
 mvn install
 cd ../
 
