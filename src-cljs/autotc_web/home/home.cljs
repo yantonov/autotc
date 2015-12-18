@@ -52,12 +52,12 @@
                 :href "#"}
        (:alias server)])]])
 
-(defn multi-action-toolbar [{enabled :enabled
-                             visible :visible
-                             on-start :on-start
-                             on-stop :on-stop
-                             on-reboot :on-reboot
-                             on-run-custom-build :on-run-custom-build} data]
+(defn multi-action-toolbar [{:keys [enabled
+                                    visible
+                                    on-start
+                                    on-stop
+                                    on-reboot
+                                    on-run-custom-build]} data]
   (let [disabled (not enabled)]
     (if visible
       [ButtonToolbar
@@ -81,12 +81,12 @@
 
 (defn loader []
   [Loader {:color "#ddd"
-         :size "16px"
-         :margin "4px"}])
+           :size "16px"
+           :margin "4px"}])
 
-(defn select-all-element [{visible :visible
-                           on-change :on-change
-                           checked :checked} data]
+(defn select-all-element [{:keys [visible
+                                  on-change
+                                  checked]} data]
   (if (not visible)
     nil
     [ListGroupItem
@@ -117,17 +117,17 @@
     true
     "unknown.png"))
 
-(defn agent-status [{running :running
-                     status :status} data]
+(defn agent-status [{:keys [running
+                            status]} data]
   [:img {:src (str "/img/statuses/" (get-image status running))
          :alt (str status (if running
                             "in progress"
                             "completed"))}])
 
-(defn agent-list-item [{key :key
-                        agent :agent
-                        selected :selected
-                        on-change :on-change-selection} data]
+(defn agent-list-item [{:keys [key
+                               agent
+                               selected
+                               on-change]} data]
   [ListGroupItem
    {:key key}
    [:input {:type "checkbox"
@@ -155,11 +155,11 @@
       (conj set key)
       (disj set key))))
 
-(defn agent-list [{agents :agents
-                   selected-agents :selected-agents
-                   on-select-agent :on-select-agent
-                   on-select-all :on-select-all
-                   show-loader :show-loader} data]
+(defn agent-list [{:keys [agents
+                          selected-agents
+                          on-select-agent
+                          on-select-all
+                          show-loader]} data]
   (if show-loader
     [:div
      nil
