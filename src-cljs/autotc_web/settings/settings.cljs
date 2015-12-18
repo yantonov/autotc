@@ -81,44 +81,53 @@
 
 (defn edit-server-form [{:keys [on-save
                                 on-cancel]} data]
-  [:form {:action ""
-          :method "POST"
-          :on-submit on-save}
-   [Grid
-    [Row
-     [Col {:xs 12
-           :md 6}
-      [Input {:type "text"
-              :label "Alias"
-              :ref "alias"
-              :placeholder "Enter text"}]
-      [Input {:type "text"
-              :label "Host"
-              :ref "host"
-              :placeholder "Enter text"}]
-      [Input {:type "text"
-              :label "Port"
-              :ref "port"
-              :placeholder "Enter text"}]
-      [Input {:type "text"
-              :label "Project"
-              :ref "project"
-              :placeholder "Enter text"}]
-      [Input {:type "text"
-              :label "Username"
-              :ref "username"
-              :placeholder "Enter text"}]
-      [Input {:type "password"
-              :label "Password"
-              :ref "alias"
-              :placeholder "Enter text"}]
-      [ButtonToolbar
-       [Button {:type "submit"
-                :bs-style "success"}
-        "Save"]
-       [Button {:type "button"
-                :on-click on-cancel}
-        "Cancel"]]]]]])
+  (let [form-state (atom {})
+        update-fn (fn [key]
+                    (fn [e]
+                      (swap! form-state assoc key (-> e
+                                                      .-target
+                                                      .-value))))]
+    [:form {:action ""
+            :method "POST"
+            :on-submit (fn [e]
+                         (println @form-state)
+                         (.preventDefault e)
+                         (on-save @form-state))}
+     [Grid
+      [Row
+       [Col {:xs 12
+             :md 6}
+        [Input {:type "text"
+                :label "Alias"
+                :placeholder "Enter text"
+                :on-change (update-fn :alias)}]
+        [Input {:type "text"
+                :label "Host"
+                :placeholder "Enter text"
+                :on-change (update-fn :host)}]
+        [Input {:type "text"
+                :label "Port"
+                :placeholder "Enter text"
+                :on-change (update-fn :port)}]
+        [Input {:type "text"
+                :label "Project"
+                :placeholder "Enter text"
+                :on-change (update-fn :project)}]
+        [Input {:type "text"
+                :label "Username"
+                :placeholder "Enter text"
+                :on-change (update-fn :username)}]
+        [Input {:type "password"
+                :label "Password"
+                :placeholder "Enter text"
+                :on-change (update-fn :password)}]
+        [ButtonToolbar
+         [Button {:type "submit"
+                  :bs-style "success"}
+          "Save"]
+         [Button {:type "button"
+                  :on-click on-cancel}
+          "Cancel"]]]]]]))
 
 (defn settings-page []
   (r/create-class
@@ -136,6 +145,7 @@
                    {:show-list true}))
     :save-server
     (fn [this server]
+      (println server)
       (ajax/POST "/settings/servers/add"
                  {:params server
                   :format (ajax/url-request-format)
