@@ -6,7 +6,10 @@
   (:import api.http.teamcity.domain.TeamCityServer))
 
 (defn settings []
-  (layout/common [:script {:type "text/javascript" :src "/js/combined/settings/settings.js"}]))
+  (layout/common [:script {:type "text/javascript"
+                           :src "/cljs/dev/autotc-web.js"}]
+                 [:script {:type "text/javascript"
+                           :src "/cljs/settings/settings.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
   (hash-map :alias (. server getAlias)

@@ -9,7 +9,9 @@
 
 (defn- home []
   (layout/common [:script {:type "text/javascript"
-                           :src "/js/combined/home/home.js"}]))
+                           :src "/cljs/dev/autotc-web.js"}]
+                 [:script {:type "text/javascript"
+                           :src "/cljs/home/home.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
   (hash-map :alias (. server getAlias)
@@ -52,7 +54,7 @@
 
 (defn- exec-action-for-agents [server-id agent-ids session-action]
   (try
-    (let [server (db/get-server-by-id server-id)
+    (let [server (db/get-server-by-id (Long/parseLong server-id))
           session (TeamCitySession/create server)
           ids-set (set agent-ids)
           agents (filter #(contains? ids-set (. % getId))
