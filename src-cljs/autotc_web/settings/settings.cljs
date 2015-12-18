@@ -10,7 +10,11 @@
 (def Grid (r/adapt-react-class js/ReactBootstrap.Grid))
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
-(def Modal (r/adapt-react-class js/ReactBootstrap.Modal))
+(def ModalBody (r/adapt-react-class js/ReactBootstrap.Modal.Body))
+(def ModalHeader (r/adapt-react-class js/ReactBootstrap.Modal.Header))
+(def ModalTitle (r/adapt-react-class js/ReactBootstrap.Modal.Title))
+(def ModalFooter (r/adapt-react-class js/ReactBootstrap.Modal.Footer))
+(def Modal (r/adapt-react-class js/ReactBootstrap.Modal.Dialog))
 
 (defn server-element [{:keys [key
                               index
@@ -62,14 +66,15 @@
 (defn delete-confirmation-dialog [{:keys [server
                                           on-ok
                                           on-cancel]} data]
-  [Modal {:title (str "Do you really want to delete '" (:alias server) "'?")
+  [Modal {:show true
           :backgrop false
           :animation false
-          :on-request-hide on-cancel
           :on-hide on-cancel}
-   [:div {:class-name "modal-body"}
+   [ModalHeader {:closebutton true}
+    [ModalTitle (str "Do you really want to delete '" (:alias server) "'?")]]
+   [ModalBody
     (str (:alias server) " at " (:host server) ":" (:port server))]
-   [:div {:class-name "modal-footer"}
+   [ModalFooter
     [Button {:on-click on-cancel} "Cancel"]
     [Button {:on-click on-ok
              :bs-style "danger"} "Delete"]]])
@@ -183,7 +188,7 @@
                          :on-delete (fn [server]  (.confirmDelete this server))}]
            (if show-confirm-delete-dialog?
              [delete-confirmation-dialog {:server server-to-delete
-                                          :on-ok this.handleDelete
+                                          :on-ok (fn [] (this.handleDelete server-to-delete))
                                           :on-cancel this.cancelDelete}])]
           [edit-server-form {:on-save this.saveServer
                              :on-cancel this.cancelEditServer}])))}))
