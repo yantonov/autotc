@@ -6,7 +6,14 @@
   (:import api.http.teamcity.domain.TeamCityServer))
 
 (defn settings []
-  (layout/common [:script {:type "text/javascript" :src "/js/combined/settings/settings.js"}]))
+  (layout/common [:script {:type "text/javascript"
+                           :src "/js/combined/settings/settings.js"}]))
+
+(defn settings-cljs []
+  (layout/common [:script {:type "text/javascript"
+                           :src "/cljs/dev/autotc-web.js"}]
+                 [:script {:type "text/javascript"
+                           :src "/cljs/settings/settings.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
   (hash-map :alias (. server getAlias)
@@ -21,6 +28,7 @@
 
 (defroutes settings-routes
   (GET "/settings" [] (settings))
+  (GET "/settings-cljs" [] (settings-cljs))
   (GET "/settings/servers/list" [] (get-servers))
   (POST "/settings/servers/add"
         [alias host port project username password]
