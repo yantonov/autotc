@@ -59,24 +59,32 @@
                                     on-reboot
                                     on-run-custom-build]} data]
   (let [disabled (not enabled)]
-    (if visible
-      [ButtonToolbar
-       [Button {:disabled disabled
-                :on-click on-start}
-        [Glyphicon {:glyph "play"}]
-        " Start"]
-       [Button {:disabled disabled
-                :on-click on-stop}
-        [Glyphicon {:glyph "stop"}]
-        " Stop"]
-       [Button {:disabled disabled
-                :on-click on-reboot}
-        [Glyphicon {:glyph "eject"}]
-        " Reboot"]
-       [Button {:disabled disabled
-                :on-click on-run-custom-build}
-        [Glyphicon {:glyph "th"}]
-        (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]])))
+    (if (and visible enabled)
+      [:div {:style {:position "fixed"
+                     :bottom "0"
+                     :left "0"
+                     :width "100%"
+                     :z-index 1}}
+       [:div {:class-name "navbar-default multi-action-panel"}
+        [:div {:class-name "container"
+               :style {}}
+         [ButtonToolbar
+          [Button {:disabled disabled
+                   :on-click on-start}
+           [Glyphicon {:glyph "play"}]
+           " Start"]
+          [Button {:disabled disabled
+                   :on-click on-stop}
+           [Glyphicon {:glyph "stop"}]
+           " Stop"]
+          [Button {:disabled disabled
+                   :on-click on-reboot}
+           [Glyphicon {:glyph "eject"}]
+           " Reboot"]
+          [Button {:disabled disabled
+                   :on-click on-run-custom-build}
+           [Glyphicon {:glyph "th"}]
+           (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]]]])))
 
 (defn loader [{:keys [visible]} data]
   (if visible

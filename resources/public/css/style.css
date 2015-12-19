@@ -18,3 +18,8 @@
 .agent__status {
     width: 70%;
 }
+
+.multi-action-panel {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
