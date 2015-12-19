@@ -175,7 +175,7 @@
         [agent-list-item {:key i
                           :agent a
                           :selected (is-agent-selected? selected-agents a)
-                          :on-change-selection (fn [checked] (on-select-agent a checked))}])]]))
+                          :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
 (defn home-page []
   (r/create-class
