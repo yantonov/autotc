@@ -1,7 +1,6 @@
 # build dir
 /target
 /classes
-/resources/public/js/combined/.module-cache
 
 # bin
 /lib
