@@ -256,7 +256,7 @@
                   p (plr/create-poller (fn []
                                          (.loadAgents this current-server))
                                        3000
-                                       10000)]
+                                       60000)]
               (do
                 (plr/start p)
                 (r/set-state this
