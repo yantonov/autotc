@@ -1,6 +1,6 @@
 ## autotc-web
 
-tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
+tiny clojure/clojurescript/react app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 ## install dependencies
 
 ```bash
-    bin/install-dependencies.sh
+    bin/install/install-dependencies.sh
 ```
 
 ## Running
