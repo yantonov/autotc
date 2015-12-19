@@ -1,2 +1,2 @@
 pushd %~dp0\..\
-start lein ring server 7777
+lein ring server 7777
