@@ -76,8 +76,7 @@
        [Button {:disabled disabled
                 :on-click on-run-custom-build}
         [Glyphicon {:glyph "th"}]
-        (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
-      nil)))
+        (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]])))
 
 (defn loader [{:keys [visible]} data]
   (if visible
@@ -120,9 +119,7 @@
 (defn agent-status [{:keys [running
                             status]} data]
   [:img {:src (str "/img/statuses/" (get-image status running))
-         :alt (str status (if running
-                            "in progress"
-                            "completed"))}])
+         :alt (str status (if running "in progress" "completed"))}])
 
 (defn agent-list-item [{:keys [key
                                agent
@@ -150,10 +147,7 @@
   (contains? selected-agents (:id agent)))
 
 (defn update-agent-selection [set agent selected?]
-  (let [key (:id agent)]
-    (if selected?
-      (conj set key)
-      (disj set key))))
+  ((if selected? conj disj) set (:id agent)))
 
 (defn agent-list [{:keys [agents
                           selected-agents
@@ -161,7 +155,6 @@
                           on-select-all
                           show-loader]} data]
   [:div
-
    [loader {:visible show-loader}]
    [:br]
    [ListGroup
@@ -173,6 +166,15 @@
                         :agent a
                         :selected (is-agent-selected? selected-agents a)
                         :on-change (fn [checked] (on-select-agent a checked))}])]])
+
+(defn other-server-selected? [state load-agents-for-server]
+  (if (nil? load-agents-for-server)
+    true
+    (let [selected-server-index (:selected-server-index state)
+          selected-server (get (:servers state) selected-server-index)]
+      (and (not (nil? selected-server))
+           (not (= (:id selected-server)
+                   (:id load-agents-for-server)))))))
 
 (defn home-page []
   (r/create-class
@@ -191,35 +193,24 @@
         (plr/stop timer)))
     :load-agents
     (fn [this server]
-      (let [state (r/state this)
-            selected-server-index (:selected-server-index state)
-            selected-server (get (:servers state) selected-server-index)]
-        (if (or (nil? server)
-                (and (not (nil? selected-server))
-                     (not (= (:id selected-server)
-                             (:id server)))))
-          nil
-          (do
-            (let [url (str "/agents/list/" (:id server))]
-              (ajax/GET
-               url
-               {:response-format (ajax/json-response-format {:keywords? true})
-                :handler (fn [response]
-                           (let [state (r/state this)
-                                 selected-server-index (:selected-server-index state)
-                                 selected-server (get (:servers state) selected-server-index)]
-                             (if (and (not (nil? selected-server))
-                                      (not (= (:id selected-server)
-                                              (:id server))))
-                               nil
-                               (do
-                                 (r/set-state this {:agents (:agents response)
-                                                    :show-agent-list-loader false})))))
-                :error-handler (fn [response]
-                                 (r/set-state this {:agents []
-                                                    :show-agent-list-loader false
-                                                    :selected-agents #{}
-                                                    :manually-selected-agents #{}}))}))))))
+      (if (other-server-selected? (r/state this) server)
+        nil
+        (do
+          (let [url (str "/agents/list/" (:id server))]
+            (ajax/GET
+             url
+             {:response-format (ajax/json-response-format {:keywords? true})
+              :handler (fn [response]
+                         (if (other-server-selected? (r/state this) server)
+                           nil
+                           (do
+                             (r/set-state this {:agents (:agents response)
+                                                :show-agent-list-loader false}))))
+              :error-handler (fn [response]
+                               (r/set-state this {:agents []
+                                                  :show-agent-list-loader false
+                                                  :selected-agents #{}
+                                                  :manually-selected-agents #{}}))})))))
     :get-server-list
     (fn [this]
       (ajax/GET
@@ -228,20 +219,18 @@
         :response-format (ajax/json-response-format {:keywords? true})
         :handler
         (fn [response]
-          (let [servers (:servers response)]
+          (let [servers (:servers response)
+                has-any-server? (and (not (nil? servers))
+                                     (> (count servers)))]
             (do
-              (if (and (not (nil? servers))
-                       (> (count servers) 0))
+              (if has-any-server?
                 (.loadAgents this))
               (r/set-state this {:servers servers
                                  :agents []
                                  :selected-agents #{}
                                  :manually-selected-agents #{}})
-              (when-let [default-server-index (if (and (not (nil? servers))
-                                                       (> (count servers) 0))
-                                                0
-                                                nil)]
-                (.onServerSelect this default-server-index)))))}))
+              (if has-any-server?
+                (.onServerSelect this 0)))))}))
     :component-did-mount
     (fn [this]
       (this.getServerList))
@@ -264,7 +253,8 @@
                           :agents []})
             (.resetTimer this)
             (let [current-server (get (:servers state) server-index)
-                  p (plr/create_poller (fn [] (.loadAgents this current-server))
+                  p (plr/create-poller (fn []
+                                         (.loadAgents this current-server))
                                        3000
                                        10000)]
               (do
@@ -284,10 +274,9 @@
                                                                              selected?)})))
     :handle-select-all
     (fn [this checked?]
-      (let [s (r/state this)
-            {agents :agents
+      (let [{agents :agents
              selected-agents :selected-agents
-             manually-selected-agents :manually-selected-agents} s
+             manually-selected-agents :manually-selected-agents} (r/state this)
 
             new-selected-agents
             (if (empty? selected-agents)
@@ -324,11 +313,10 @@
        "custom build has triggered"))
     :show-message
     (fn [this message]
-      (let [s (r/state this)]
-        (when-let [message-timer (:message-timer s)]
-          (js/clearTimeout message-timer))
-        (r/set-state this {:message message
-                           :message-timer (js/setTimeout this.closeMessage 5000)})))
+      (when-let [message-timer (:message-timer (r/state this))]
+        (js/clearTimeout message-timer))
+      (r/set-state this {:message message
+                         :message-timer (js/setTimeout this.closeMessage 5000)}))
     :close-message
     (fn [this]
       (r/set-state this {:message nil}))
@@ -349,31 +337,36 @@
                       :error-handler (fn [response] (println response))}))))
     :render
     (fn [this]
-      (let [state (r/state this)]
+      (let [{:keys [servers
+                    selected-server-index
+                    message
+                    selected-agents
+                    agents
+                    show-agent-list-loader] :or {:show-agent-list-loader false}}
+            (r/state this)]
         [:div
-         [info-message (:message state)]
+         [info-message message]
          [server-list
-          (:servers state)
-          (:selected-server-index state)
+          servers
+          selected-server-index
           this.onServerSelect]
          [Grid nil
           [Row {:className "show-grid"}
            [Col {:xs 12
                  :md 6}
             [:br]
-            [multi-action-toolbar {:enabled (not (empty? (:selected-agents state)))
-                                   :visible (not (empty? (:agents state)))
+            [multi-action-toolbar {:enabled (not (empty? selected-agents))
+                                   :visible (not (empty? agents))
                                    :on-start this.handleStartBuild
                                    :on-stop this.handleStopBuild
                                    :on-reboot this.handleRebootAgent
                                    :on-run-custom-build this.handleRunCustomBuild}]
-            [agent-list {:agents (:agents state)
-                         :selected-agents (:selected-agents state)
+            [agent-list {:agents agents
+                         :selected-agents selected-agents
                          :on-select-agent this.handleSelectAgent
                          :on-select-all this.handleSelectAll
-                         :show-loader (get state :show-agent-list-loader false)}]]]]]))}))
+                         :show-loader show-agent-list-loader}]]]]]))}))
 
 (defn ^:export init []
   (r/render-component [home-page]
                       (js/document.getElementById "main-content")))
-
