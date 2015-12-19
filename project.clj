@@ -32,15 +32,12 @@
   {:builds
    {:production
     {:source-paths ["src-cljs"]
-     :compiler {
-                :output-to "target/autotc-web.js"
-                :source-map "target/autotc-web.js.map"
+     :compiler {:output-to "target/autotc-web.js"
                 :optimizations :advanced
                 :pretty-print false}}
     :development
     {:source-paths ["src-cljs"]
-     :compiler {
-                :output-dir "resources/public/cljs/dev"
+     :compiler {:output-dir "resources/public/cljs/dev"
                 :output-to "resources/public/cljs/dev/autotc-web.js"
                 :source-map "resources/public/cljs/dev/autotc-web.js.map"
                 :externs ["externs/externs.js"]
