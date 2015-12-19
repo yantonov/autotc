@@ -5,7 +5,6 @@
                  [compojure "1.4.0"]
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
-                 [commons-codec/commons-codec "1.10"] ; it seems its bug in ring-defaults (required dependency)
                  [hiccup "1.0.5"]
                  [api.http/teamcity "0.0.1"]
                  [org.clojure/java.jdbc "0.4.2"]
@@ -14,7 +13,7 @@
                  ;; cljs
                  [org.clojure/clojurescript "1.7.170"]
                  [reagent "0.5.1"]
-                 [cljsjs/react-bootstrap "0.27.3-0"]
+                 [cljsjs/react-bootstrap "0.27.3-0" :exclusions [org.webjars.bower/jquery]]
                  [cljs-ajax "0.5.2"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.1"]]
