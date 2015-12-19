@@ -12,7 +12,7 @@ tiny clojure/clojurescript/react app which allow you to start/stop/reboot multip
 [2]: http://maven.apache.org
 [3]: https://github.com/technomancy/leiningen
 
-## install dependencies
+## Install dependencies
 
 ```bash
     bin/install/install-dependencies.sh
@@ -26,6 +26,8 @@ To start a web server for the application, run:
     bin/run.sh
 ```
 
+## How it looks
+![screenshot](https://raw.githubusercontent.com/yantonov/autotc-web/master/docs/screenshot.png)
 
 ## License
 
