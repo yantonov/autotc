@@ -79,16 +79,16 @@
         (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
       nil)))
 
-(defn loader []
-  [Loader {:color "#ddd"
-           :size "16px"
-           :margin "4px"}])
+(defn loader [{:keys [visible]} data]
+  (if visible
+    [Loader {:color "#ddd"
+             :size "16px"
+             :margin "4px"}]))
 
 (defn select-all-element [{:keys [visible
                                   on-change
                                   checked]} data]
-  (if (not visible)
-    nil
+  (if visible
     [ListGroupItem
      [:input {:type "checkbox"
               :on-change (fn [event] (on-change event.target.checked))
@@ -160,22 +160,19 @@
                           on-select-agent
                           on-select-all
                           show-loader]} data]
-  (if show-loader
-    [:div
-     nil
-     [loader]]
-    [:div
-     nil
-     [:br]
-     [ListGroup
-      [select-all-element {:visible (> (count agents) 0)
-                           :on-change on-select-all
-                           :checked (= (count agents) (count selected-agents))}]
-      (for [[a i] (map vector agents (iterate inc 0))]
-        [agent-list-item {:key i
-                          :agent a
-                          :selected (is-agent-selected? selected-agents a)
-                          :on-change (fn [checked] (on-select-agent a checked))}])]]))
+  [:div
+
+   [loader {:visible show-loader}]
+   [:br]
+   [ListGroup
+    [select-all-element {:visible (> (count agents) 0)
+                         :on-change on-select-all
+                         :checked (= (count agents) (count selected-agents))}]
+    (for [[a i] (map vector agents (iterate inc 0))]
+      [agent-list-item {:key i
+                        :agent a
+                        :selected (is-agent-selected? selected-agents a)
+                        :on-change (fn [checked] (on-select-agent a checked))}])]])
 
 (defn home-page []
   (r/create-class
