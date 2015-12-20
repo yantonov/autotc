@@ -60,11 +60,7 @@
                                     on-run-custom-build]} data]
   (let [disabled (not enabled)]
     (if (and visible enabled)
-      [:div {:style {:position "fixed"
-                     :bottom "0"
-                     :left "0"
-                     :width "100%"
-                     :z-index 1}}
+      [:div {:class-name "multi-action-toolbar-container"}
        [:div {:class-name "navbar-default multi-action-panel"}
         [:div {:class-name "container"
                :style {}}
