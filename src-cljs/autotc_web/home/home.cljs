@@ -3,7 +3,11 @@
             [reagent.core :as r]
             [ajax.core :as ajax]
             [goog.string :as gstring]
-            [autotc-web.util.poller :as plr]))
+            [autotc-web.util.poller :as plr]
+            [rex.core :as rcore]
+            [rex.cursor :as rcur]
+            [rex.reducer :as rr]
+            [rex.subscriber :as rs]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -16,6 +20,105 @@
 (def Button (r/adapt-react-class js/ReactBootstrap.Button))
 (def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
 (def Loader (r/adapt-react-class js/Halogen.ScaleLoader))
+
+(defn dispatch [cursor action]
+  (rcore/dispatch cursor
+                  (fn [dispatch state]
+                    action)))
+
+(defn- define-reducers []
+  (rr/defreducer :init-page-reducer
+    (fn [state event-type event]
+      (if (= event-type :init-page)
+        (assoc state :page {})
+        state)))
+
+  (rr/defreducer :new-server-list
+    (fn [state event-type event cursor]
+      (if (= event-type :new-server-list)
+        (rcur/update-state cursor
+                           state
+                           {:servers (:servers event)
+                            :agents []
+                            :selected-agents #{}
+                            :manually-selected-agents #{}})
+        state)))
+
+  (rr/defreducer :new-agent-list
+    (fn [state event-type event cursor]
+      (if (= event-type :new-agent-list)
+        (let [old-state (rcur/get-state cursor state)
+              new-state (merge old-state
+                               {:agents (:agents event)
+                                :show-agent-list-loader false})]
+          (rcur/update-state cursor
+                             state
+                             new-state))
+        state)))
+
+  (rr/defreducer :reset-agent-list
+    (fn [state event-type event cursor]
+      (if (= event-type :reset-agent-list)
+        (let [old-state (rcur/get-state cursor state)
+              new-state (merge old-state
+                               {:agents []
+                                :show-agent-list-loader false
+                                :selected-agents #{}
+                                :manually-selected-agents #{}})]
+          (rcur/update-state cursor
+                             state
+                             new-state))
+        state)))
+  )
+
+(defn other-server-selected? [state load-agents-for-server]
+  (if (nil? load-agents-for-server)
+    true
+    (let [selected-server-index (:selected-server-index state)
+          selected-server (get (:servers state) selected-server-index)]
+      (and (not (nil? selected-server))
+           (not (= (:id selected-server)
+                   (:id load-agents-for-server)))))))
+
+(defn load-agents-action-creator [server]
+  (fn [dispatch store]
+    (if (other-server-selected? store server)
+      nil
+      (do
+        (let [url (str "/agents/list/" (:id server))]
+          (ajax/GET
+           url
+           {:response-format (ajax/json-response-format {:keywords? true})
+            :handler (fn [response]
+                       (if (other-server-selected? store server)
+                         nil
+                         (do
+                           (dispatch {:type :new-agent-list
+                                      :agents (:agents response)}))))
+            :error-handler (fn [response]
+                             (dispatch {:type :reset-agent-list}))}))))))
+
+(defn get-server-list-action-creator [dispatch store]
+  (ajax/GET
+   "/servers/list"
+   {:params {}
+    :response-format (ajax/json-response-format {:keywords? true})
+    :handler
+    (fn [response]
+      (let [servers (:servers response)
+            has-any-server? (and (not (nil? servers))
+                                 (> (count servers)))]
+        (do
+
+          (if has-any-server?
+          ((load-agents-action-creator (get servers 0)) dispatch store))
+
+          (dispatch {:type :new-server-list
+                     :servers servers})
+
+          ;; (if has-any-server?
+          ;; (.onServerSelect this 0))
+          )))}))
 
 (defn info-message []
   (r/create-class
@@ -175,15 +278,6 @@
                         :selected (is-agent-selected? selected-agents a)
                         :on-change (fn [checked] (on-select-agent a checked))}])]])
 
-(defn other-server-selected? [state load-agents-for-server]
-  (if (nil? load-agents-for-server)
-    true
-    (let [selected-server-index (:selected-server-index state)
-          selected-server (get (:servers state) selected-server-index)]
-      (and (not (nil? selected-server))
-           (not (= (:id selected-server)
-                   (:id load-agents-for-server)))))))
-
 (defn home-page []
   (r/create-class
    {:get-initial-state
@@ -199,49 +293,21 @@
     (fn [this timer]
       (when-let [timer (:poll-agent-timer (r/state this))]
         (plr/stop timer)))
-    :load-agents
-    (fn [this server]
-      (if (other-server-selected? (r/state this) server)
-        nil
-        (do
-          (let [url (str "/agents/list/" (:id server))]
-            (ajax/GET
-             url
-             {:response-format (ajax/json-response-format {:keywords? true})
-              :handler (fn [response]
-                         (if (other-server-selected? (r/state this) server)
-                           nil
-                           (do
-                             (r/set-state this {:agents (:agents response)
-                                                :show-agent-list-loader false}))))
-              :error-handler (fn [response]
-                               (r/set-state this {:agents []
-                                                  :show-agent-list-loader false
-                                                  :selected-agents #{}
-                                                  :manually-selected-agents #{}}))})))))
-    :get-server-list
-    (fn [this]
-      (ajax/GET
-       "/servers/list"
-       {:params {}
-        :response-format (ajax/json-response-format {:keywords? true})
-        :handler
-        (fn [response]
-          (let [servers (:servers response)
-                has-any-server? (and (not (nil? servers))
-                                     (> (count servers)))]
-            (do
-              (if has-any-server?
-                (.loadAgents this))
-              (r/set-state this {:servers servers
-                                 :agents []
-                                 :selected-agents #{}
-                                 :manually-selected-agents #{}})
-              (if has-any-server?
-                (.onServerSelect this 0)))))}))
     :component-did-mount
     (fn [this]
-      (this.getServerList))
+
+      (rs/defsubscriber
+        (rcur/nest (rcur/make-cursor) :page)
+        (fn [state]
+          (println "page state has changed to: " state)
+          (r/set-state this state)))
+
+      (dispatch (rcur/make-cursor)
+                {:type :init-page})
+
+      (rcore/dispatch (rcur/nest (rcur/make-cursor)
+                                 :page)
+                      get-server-list-action-creator))
     :component-unmount
     (fn [this]
       (this.resetTimer)
@@ -376,5 +442,8 @@
                          :show-loader show-agent-list-loader}]]]]]))}))
 
 (defn ^:export init []
-  (r/render-component [home-page]
-                      (js/document.getElementById "main-content")))
+  (let [page (home-page)]
+    (do
+      (define-reducers)
+      (r/render-component [page]
+                          (js/document.getElementById "main-content")))))
