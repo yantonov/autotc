@@ -181,14 +181,16 @@
     (let [state (get-store)]
       (when-let [message-timer (:message-timer state)]
         (js/clearTimeout message-timer))
-      (dispatch {:type :show-message
+      (dispatch cursor
+                {:type :show-message
                  :message message
-                 :message-timer (js/setTimeout (fn [] (dispatch (hide-message-action-creator dispatch
+                 :message-timer (js/setTimeout (fn [] (dispatch cursor
+                                                                (hide-message-action-creator dispatch
                                                                                              get-store
                                                                                              cursor)))
                                                5000)}))))
 
-(defn reset-timer-action-creator [dispatch get-store]
+(defn reset-timer-action-creator [dispatch get-store cursor]
   (when-let [timer (:poll-agent-timer (get-store))]
     (plr/stop timer))
   nil)
@@ -219,10 +221,12 @@
                                                    server)
                          nil
                          (do
-                           (dispatch {:type :new-agent-list
+                           (dispatch cursor
+                                     {:type :new-agent-list
                                       :agents (:agents response)}))))
             :error-handler (fn [response]
-                             (dispatch {:type :reset-agent-list}))}))))))
+                             (dispatch cursor
+                                       {:type :reset-agent-list}))}))))))
 
 (defn select-server-action-creator [server-index]
   (fn [dispatch get-state cursor]
@@ -231,9 +235,10 @@
              (:selected-server-index state))
         nil
         (do
-          (dispatch {:type :init-load-agent-list
+          (dispatch cursor
+                    {:type :init-load-agent-list
                      :server-index server-index})
-          (reset-timer-action-creator dispatch get-state)
+          (reset-timer-action-creator dispatch get-state cursor)
           (let [current-server (get (:servers state) server-index)
                 p (plr/create-poller (fn []
                                        ((load-agents-action-creator current-server) dispatch get-state cursor))
@@ -241,7 +246,8 @@
                                      60000)]
             (do
               (plr/start p)
-              (dispatch {:type :attach-poll-agent-timer
+              (dispatch cursor
+                        {:type :attach-poll-agent-timer
                          :poll-agent-timer p}))))))))
 
 (defn get-server-list-action-creator [dispatch get-store cursor]
@@ -255,11 +261,8 @@
             has-any-server? (and (not (nil? servers))
                                  (> (count servers)))]
         (do
-
-          (if has-any-server?
-            ((load-agents-action-creator (get servers 0)) dispatch get-store cursor))
-
-          (dispatch {:type :new-server-list
+          (dispatch cursor
+                    {:type :new-server-list
                      :servers servers})
 
           (if has-any-server?
