@@ -98,8 +98,8 @@
 
   )
 
-(defn reset-timer-action-creator [dispatch store]
-  (when-let [timer (:poll-agent-timer store)]
+(defn reset-timer-action-creator [dispatch get-store]
+  (when-let [timer (:poll-agent-timer (get-store))]
     (plr/stop timer))
   nil)
 
@@ -113,8 +113,10 @@
                    (:id load-agents-for-server)))))))
 
 (defn load-agents-action-creator [server]
-  (fn [dispatch store]
-    (if (other-server-selected? store server)
+  (fn [dispatch get-store cursor]
+    (if (other-server-selected? (rcur/get-state cursor
+                                                (get-store))
+                                server)
       nil
       (do
         (let [url (str "/agents/list/" (:id server))]
@@ -122,7 +124,9 @@
            url
            {:response-format (ajax/json-response-format {:keywords? true})
             :handler (fn [response]
-                       (if (other-server-selected? store server)
+                       (if (other-server-selected? (rcur/get-state cursor
+                                                                   (get-store))
+                                                   server)
                          nil
                          (do
                            (dispatch {:type :new-agent-list
@@ -131,27 +135,26 @@
                              (dispatch {:type :reset-agent-list}))}))))))
 
 (defn select-server-action-creator [server-index]
-  (fn [dispatch state]
-    (if (= server-index
-           (:selected-server-index state))
-      nil
-      (do
-        (dispatch {:type :init-load-agent-list
-                   :server-index server-index})
-        (reset-timer-action-creator dispatch state)
-        (let [current-server (get (:servers state) server-index)
-              p (plr/create-poller (fn []
-                                     (println "state:" state)
-                                     (println "poll agents for:" (get (:servers state) server-index))
-                                     ((load-agents-action-creator current-server) dispatch state))
-                                   3000
-                                   60000)]
-          (do
-            (plr/start p)
-            (dispatch {:type :attach-poll-agent-timer
-                       :poll-agent-timer p})))))))
+  (fn [dispatch get-state cursor]
+    (let [state (rcur/get-state cursor (get-state))]
+      (if (= server-index
+             (:selected-server-index state))
+        nil
+        (do
+          (dispatch {:type :init-load-agent-list
+                     :server-index server-index})
+          (reset-timer-action-creator dispatch get-state)
+          (let [current-server (get (:servers state) server-index)
+                p (plr/create-poller (fn []
+                                       ((load-agents-action-creator current-server) dispatch get-state cursor))
+                                     3000
+                                     60000)]
+            (do
+              (plr/start p)
+              (dispatch {:type :attach-poll-agent-timer
+                         :poll-agent-timer p}))))))))
 
-(defn get-server-list-action-creator [dispatch store]
+(defn get-server-list-action-creator [dispatch get-store cursor]
   (ajax/GET
    "/servers/list"
    {:params {}
@@ -164,13 +167,13 @@
         (do
 
           (if has-any-server?
-            ((load-agents-action-creator (get servers 0)) dispatch store))
+            ((load-agents-action-creator (get servers 0)) dispatch get-store cursor))
 
           (dispatch {:type :new-server-list
                      :servers servers})
 
           (if has-any-server?
-            ((select-server-action-creator 0) dispatch store)))))}))
+            ((select-server-action-creator 0) dispatch get-store cursor)))))}))
 
 (defn info-message []
   (r/create-class
@@ -435,7 +438,6 @@
                                "agentIds[]" agent-ids}
                       :format (ajax/url-request-format)
                       :handler (fn [response]
-                                 (println response)
                                  (this.showMessage completed-message))
                       :error-handler (fn [response] (println response))}))))
     :render

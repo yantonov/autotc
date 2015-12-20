@@ -84146,7 +84146,7 @@ rex.dispatch.dispatch_event = function rex$dispatch$dispatch_event(get_store, up
 };
 rex.dispatch.dispatch = function rex$dispatch$dispatch(get_store, update_store, get_reducers, get_middlewares, get_subscribers, deref_state_by_cursor, cursor, action_creator) {
   var dispatch_event_fn = cljs.core.partial.call(null, rex.dispatch.dispatch_event, get_store, update_store, get_reducers, get_middlewares, get_subscribers, deref_state_by_cursor);
-  var event = action_creator.call(null, cljs.core.partial.call(null, dispatch_event_fn, cursor), get_store.call(null), cursor);
+  var event = action_creator.call(null, cljs.core.partial.call(null, dispatch_event_fn, cursor), get_store, cursor);
   if (event == null) {
     return get_store.call(null);
   } else {
@@ -84515,11 +84515,11 @@ autotc_web.home.home.define_reducers = function autotc_web$home$home$define_redu
     }
   });
 };
-autotc_web.home.home.reset_timer_action_creator = function autotc_web$home$home$reset_timer_action_creator(dispatch, store) {
-  var temp__4425__auto___11593 = (new cljs.core.Keyword(null, "poll-agent-timer", "poll-agent-timer", -309589087)).cljs$core$IFn$_invoke$arity$1(store);
-  if (cljs.core.truth_(temp__4425__auto___11593)) {
-    var timer_11594 = temp__4425__auto___11593;
-    autotc_web.util.poller.stop.call(null, timer_11594);
+autotc_web.home.home.reset_timer_action_creator = function autotc_web$home$home$reset_timer_action_creator(dispatch, get_store) {
+  var temp__4425__auto___13231 = (new cljs.core.Keyword(null, "poll-agent-timer", "poll-agent-timer", -309589087)).cljs$core$IFn$_invoke$arity$1(get_store.call(null));
+  if (cljs.core.truth_(temp__4425__auto___13231)) {
+    var timer_13232 = temp__4425__auto___13231;
+    autotc_web.util.poller.stop.call(null, timer_13232);
   } else {
   }
   return null;
@@ -84534,14 +84534,14 @@ autotc_web.home.home.other_server_selected_QMARK_ = function autotc_web$home$hom
   }
 };
 autotc_web.home.home.load_agents_action_creator = function autotc_web$home$home$load_agents_action_creator(server) {
-  return function(dispatch, store) {
-    if (cljs.core.truth_(autotc_web.home.home.other_server_selected_QMARK_.call(null, store, server))) {
+  return function(dispatch, get_store, cursor) {
+    if (cljs.core.truth_(autotc_web.home.home.other_server_selected_QMARK_.call(null, rex.cursor.get_state.call(null, cursor, get_store.call(null)), server))) {
       return null;
     } else {
       var url = [cljs.core.str("/agents/list/"), cljs.core.str((new cljs.core.Keyword(null, "id", "id", -1388402092)).cljs$core$IFn$_invoke$arity$1(server))].join("");
       return ajax.core.GET.call(null, url, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "response-format", "response-format", 1664465322), ajax.core.json_response_format.call(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "keywords?", "keywords?", 764949733), true], null)), new cljs.core.Keyword(null, "handler", "handler", -195596612), function(url) {
         return function(response) {
-          if (cljs.core.truth_(autotc_web.home.home.other_server_selected_QMARK_.call(null, store, server))) {
+          if (cljs.core.truth_(autotc_web.home.home.other_server_selected_QMARK_.call(null, rex.cursor.get_state.call(null, cursor, get_store.call(null)), server))) {
             return null;
           } else {
             return dispatch.call(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "type", "type", 1174270348), new cljs.core.Keyword(null, "new-agent-list", "new-agent-list", 2075775292), new cljs.core.Keyword(null, "agents", "agents", -1112413700), (new cljs.core.Keyword(null, "agents", "agents", -1112413700)).cljs$core$IFn$_invoke$arity$1(response)], null));
@@ -84556,36 +84556,35 @@ autotc_web.home.home.load_agents_action_creator = function autotc_web$home$home$
   };
 };
 autotc_web.home.home.select_server_action_creator = function autotc_web$home$home$select_server_action_creator(server_index) {
-  return function(dispatch, state) {
+  return function(dispatch, get_state, cursor) {
+    var state = rex.cursor.get_state.call(null, cursor, get_state.call(null));
     if (cljs.core._EQ_.call(null, server_index, (new cljs.core.Keyword(null, "selected-server-index", "selected-server-index", -776797608)).cljs$core$IFn$_invoke$arity$1(state))) {
       return null;
     } else {
       dispatch.call(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "type", "type", 1174270348), new cljs.core.Keyword(null, "init-load-agent-list", "init-load-agent-list", -711530887), new cljs.core.Keyword(null, "server-index", "server-index", 363049732), server_index], null));
-      autotc_web.home.home.reset_timer_action_creator.call(null, dispatch, state);
+      autotc_web.home.home.reset_timer_action_creator.call(null, dispatch, get_state);
       var current_server = cljs.core.get.call(null, (new cljs.core.Keyword(null, "servers", "servers", 1881102005)).cljs$core$IFn$_invoke$arity$1(state), server_index);
-      var p = autotc_web.util.poller.create_poller.call(null, function(current_server) {
+      var p = autotc_web.util.poller.create_poller.call(null, function(current_server, state) {
         return function() {
-          cljs.core.println.call(null, "state:", state);
-          cljs.core.println.call(null, "poll agents for:", cljs.core.get.call(null, (new cljs.core.Keyword(null, "servers", "servers", 1881102005)).cljs$core$IFn$_invoke$arity$1(state), server_index));
-          return autotc_web.home.home.load_agents_action_creator.call(null, current_server).call(null, dispatch, state);
+          return autotc_web.home.home.load_agents_action_creator.call(null, current_server).call(null, dispatch, get_state, cursor);
         };
-      }(current_server), 3E3, 6E4);
+      }(current_server, state), 3E3, 6E4);
       autotc_web.util.poller.start.call(null, p);
       return dispatch.call(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "type", "type", 1174270348), new cljs.core.Keyword(null, "attach-poll-agent-timer", "attach-poll-agent-timer", -509946090), new cljs.core.Keyword(null, "poll-agent-timer", "poll-agent-timer", -309589087), p], null));
     }
   };
 };
-autotc_web.home.home.get_server_list_action_creator = function autotc_web$home$home$get_server_list_action_creator(dispatch, store) {
+autotc_web.home.home.get_server_list_action_creator = function autotc_web$home$home$get_server_list_action_creator(dispatch, get_store, cursor) {
   return ajax.core.GET.call(null, "/servers/list", new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "params", "params", 710516235), cljs.core.PersistentArrayMap.EMPTY, new cljs.core.Keyword(null, "response-format", "response-format", 1664465322), ajax.core.json_response_format.call(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "keywords?", "keywords?", 764949733), true], null)), new cljs.core.Keyword(null, "handler", "handler", -195596612), function(response) {
     var servers = (new cljs.core.Keyword(null, "servers", "servers", 1881102005)).cljs$core$IFn$_invoke$arity$1(response);
     var has_any_server_QMARK_ = !(servers == null) && true;
     if (has_any_server_QMARK_) {
-      autotc_web.home.home.load_agents_action_creator.call(null, cljs.core.get.call(null, servers, 0)).call(null, dispatch, store);
+      autotc_web.home.home.load_agents_action_creator.call(null, cljs.core.get.call(null, servers, 0)).call(null, dispatch, get_store, cursor);
     } else {
     }
     dispatch.call(null, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "type", "type", 1174270348), new cljs.core.Keyword(null, "new-server-list", "new-server-list", 398292268), new cljs.core.Keyword(null, "servers", "servers", 1881102005), servers], null));
     if (has_any_server_QMARK_) {
-      return autotc_web.home.home.select_server_action_creator.call(null, 0).call(null, dispatch, store);
+      return autotc_web.home.home.select_server_action_creator.call(null, 0).call(null, dispatch, get_store, cursor);
     } else {
       return null;
     }
@@ -84608,28 +84607,28 @@ autotc_web.home.home.info_message = function autotc_web$home$home$info_message()
 autotc_web.home.home.server_list = function autotc_web$home$home$server_list(servers, selected_server_index, on_server_select) {
   return new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), null, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.Nav, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "bs-style", "bs-style", 1424423998), "tabs", new cljs.core.Keyword(null, "active-key", "active-key", -2039404654), selected_server_index, new cljs.core.Keyword(null, "on-select", 
   "on-select", -192407950), on_server_select], null), function() {
-    var iter__5440__auto__ = function autotc_web$home$home$server_list_$_iter__11603(s__11604) {
+    var iter__5440__auto__ = function autotc_web$home$home$server_list_$_iter__13241(s__13242) {
       return new cljs.core.LazySeq(null, function() {
-        var s__11604__$1 = s__11604;
+        var s__13242__$1 = s__13242;
         while (true) {
-          var temp__4425__auto__ = cljs.core.seq.call(null, s__11604__$1);
+          var temp__4425__auto__ = cljs.core.seq.call(null, s__13242__$1);
           if (temp__4425__auto__) {
-            var s__11604__$2 = temp__4425__auto__;
-            if (cljs.core.chunked_seq_QMARK_.call(null, s__11604__$2)) {
-              var c__5438__auto__ = cljs.core.chunk_first.call(null, s__11604__$2);
+            var s__13242__$2 = temp__4425__auto__;
+            if (cljs.core.chunked_seq_QMARK_.call(null, s__13242__$2)) {
+              var c__5438__auto__ = cljs.core.chunk_first.call(null, s__13242__$2);
               var size__5439__auto__ = cljs.core.count.call(null, c__5438__auto__);
-              var b__11606 = cljs.core.chunk_buffer.call(null, size__5439__auto__);
+              var b__13244 = cljs.core.chunk_buffer.call(null, size__5439__auto__);
               if (function() {
-                var i__11605 = 0;
+                var i__13243 = 0;
                 while (true) {
-                  if (i__11605 < size__5439__auto__) {
-                    var vec__11609 = cljs.core._nth.call(null, c__5438__auto__, i__11605);
-                    var server = cljs.core.nth.call(null, vec__11609, 0, null);
-                    var index = cljs.core.nth.call(null, vec__11609, 1, null);
-                    cljs.core.chunk_append.call(null, b__11606, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.NavItem, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "key", "key", -1516042587), index, new cljs.core.Keyword(null, "event-key", "event-key", 2089664830), index, new cljs.core.Keyword(null, "href", "href", -793805698), "#"], null), (new cljs.core.Keyword(null, "alias", "alias", -2039751630)).cljs$core$IFn$_invoke$arity$1(server)], 
+                  if (i__13243 < size__5439__auto__) {
+                    var vec__13247 = cljs.core._nth.call(null, c__5438__auto__, i__13243);
+                    var server = cljs.core.nth.call(null, vec__13247, 0, null);
+                    var index = cljs.core.nth.call(null, vec__13247, 1, null);
+                    cljs.core.chunk_append.call(null, b__13244, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.NavItem, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "key", "key", -1516042587), index, new cljs.core.Keyword(null, "event-key", "event-key", 2089664830), index, new cljs.core.Keyword(null, "href", "href", -793805698), "#"], null), (new cljs.core.Keyword(null, "alias", "alias", -2039751630)).cljs$core$IFn$_invoke$arity$1(server)], 
                     null));
-                    var G__11611 = i__11605 + 1;
-                    i__11605 = G__11611;
+                    var G__13249 = i__13243 + 1;
+                    i__13243 = G__13249;
                     continue;
                   } else {
                     return true;
@@ -84637,16 +84636,16 @@ autotc_web.home.home.server_list = function autotc_web$home$home$server_list(ser
                   break;
                 }
               }()) {
-                return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__11606), autotc_web$home$home$server_list_$_iter__11603.call(null, cljs.core.chunk_rest.call(null, s__11604__$2)));
+                return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__13244), autotc_web$home$home$server_list_$_iter__13241.call(null, cljs.core.chunk_rest.call(null, s__13242__$2)));
               } else {
-                return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__11606), null);
+                return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__13244), null);
               }
             } else {
-              var vec__11610 = cljs.core.first.call(null, s__11604__$2);
-              var server = cljs.core.nth.call(null, vec__11610, 0, null);
-              var index = cljs.core.nth.call(null, vec__11610, 1, null);
+              var vec__13248 = cljs.core.first.call(null, s__13242__$2);
+              var server = cljs.core.nth.call(null, vec__13248, 0, null);
+              var index = cljs.core.nth.call(null, vec__13248, 1, null);
               return cljs.core.cons.call(null, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.NavItem, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "key", "key", -1516042587), index, new cljs.core.Keyword(null, "event-key", "event-key", 2089664830), index, new cljs.core.Keyword(null, "href", "href", -793805698), "#"], null), (new cljs.core.Keyword(null, "alias", "alias", -2039751630)).cljs$core$IFn$_invoke$arity$1(server)], 
-              null), autotc_web$home$home$server_list_$_iter__11603.call(null, cljs.core.rest.call(null, s__11604__$2)));
+              null), autotc_web$home$home$server_list_$_iter__13241.call(null, cljs.core.rest.call(null, s__13242__$2)));
             }
           } else {
             return null;
@@ -84658,15 +84657,15 @@ autotc_web.home.home.server_list = function autotc_web$home$home$server_list(ser
     return iter__5440__auto__.call(null, cljs.core.map.call(null, cljs.core.vector, servers, cljs.core.iterate.call(null, cljs.core.inc, 0)));
   }()], null)], null);
 };
-autotc_web.home.home.multi_action_toolbar = function autotc_web$home$home$multi_action_toolbar(p__11612, data) {
-  var map__11615 = p__11612;
-  var map__11615__$1 = (!(map__11615 == null) ? map__11615.cljs$lang$protocol_mask$partition0$ & 64 || map__11615.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11615) : map__11615;
-  var enabled = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "enabled", "enabled", 1195909756));
-  var visible = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
-  var on_start = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "on-start", "on-start", -1839785985));
-  var on_stop = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "on-stop", "on-stop", 1520114515));
-  var on_reboot = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "on-reboot", "on-reboot", 1605190114));
-  var on_run_custom_build = cljs.core.get.call(null, map__11615__$1, new cljs.core.Keyword(null, "on-run-custom-build", "on-run-custom-build", 1403879733));
+autotc_web.home.home.multi_action_toolbar = function autotc_web$home$home$multi_action_toolbar(p__13250, data) {
+  var map__13253 = p__13250;
+  var map__13253__$1 = (!(map__13253 == null) ? map__13253.cljs$lang$protocol_mask$partition0$ & 64 || map__13253.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13253) : map__13253;
+  var enabled = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "enabled", "enabled", 1195909756));
+  var visible = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
+  var on_start = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "on-start", "on-start", -1839785985));
+  var on_stop = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "on-stop", "on-stop", 1520114515));
+  var on_reboot = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "on-reboot", "on-reboot", 1605190114));
+  var on_run_custom_build = cljs.core.get.call(null, map__13253__$1, new cljs.core.Keyword(null, "on-run-custom-build", "on-run-custom-build", 1403879733));
   var disabled = cljs.core.not.call(null, enabled);
   if (cljs.core.truth_(function() {
     var and__4656__auto__ = visible;
@@ -84687,29 +84686,29 @@ autotc_web.home.home.multi_action_toolbar = function autotc_web$home$home$multi_
     return null;
   }
 };
-autotc_web.home.home.loader = function autotc_web$home$home$loader(p__11617, data) {
-  var map__11620 = p__11617;
-  var map__11620__$1 = (!(map__11620 == null) ? map__11620.cljs$lang$protocol_mask$partition0$ & 64 || map__11620.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11620) : map__11620;
-  var visible = cljs.core.get.call(null, map__11620__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
+autotc_web.home.home.loader = function autotc_web$home$home$loader(p__13255, data) {
+  var map__13258 = p__13255;
+  var map__13258__$1 = (!(map__13258 == null) ? map__13258.cljs$lang$protocol_mask$partition0$ & 64 || map__13258.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13258) : map__13258;
+  var visible = cljs.core.get.call(null, map__13258__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
   if (cljs.core.truth_(visible)) {
     return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.Loader, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "color", "color", 1011675173), "#ddd", new cljs.core.Keyword(null, "size", "size", 1098693007), "16px", new cljs.core.Keyword(null, "margin", "margin", -995903681), "4px"], null)], null);
   } else {
     return null;
   }
 };
-autotc_web.home.home.select_all_element = function autotc_web$home$home$select_all_element(p__11622, data) {
-  var map__11625 = p__11622;
-  var map__11625__$1 = (!(map__11625 == null) ? map__11625.cljs$lang$protocol_mask$partition0$ & 64 || map__11625.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11625) : map__11625;
-  var visible = cljs.core.get.call(null, map__11625__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
-  var on_change = cljs.core.get.call(null, map__11625__$1, new cljs.core.Keyword(null, "on-change", "on-change", -732046149));
-  var checked = cljs.core.get.call(null, map__11625__$1, new cljs.core.Keyword(null, "checked", "checked", -50955819));
+autotc_web.home.home.select_all_element = function autotc_web$home$home$select_all_element(p__13260, data) {
+  var map__13263 = p__13260;
+  var map__13263__$1 = (!(map__13263 == null) ? map__13263.cljs$lang$protocol_mask$partition0$ & 64 || map__13263.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13263) : map__13263;
+  var visible = cljs.core.get.call(null, map__13263__$1, new cljs.core.Keyword(null, "visible", "visible", -1024216805));
+  var on_change = cljs.core.get.call(null, map__13263__$1, new cljs.core.Keyword(null, "on-change", "on-change", -732046149));
+  var checked = cljs.core.get.call(null, map__13263__$1, new cljs.core.Keyword(null, "checked", "checked", -50955819));
   if (cljs.core.truth_(visible)) {
-    return new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.ListGroupItem, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "input", "input", 556931961), new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "type", "type", 1174270348), "checkbox", new cljs.core.Keyword(null, "on-change", "on-change", -732046149), function(map__11625, map__11625__$1, visible, on_change, 
+    return new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.ListGroupItem, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "input", "input", 556931961), new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "type", "type", 1174270348), "checkbox", new cljs.core.Keyword(null, "on-change", "on-change", -732046149), function(map__13263, map__13263__$1, visible, on_change, 
     checked) {
       return function(event) {
         return on_change.call(null, event.target.checked);
       };
-    }(map__11625, map__11625__$1, visible, on_change, checked), new cljs.core.Keyword(null, "checked", "checked", -50955819), checked], null)], null), goog.string.unescapeEntities("\x26nbsp;"), "All agents"], null);
+    }(map__13263, map__13263__$1, visible, on_change, checked), new cljs.core.Keyword(null, "checked", "checked", -50955819), checked], null)], null), goog.string.unescapeEntities("\x26nbsp;"), "All agents"], null);
   } else {
     return null;
   }
@@ -84741,27 +84740,27 @@ autotc_web.home.home.get_image = function autotc_web$home$home$get_image(status,
     }
   }
 };
-autotc_web.home.home.agent_status = function autotc_web$home$home$agent_status(p__11627, data) {
-  var map__11630 = p__11627;
-  var map__11630__$1 = (!(map__11630 == null) ? map__11630.cljs$lang$protocol_mask$partition0$ & 64 || map__11630.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11630) : map__11630;
-  var running = cljs.core.get.call(null, map__11630__$1, new cljs.core.Keyword(null, "running", "running", 1554969103));
-  var status = cljs.core.get.call(null, map__11630__$1, new cljs.core.Keyword(null, "status", "status", -1997798413));
+autotc_web.home.home.agent_status = function autotc_web$home$home$agent_status(p__13265, data) {
+  var map__13268 = p__13265;
+  var map__13268__$1 = (!(map__13268 == null) ? map__13268.cljs$lang$protocol_mask$partition0$ & 64 || map__13268.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13268) : map__13268;
+  var running = cljs.core.get.call(null, map__13268__$1, new cljs.core.Keyword(null, "running", "running", 1554969103));
+  var status = cljs.core.get.call(null, map__13268__$1, new cljs.core.Keyword(null, "status", "status", -1997798413));
   return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "img", "img", 1442687358), new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "src", "src", -1651076051), [cljs.core.str("/img/statuses/"), cljs.core.str(autotc_web.home.home.get_image.call(null, status, running))].join(""), new cljs.core.Keyword(null, "alt", "alt", -3214426), [cljs.core.str(status), cljs.core.str(cljs.core.truth_(running) ? "in progress" : "completed")].join("")], 
   null)], null);
 };
-autotc_web.home.home.agent_list_item = function autotc_web$home$home$agent_list_item(p__11632, data) {
-  var map__11635 = p__11632;
-  var map__11635__$1 = (!(map__11635 == null) ? map__11635.cljs$lang$protocol_mask$partition0$ & 64 || map__11635.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11635) : map__11635;
-  var key = cljs.core.get.call(null, map__11635__$1, new cljs.core.Keyword(null, "key", "key", -1516042587));
-  var agent = cljs.core.get.call(null, map__11635__$1, new cljs.core.Keyword(null, "agent", "agent", -766455027));
-  var selected = cljs.core.get.call(null, map__11635__$1, new cljs.core.Keyword(null, "selected", "selected", 574897764));
-  var on_change = cljs.core.get.call(null, map__11635__$1, new cljs.core.Keyword(null, "on-change", "on-change", -732046149));
+autotc_web.home.home.agent_list_item = function autotc_web$home$home$agent_list_item(p__13270, data) {
+  var map__13273 = p__13270;
+  var map__13273__$1 = (!(map__13273 == null) ? map__13273.cljs$lang$protocol_mask$partition0$ & 64 || map__13273.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13273) : map__13273;
+  var key = cljs.core.get.call(null, map__13273__$1, new cljs.core.Keyword(null, "key", "key", -1516042587));
+  var agent = cljs.core.get.call(null, map__13273__$1, new cljs.core.Keyword(null, "agent", "agent", -766455027));
+  var selected = cljs.core.get.call(null, map__13273__$1, new cljs.core.Keyword(null, "selected", "selected", 574897764));
+  var on_change = cljs.core.get.call(null, map__13273__$1, new cljs.core.Keyword(null, "on-change", "on-change", -732046149));
   return new cljs.core.PersistentVector(null, 9, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.ListGroupItem, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "key", "key", -1516042587), key], null), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "input", "input", 556931961), new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "type", "type", 1174270348), "checkbox", new cljs.core.Keyword(null, 
-  "checked", "checked", -50955819), selected, new cljs.core.Keyword(null, "on-change", "on-change", -732046149), function(map__11635, map__11635__$1, key, agent, selected, on_change) {
+  "checked", "checked", -50955819), selected, new cljs.core.Keyword(null, "on-change", "on-change", -732046149), function(map__13273, map__13273__$1, key, agent, selected, on_change) {
     return function(event) {
       return on_change.call(null, event.target.checked);
     };
-  }(map__11635, map__11635__$1, key, agent, selected, on_change), new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "agent__checkbox"], null)], null), goog.string.unescapeEntities("\x26nbsp;"), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.agent_status, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "running", "running", 1554969103), (new cljs.core.Keyword(null, "running", "running", 1554969103)).cljs$core$IFn$_invoke$arity$1(agent), 
+  }(map__13273, map__13273__$1, key, agent, selected, on_change), new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "agent__checkbox"], null)], null), goog.string.unescapeEntities("\x26nbsp;"), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.agent_status, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "running", "running", 1554969103), (new cljs.core.Keyword(null, "running", "running", 1554969103)).cljs$core$IFn$_invoke$arity$1(agent), 
   new cljs.core.Keyword(null, "status", "status", -1997798413), (new cljs.core.Keyword(null, "status", "status", -1997798413)).cljs$core$IFn$_invoke$arity$1(agent)], null)], null), goog.string.unescapeEntities("\x26nbsp;"), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "span", "span", 1394872991), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "agent__text agent__name"], 
   null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "a", "a", -2123407586), new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "href", "href", -793805698), (new cljs.core.Keyword(null, "webUrl", "webUrl", 1123787282)).cljs$core$IFn$_invoke$arity$1(agent), new cljs.core.Keyword(null, "target", "target", 253001721), "_blank"], null), (new cljs.core.Keyword(null, "name", "name", 1843675177)).cljs$core$IFn$_invoke$arity$1(agent)], 
   null)], null), goog.string.unescapeEntities("\x26nbsp;"), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "span", "span", 1394872991), new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "class-name", "class-name", 945142584), "agent__text agent__status"], null), [cljs.core.str("["), cljs.core.str(autotc_web.home.home.get_agent_status.call(null, agent)), cljs.core.str("]")].join("")], null)], null);
@@ -84772,45 +84771,45 @@ autotc_web.home.home.is_agent_selected_QMARK_ = function autotc_web$home$home$is
 autotc_web.home.home.update_agent_selection = function autotc_web$home$home$update_agent_selection(set, agent, selected_QMARK_) {
   return (cljs.core.truth_(selected_QMARK_) ? cljs.core.conj : cljs.core.disj).call(null, set, (new cljs.core.Keyword(null, "id", "id", -1388402092)).cljs$core$IFn$_invoke$arity$1(agent));
 };
-autotc_web.home.home.agent_list = function autotc_web$home$home$agent_list(p__11637, data) {
-  var map__11648 = p__11637;
-  var map__11648__$1 = (!(map__11648 == null) ? map__11648.cljs$lang$protocol_mask$partition0$ & 64 || map__11648.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11648) : map__11648;
-  var agents = cljs.core.get.call(null, map__11648__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
-  var selected_agents = cljs.core.get.call(null, map__11648__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
-  var on_select_agent = cljs.core.get.call(null, map__11648__$1, new cljs.core.Keyword(null, "on-select-agent", "on-select-agent", -1317688724));
-  var on_select_all = cljs.core.get.call(null, map__11648__$1, new cljs.core.Keyword(null, "on-select-all", "on-select-all", 28450963));
-  var show_loader = cljs.core.get.call(null, map__11648__$1, new cljs.core.Keyword(null, "show-loader", "show-loader", -1947055931));
+autotc_web.home.home.agent_list = function autotc_web$home$home$agent_list(p__13275, data) {
+  var map__13286 = p__13275;
+  var map__13286__$1 = (!(map__13286 == null) ? map__13286.cljs$lang$protocol_mask$partition0$ & 64 || map__13286.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13286) : map__13286;
+  var agents = cljs.core.get.call(null, map__13286__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
+  var selected_agents = cljs.core.get.call(null, map__13286__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
+  var on_select_agent = cljs.core.get.call(null, map__13286__$1, new cljs.core.Keyword(null, "on-select-agent", "on-select-agent", -1317688724));
+  var on_select_all = cljs.core.get.call(null, map__13286__$1, new cljs.core.Keyword(null, "on-select-all", "on-select-all", 28450963));
+  var show_loader = cljs.core.get.call(null, map__13286__$1, new cljs.core.Keyword(null, "show-loader", "show-loader", -1947055931));
   return new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.loader, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "visible", "visible", -1024216805), show_loader], null)], null), new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, 
   "br", "br", 934104792)], null), new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.ListGroup, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.select_all_element, new cljs.core.PersistentArrayMap(null, 3, [new cljs.core.Keyword(null, "visible", "visible", -1024216805), cljs.core.count.call(null, agents) > 0, new cljs.core.Keyword(null, "on-change", "on-change", -732046149), on_select_all, 
   new cljs.core.Keyword(null, "checked", "checked", -50955819), cljs.core._EQ_.call(null, cljs.core.count.call(null, agents), cljs.core.count.call(null, selected_agents))], null)], null), function() {
-    var iter__5440__auto__ = function(map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
-      return function autotc_web$home$home$agent_list_$_iter__11650(s__11651) {
-        return new cljs.core.LazySeq(null, function(map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
+    var iter__5440__auto__ = function(map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
+      return function autotc_web$home$home$agent_list_$_iter__13288(s__13289) {
+        return new cljs.core.LazySeq(null, function(map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
           return function() {
-            var s__11651__$1 = s__11651;
+            var s__13289__$1 = s__13289;
             while (true) {
-              var temp__4425__auto__ = cljs.core.seq.call(null, s__11651__$1);
+              var temp__4425__auto__ = cljs.core.seq.call(null, s__13289__$1);
               if (temp__4425__auto__) {
-                var s__11651__$2 = temp__4425__auto__;
-                if (cljs.core.chunked_seq_QMARK_.call(null, s__11651__$2)) {
-                  var c__5438__auto__ = cljs.core.chunk_first.call(null, s__11651__$2);
+                var s__13289__$2 = temp__4425__auto__;
+                if (cljs.core.chunked_seq_QMARK_.call(null, s__13289__$2)) {
+                  var c__5438__auto__ = cljs.core.chunk_first.call(null, s__13289__$2);
                   var size__5439__auto__ = cljs.core.count.call(null, c__5438__auto__);
-                  var b__11653 = cljs.core.chunk_buffer.call(null, size__5439__auto__);
+                  var b__13291 = cljs.core.chunk_buffer.call(null, size__5439__auto__);
                   if (function() {
-                    var i__11652 = 0;
+                    var i__13290 = 0;
                     while (true) {
-                      if (i__11652 < size__5439__auto__) {
-                        var vec__11656 = cljs.core._nth.call(null, c__5438__auto__, i__11652);
-                        var a = cljs.core.nth.call(null, vec__11656, 0, null);
-                        var i = cljs.core.nth.call(null, vec__11656, 1, null);
-                        cljs.core.chunk_append.call(null, b__11653, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.agent_list_item, new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "key", "key", -1516042587), i, new cljs.core.Keyword(null, "agent", "agent", -766455027), a, new cljs.core.Keyword(null, "selected", "selected", 574897764), autotc_web.home.home.is_agent_selected_QMARK_.call(null, selected_agents, a), new cljs.core.Keyword(null, 
-                        "on-change", "on-change", -732046149), function(i__11652, vec__11656, a, i, c__5438__auto__, size__5439__auto__, b__11653, s__11651__$2, temp__4425__auto__, map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
+                      if (i__13290 < size__5439__auto__) {
+                        var vec__13294 = cljs.core._nth.call(null, c__5438__auto__, i__13290);
+                        var a = cljs.core.nth.call(null, vec__13294, 0, null);
+                        var i = cljs.core.nth.call(null, vec__13294, 1, null);
+                        cljs.core.chunk_append.call(null, b__13291, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.agent_list_item, new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "key", "key", -1516042587), i, new cljs.core.Keyword(null, "agent", "agent", -766455027), a, new cljs.core.Keyword(null, "selected", "selected", 574897764), autotc_web.home.home.is_agent_selected_QMARK_.call(null, selected_agents, a), new cljs.core.Keyword(null, 
+                        "on-change", "on-change", -732046149), function(i__13290, vec__13294, a, i, c__5438__auto__, size__5439__auto__, b__13291, s__13289__$2, temp__4425__auto__, map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
                           return function(checked) {
                             return on_select_agent.call(null, a, checked);
                           };
-                        }(i__11652, vec__11656, a, i, c__5438__auto__, size__5439__auto__, b__11653, s__11651__$2, temp__4425__auto__, map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader)], null)], null));
-                        var G__11658 = i__11652 + 1;
-                        i__11652 = G__11658;
+                        }(i__13290, vec__13294, a, i, c__5438__auto__, size__5439__auto__, b__13291, s__13289__$2, temp__4425__auto__, map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader)], null)], null));
+                        var G__13296 = i__13290 + 1;
+                        i__13290 = G__13296;
                         continue;
                       } else {
                         return true;
@@ -84818,20 +84817,20 @@ autotc_web.home.home.agent_list = function autotc_web$home$home$agent_list(p__11
                       break;
                     }
                   }()) {
-                    return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__11653), autotc_web$home$home$agent_list_$_iter__11650.call(null, cljs.core.chunk_rest.call(null, s__11651__$2)));
+                    return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__13291), autotc_web$home$home$agent_list_$_iter__13288.call(null, cljs.core.chunk_rest.call(null, s__13289__$2)));
                   } else {
-                    return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__11653), null);
+                    return cljs.core.chunk_cons.call(null, cljs.core.chunk.call(null, b__13291), null);
                   }
                 } else {
-                  var vec__11657 = cljs.core.first.call(null, s__11651__$2);
-                  var a = cljs.core.nth.call(null, vec__11657, 0, null);
-                  var i = cljs.core.nth.call(null, vec__11657, 1, null);
+                  var vec__13295 = cljs.core.first.call(null, s__13289__$2);
+                  var a = cljs.core.nth.call(null, vec__13295, 0, null);
+                  var i = cljs.core.nth.call(null, vec__13295, 1, null);
                   return cljs.core.cons.call(null, new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.agent_list_item, new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "key", "key", -1516042587), i, new cljs.core.Keyword(null, "agent", "agent", -766455027), a, new cljs.core.Keyword(null, "selected", "selected", 574897764), autotc_web.home.home.is_agent_selected_QMARK_.call(null, selected_agents, a), new cljs.core.Keyword(null, 
-                  "on-change", "on-change", -732046149), function(vec__11657, a, i, s__11651__$2, temp__4425__auto__, map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
+                  "on-change", "on-change", -732046149), function(vec__13295, a, i, s__13289__$2, temp__4425__auto__, map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader) {
                     return function(checked) {
                       return on_select_agent.call(null, a, checked);
                     };
-                  }(vec__11657, a, i, s__11651__$2, temp__4425__auto__, map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader)], null)], null), autotc_web$home$home$agent_list_$_iter__11650.call(null, cljs.core.rest.call(null, s__11651__$2)));
+                  }(vec__13295, a, i, s__13289__$2, temp__4425__auto__, map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader)], null)], null), autotc_web$home$home$agent_list_$_iter__13288.call(null, cljs.core.rest.call(null, s__13289__$2)));
                 }
               } else {
                 return null;
@@ -84839,9 +84838,9 @@ autotc_web.home.home.agent_list = function autotc_web$home$home$agent_list(p__11
               break;
             }
           };
-        }(map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader), null, null);
+        }(map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader), null, null);
       };
-    }(map__11648, map__11648__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader);
+    }(map__13286, map__13286__$1, agents, selected_agents, on_select_agent, on_select_all, show_loader);
     return iter__5440__auto__.call(null, cljs.core.map.call(null, cljs.core.vector, agents, cljs.core.iterate.call(null, cljs.core.inc, 0)));
   }()], null)], null);
 };
@@ -84871,7 +84870,6 @@ autotc_web.home.home.home_page = function autotc_web$home$home$home_page() {
     this$.showMessage.call(null, trigger_message);
     return ajax.core.POST.call(null, url, new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "params", "params", 710516235), new cljs.core.PersistentArrayMap(null, 2, ["serverId", current_server_id, "agentIds[]", agent_ids], null), new cljs.core.Keyword(null, "format", "format", -1306924766), ajax.core.url_request_format.call(null), new cljs.core.Keyword(null, "handler", "handler", -195596612), function(s, current_server_id, agent_ids) {
       return function(response) {
-        cljs.core.println.call(null, response);
         return this$.showMessage.call(null, completed_message);
       };
     }(s, current_server_id, agent_ids), new cljs.core.Keyword(null, "error-handler", "error-handler", -484945776), function(s, current_server_id, agent_ids) {
@@ -84882,22 +84880,22 @@ autotc_web.home.home.home_page = function autotc_web$home$home$home_page() {
   }, function(this$) {
     return this$.execActionForAgents.call(null, "/agents/runCustomBuild", "request to run custom build was sent", "custom build has triggered");
   }, function(this$, message) {
-    var temp__4425__auto___11667 = (new cljs.core.Keyword(null, "message-timer", "message-timer", 1263614079)).cljs$core$IFn$_invoke$arity$1(reagent.core.state.call(null, this$));
-    if (cljs.core.truth_(temp__4425__auto___11667)) {
-      var message_timer_11668 = temp__4425__auto___11667;
-      clearTimeout(message_timer_11668);
+    var temp__4425__auto___13305 = (new cljs.core.Keyword(null, "message-timer", "message-timer", 1263614079)).cljs$core$IFn$_invoke$arity$1(reagent.core.state.call(null, this$));
+    if (cljs.core.truth_(temp__4425__auto___13305)) {
+      var message_timer_13306 = temp__4425__auto___13305;
+      clearTimeout(message_timer_13306);
     } else {
     }
     return reagent.core.set_state.call(null, this$, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, "message", "message", -406056002), message, new cljs.core.Keyword(null, "message-timer", "message-timer", 1263614079), setTimeout(this$.closeMessage, 5E3)], null));
   }, function(this$) {
-    var map__11663 = reagent.core.state.call(null, this$);
-    var map__11663__$1 = (!(map__11663 == null) ? map__11663.cljs$lang$protocol_mask$partition0$ & 64 || map__11663.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11663) : map__11663;
-    var servers = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "servers", "servers", 1881102005));
-    var selected_server_index = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "selected-server-index", "selected-server-index", -776797608));
-    var message = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "message", "message", -406056002));
-    var selected_agents = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
-    var agents = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
-    var show_agent_list_loader = cljs.core.get.call(null, map__11663__$1, new cljs.core.Keyword(null, "show-agent-list-loader", "show-agent-list-loader", -1418295037));
+    var map__13301 = reagent.core.state.call(null, this$);
+    var map__13301__$1 = (!(map__13301 == null) ? map__13301.cljs$lang$protocol_mask$partition0$ & 64 || map__13301.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13301) : map__13301;
+    var servers = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "servers", "servers", 1881102005));
+    var selected_server_index = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "selected-server-index", "selected-server-index", -776797608));
+    var message = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "message", "message", -406056002));
+    var selected_agents = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
+    var agents = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
+    var show_agent_list_loader = cljs.core.get.call(null, map__13301__$1, new cljs.core.Keyword(null, "show-agent-list-loader", "show-agent-list-loader", -1418295037));
     return new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "div", "div", 1057191632), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.info_message, message], null), new cljs.core.PersistentVector(null, 4, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.server_list, servers, selected_server_index, this$.onServerSelect], null), new cljs.core.PersistentVector(null, 3, 
     5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.Grid, null, new cljs.core.PersistentVector(null, 3, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.Row, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "className", "className", -1983287057), "show-grid"], null), new cljs.core.PersistentVector(null, 5, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.Col, new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null, 
     "xs", "xs", 649443341), 12, new cljs.core.Keyword(null, "md", "md", 707286655), 6], null), new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword(null, "br", "br", 934104792)], null), new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [autotc_web.home.home.multi_action_toolbar, new cljs.core.PersistentArrayMap(null, 6, [new cljs.core.Keyword(null, "enabled", "enabled", 1195909756), !cljs.core.empty_QMARK_.call(null, 
@@ -84909,11 +84907,11 @@ autotc_web.home.home.home_page = function autotc_web$home$home$home_page() {
   }, function(this$) {
     return this$.execActionForAgents.call(null, "/agents/rebootAgent", "request to reboot agent was sent", "reboot triggered");
   }, function(this$, checked_QMARK_) {
-    var map__11665 = reagent.core.state.call(null, this$);
-    var map__11665__$1 = (!(map__11665 == null) ? map__11665.cljs$lang$protocol_mask$partition0$ & 64 || map__11665.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__11665) : map__11665;
-    var agents = cljs.core.get.call(null, map__11665__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
-    var selected_agents = cljs.core.get.call(null, map__11665__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
-    var manually_selected_agents = cljs.core.get.call(null, map__11665__$1, new cljs.core.Keyword(null, "manually-selected-agents", "manually-selected-agents", 861824515));
+    var map__13303 = reagent.core.state.call(null, this$);
+    var map__13303__$1 = (!(map__13303 == null) ? map__13303.cljs$lang$protocol_mask$partition0$ & 64 || map__13303.cljs$core$ISeq$ ? true : false : false) ? cljs.core.apply.call(null, cljs.core.hash_map, map__13303) : map__13303;
+    var agents = cljs.core.get.call(null, map__13303__$1, new cljs.core.Keyword(null, "agents", "agents", -1112413700));
+    var selected_agents = cljs.core.get.call(null, map__13303__$1, new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544));
+    var manually_selected_agents = cljs.core.get.call(null, map__13303__$1, new cljs.core.Keyword(null, "manually-selected-agents", "manually-selected-agents", 861824515));
     var new_selected_agents = cljs.core.empty_QMARK_.call(null, selected_agents) ? cljs.core.empty_QMARK_.call(null, manually_selected_agents) ? cljs.core.apply.call(null, cljs.core.hash_set, cljs.core.map.call(null, new cljs.core.Keyword(null, "id", "id", -1388402092), agents)) : cljs.core.apply.call(null, cljs.core.hash_set, manually_selected_agents) : cljs.core.count.call(null, selected_agents) < cljs.core.count.call(null, agents) ? cljs.core.apply.call(null, cljs.core.hash_set, cljs.core.map.call(null, 
     new cljs.core.Keyword(null, "id", "id", -1388402092), agents)) : cljs.core.PersistentHashSet.EMPTY;
     return reagent.core.set_state.call(null, this$, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null, "selected-agents", "selected-agents", 88356544), new_selected_agents], null));
