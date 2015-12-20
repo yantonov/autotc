@@ -5,17 +5,17 @@
             [goog.string :as gstring]
             [autotc-web.util.poller :as plr]))
 
-(defonce Nav (r/adapt-react-class js/ReactBootstrap.Nav))
-(defonce NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
-(defonce Grid (r/adapt-react-class js/ReactBootstrap.Grid))
-(defonce Row (r/adapt-react-class js/ReactBootstrap.Row))
-(defonce Col (r/adapt-react-class js/ReactBootstrap.Col))
-(defonce ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
-(defonce ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
-(defonce ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
-(defonce Button (r/adapt-react-class js/ReactBootstrap.Button))
-(defonce Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
-(defonce Loader (r/adapt-react-class js/Halogen.ScaleLoader))
+(def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
+(def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
+(def Grid (r/adapt-react-class js/ReactBootstrap.Grid))
+(def Row (r/adapt-react-class js/ReactBootstrap.Row))
+(def Col (r/adapt-react-class js/ReactBootstrap.Col))
+(def ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
+(def ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
+(def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
+(def Button (r/adapt-react-class js/ReactBootstrap.Button))
+(def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
+(def Loader (r/adapt-react-class js/Halogen.ScaleLoader))
 
 (defn info-message []
   (r/create-class
@@ -59,36 +59,39 @@
                                     on-reboot
                                     on-run-custom-build]} data]
   (let [disabled (not enabled)]
-    (if visible
-      [ButtonToolbar
-       [Button {:disabled disabled
-                :on-click on-start}
-        [Glyphicon {:glyph "play"}]
-        " Start"]
-       [Button {:disabled disabled
-                :on-click on-stop}
-        [Glyphicon {:glyph "stop"}]
-        " Stop"]
-       [Button {:disabled disabled
-                :on-click on-reboot}
-        [Glyphicon {:glyph "eject"}]
-        " Reboot"]
-       [Button {:disabled disabled
-                :on-click on-run-custom-build}
-        [Glyphicon {:glyph "th"}]
-        (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
-      nil)))
+    (if (and visible enabled)
+      [:div {:class-name "multi-action-toolbar-container"}
+       [:div {:class-name "navbar-default multi-action-panel"}
+        [:div {:class-name "container"
+               :style {}}
+         [ButtonToolbar
+          [Button {:disabled disabled
+                   :on-click on-start}
+           [Glyphicon {:glyph "play"}]
+           " Start"]
+          [Button {:disabled disabled
+                   :on-click on-stop}
+           [Glyphicon {:glyph "stop"}]
+           " Stop"]
+          [Button {:disabled disabled
+                   :on-click on-reboot}
+           [Glyphicon {:glyph "eject"}]
+           " Reboot"]
+          [Button {:disabled disabled
+                   :on-click on-run-custom-build}
+           [Glyphicon {:glyph "th"}]
+           (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]]]])))
 
-(defn loader []
-  [Loader {:color "#ddd"
-           :size "16px"
-           :margin "4px"}])
+(defn loader [{:keys [visible]} data]
+  (if visible
+    [Loader {:color "#ddd"
+             :size "16px"
+             :margin "4px"}]))
 
 (defn select-all-element [{:keys [visible
                                   on-change
                                   checked]} data]
-  (if (not visible)
-    nil
+  (if visible
     [ListGroupItem
      [:input {:type "checkbox"
               :on-change (fn [event] (on-change event.target.checked))
@@ -120,9 +123,7 @@
 (defn agent-status [{:keys [running
                             status]} data]
   [:img {:src (str "/img/statuses/" (get-image status running))
-         :alt (str status (if running
-                            "in progress"
-                            "completed"))}])
+         :alt (str status (if running "in progress" "completed"))}])
 
 (defn agent-list-item [{:keys [key
                                agent
@@ -150,32 +151,34 @@
   (contains? selected-agents (:id agent)))
 
 (defn update-agent-selection [set agent selected?]
-  (let [key (:id agent)]
-    (if selected?
-      (conj set key)
-      (disj set key))))
+  ((if selected? conj disj) set (:id agent)))
 
 (defn agent-list [{:keys [agents
                           selected-agents
                           on-select-agent
                           on-select-all
                           show-loader]} data]
-  (if show-loader
-    [:div
-     nil
-     [loader]]
-    [:div
-     nil
-     [:br]
-     [ListGroup
-      [select-all-element {:visible (> (count agents) 0)
-                           :on-change on-select-all
-                           :checked (= (count agents) (count selected-agents))}]
-      (for [[a i] (map vector agents (iterate inc 0))]
-        [agent-list-item {:key i
-                          :agent a
-                          :selected (is-agent-selected? selected-agents a)
-                          :on-change-selection (fn [checked] (on-select-agent a checked))}])]]))
+  [:div
+   [loader {:visible show-loader}]
+   [:br]
+   [ListGroup
+    [select-all-element {:visible (> (count agents) 0)
+                         :on-change on-select-all
+                         :checked (= (count agents) (count selected-agents))}]
+    (for [[a i] (map vector agents (iterate inc 0))]
+      [agent-list-item {:key i
+                        :agent a
+                        :selected (is-agent-selected? selected-agents a)
+                        :on-change (fn [checked] (on-select-agent a checked))}])]])
+
+(defn other-server-selected? [state load-agents-for-server]
+  (if (nil? load-agents-for-server)
+    true
+    (let [selected-server-index (:selected-server-index state)
+          selected-server (get (:servers state) selected-server-index)]
+      (and (not (nil? selected-server))
+           (not (= (:id selected-server)
+                   (:id load-agents-for-server)))))))
 
 (defn home-page []
   (r/create-class
@@ -189,40 +192,28 @@
        :message nil
        :show-agent-list-loader false})
     :reset-timer
-    (fn [this timer]
+    (fn [this]
       (when-let [timer (:poll-agent-timer (r/state this))]
         (plr/stop timer)))
     :load-agents
     (fn [this server]
-      (let [state (r/state this)
-            selected-server-index (:selected-server-index state)
-            selected-server (get (:servers state) selected-server-index)]
-        (if (or (nil? server)
-                (and (not (nil? selected-server))
-                     (not (= (:id selected-server)
-                             (:id server)))))
-          nil
-          (do
-            (let [url (str "/agents/list/" (:id server))]
-              (ajax/GET
-               url
-               {:response-format (ajax/json-response-format {:keywords? true})
-                :handler (fn [response]
-                           (let [state (r/state this)
-                                 selected-server-index (:selected-server-index state)
-                                 selected-server (get (:servers state) selected-server-index)]
-                             (if (and (not (nil? selected-server))
-                                      (not (= (:id selected-server)
-                                              (:id server))))
-                               nil
-                               (do
-                                 (r/set-state this {:agents (:agents response)
-                                                    :show-agent-list-loader false})))))
-                :error-handler (fn [response]
-                                 (r/set-state this {:agents []
-                                                    :show-agent-list-loader false
-                                                    :selected-agents #{}
-                                                    :manually-selected-agents #{}}))}))))))
+      (if (other-server-selected? (r/state this) server)
+        nil
+        (let [url (str "/agents/list/" (:id server))]
+          (ajax/GET
+           url
+           {:response-format (ajax/json-response-format {:keywords? true})
+            :handler (fn [response]
+                       (if (other-server-selected? (r/state this) server)
+                         nil
+                         (do
+                           (r/set-state this {:agents (:agents response)
+                                              :show-agent-list-loader false}))))
+            :error-handler (fn [response]
+                             (r/set-state this {:agents []
+                                                :show-agent-list-loader false
+                                                :selected-agents #{}
+                                                :manually-selected-agents #{}}))}))))
     :get-server-list
     (fn [this]
       (ajax/GET
@@ -231,20 +222,16 @@
         :response-format (ajax/json-response-format {:keywords? true})
         :handler
         (fn [response]
-          (let [servers (:servers response)]
+          (let [servers (:servers response)
+                has-any-server? (and (not (nil? servers))
+                                     (> (count servers)))]
             (do
-              (if (and (not (nil? servers))
-                       (> (count servers) 0))
-                (.loadAgents this))
               (r/set-state this {:servers servers
                                  :agents []
                                  :selected-agents #{}
                                  :manually-selected-agents #{}})
-              (when-let [default-server-index (if (and (not (nil? servers))
-                                                       (> (count servers) 0))
-                                                0
-                                                nil)]
-                (.onServerSelect this default-server-index)))))}))
+              (if has-any-server?
+                (.onServerSelect this 0)))))}))
     :component-did-mount
     (fn [this]
       (this.getServerList))
@@ -267,9 +254,10 @@
                           :agents []})
             (.resetTimer this)
             (let [current-server (get (:servers state) server-index)
-                  p (plr/create_poller (fn [] (.loadAgents this current-server))
+                  p (plr/create-poller (fn []
+                                         (.loadAgents this current-server))
                                        3000
-                                       10000)]
+                                       60000)]
               (do
                 (plr/start p)
                 (r/set-state this
@@ -287,10 +275,9 @@
                                                                              selected?)})))
     :handle-select-all
     (fn [this checked?]
-      (let [s (r/state this)
-            {agents :agents
+      (let [{agents :agents
              selected-agents :selected-agents
-             manually-selected-agents :manually-selected-agents} s
+             manually-selected-agents :manually-selected-agents} (r/state this)
 
             new-selected-agents
             (if (empty? selected-agents)
@@ -327,11 +314,10 @@
        "custom build has triggered"))
     :show-message
     (fn [this message]
-      (let [s (r/state this)]
-        (when-let [message-timer (:message-timer s)]
-          (js/clearTimeout message-timer))
-        (r/set-state this {:message message
-                           :message-timer (js/setTimeout this.closeMessage 5000)})))
+      (when-let [message-timer (:message-timer (r/state this))]
+        (js/clearTimeout message-timer))
+      (r/set-state this {:message message
+                         :message-timer (js/setTimeout this.closeMessage 5000)}))
     :close-message
     (fn [this]
       (r/set-state this {:message nil}))
@@ -352,31 +338,36 @@
                       :error-handler (fn [response] (println response))}))))
     :render
     (fn [this]
-      (let [state (r/state this)]
+      (let [{:keys [servers
+                    selected-server-index
+                    message
+                    selected-agents
+                    agents
+                    show-agent-list-loader] :or {:show-agent-list-loader false}}
+            (r/state this)]
         [:div
-         [info-message (:message state)]
+         [info-message message]
          [server-list
-          (:servers state)
-          (:selected-server-index state)
+          servers
+          selected-server-index
           this.onServerSelect]
          [Grid nil
           [Row {:className "show-grid"}
            [Col {:xs 12
                  :md 6}
             [:br]
-            [multi-action-toolbar {:enabled (not (empty? (:selected-agents state)))
-                                   :visible (not (empty? (:agents state)))
+            [multi-action-toolbar {:enabled (not (empty? selected-agents))
+                                   :visible (not (empty? agents))
                                    :on-start this.handleStartBuild
                                    :on-stop this.handleStopBuild
                                    :on-reboot this.handleRebootAgent
                                    :on-run-custom-build this.handleRunCustomBuild}]
-            [agent-list {:agents (:agents state)
-                         :selected-agents (:selected-agents state)
+            [agent-list {:agents agents
+                         :selected-agents selected-agents
                          :on-select-agent this.handleSelectAgent
                          :on-select-all this.handleSelectAll
-                         :show-loader (get state :show-agent-list-loader false)}]]]]]))}))
+                         :show-loader show-agent-list-loader}]]]]]))}))
 
 (defn ^:export init []
   (r/render-component [home-page]
                       (js/document.getElementById "main-content")))
-

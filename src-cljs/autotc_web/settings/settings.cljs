@@ -90,7 +90,6 @@
     [:form {:action ""
             :method "POST"
             :on-submit (fn [e]
-                         (println @form-state)
                          (.preventDefault e)
                          (on-save @form-state))}
      [Grid
@@ -145,12 +144,10 @@
                    {:show-list true}))
     :save-server
     (fn [this server]
-      (println server)
       (ajax/POST "/settings/servers/add"
                  {:params server
                   :format (ajax/url-request-format)
                   :handler (fn [response]
-                             (println response)
                              (.loadServerList this)
                              (.showList this))}))
     :cancel-edit-server
@@ -171,7 +168,6 @@
                  {:params {:id (:id server)}
                   :format (ajax/url-request-format)
                   :handler (fn [response]
-                             (println response)
                              (.loadServerList this)
                              (.hideDeleteConfirmationDialog this))}))
     :confirm-delete

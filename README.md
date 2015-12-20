@@ -1,6 +1,6 @@
 ## autotc-web
 
-tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
+tiny [clojure](http://clojure.org)/[clojurescript](https://github.com/clojure/clojurescript)/[react](https://facebook.github.io/react/) app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
 
 ## Prerequisites
 
@@ -12,10 +12,10 @@ tiny clojure/react app which allow you to start/stop/reboot multiple [teamcity](
 [2]: http://maven.apache.org
 [3]: https://github.com/technomancy/leiningen
 
-## install dependencies
+## Install dependencies
 
 ```bash
-    bin/install-dependencies.sh
+    bin/install/install-dependencies.sh
 ```
 
 ## Running
@@ -26,6 +26,8 @@ To start a web server for the application, run:
     bin/run.sh
 ```
 
+## How it looks
+![screenshot](https://raw.githubusercontent.com/yantonov/autotc-web/master/docs/screenshot.png)
 
 ## License
 
