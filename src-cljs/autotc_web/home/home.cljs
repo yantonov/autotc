@@ -196,29 +196,28 @@
        :message nil
        :show-agent-list-loader false})
     :reset-timer
-    (fn [this timer]
+    (fn [this]
       (when-let [timer (:poll-agent-timer (r/state this))]
         (plr/stop timer)))
     :load-agents
     (fn [this server]
       (if (other-server-selected? (r/state this) server)
         nil
-        (do
-          (let [url (str "/agents/list/" (:id server))]
-            (ajax/GET
-             url
-             {:response-format (ajax/json-response-format {:keywords? true})
-              :handler (fn [response]
-                         (if (other-server-selected? (r/state this) server)
-                           nil
-                           (do
-                             (r/set-state this {:agents (:agents response)
-                                                :show-agent-list-loader false}))))
-              :error-handler (fn [response]
-                               (r/set-state this {:agents []
-                                                  :show-agent-list-loader false
-                                                  :selected-agents #{}
-                                                  :manually-selected-agents #{}}))})))))
+        (let [url (str "/agents/list/" (:id server))]
+          (ajax/GET
+           url
+           {:response-format (ajax/json-response-format {:keywords? true})
+            :handler (fn [response]
+                       (if (other-server-selected? (r/state this) server)
+                         nil
+                         (do
+                           (r/set-state this {:agents (:agents response)
+                                              :show-agent-list-loader false}))))
+            :error-handler (fn [response]
+                             (r/set-state this {:agents []
+                                                :show-agent-list-loader false
+                                                :selected-agents #{}
+                                                :manually-selected-agents #{}}))}))))
     :get-server-list
     (fn [this]
       (ajax/GET
@@ -231,8 +230,6 @@
                 has-any-server? (and (not (nil? servers))
                                      (> (count servers)))]
             (do
-              (if has-any-server?
-                (.loadAgents this))
               (r/set-state this {:servers servers
                                  :agents []
                                  :selected-agents #{}
