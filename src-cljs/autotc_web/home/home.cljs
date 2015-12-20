@@ -69,7 +69,39 @@
                              state
                              new-state))
         state)))
+
+  (rr/defreducer :init-load-agent-list
+    (fn [state event-type event cursor]
+      (if (= event-type :init-load-agent-list)
+        (let [old-state (rcur/get-state cursor state)
+              new-state (merge old-state
+                               {:show-agent-list-loader true
+                                :selected-server-index (:server-index event)
+                                :selected-agents #{}
+                                :manually-selected-agents #{}
+                                :agents []})]
+          (rcur/update-state cursor
+                             state
+                             new-state))
+        state)))
+
+  (rr/defreducer :attach-poll-agent-timer
+    (fn [state event-type event cursor]
+      (if (= event-type :attach-poll-agent-timer)
+        (let [old-state (rcur/get-state cursor state)
+              new-state (merge old-state
+                               {:poll-agent-timer (:poll-agent-timer event)})]
+          (rcur/update-state cursor
+                             state
+                             new-state))
+        state)))
+
   )
+
+(defn reset-timer-action-creator [dispatch store]
+  (when-let [timer (:poll-agent-timer store)]
+    (plr/stop timer))
+  nil)
 
 (defn other-server-selected? [state load-agents-for-server]
   (if (nil? load-agents-for-server)
@@ -98,6 +130,27 @@
             :error-handler (fn [response]
                              (dispatch {:type :reset-agent-list}))}))))))
 
+(defn select-server-action-creator [server-index]
+  (fn [dispatch state]
+    (if (= server-index
+           (:selected-server-index state))
+      nil
+      (do
+        (dispatch {:type :init-load-agent-list
+                   :server-index server-index})
+        (reset-timer-action-creator dispatch state)
+        (let [current-server (get (:servers state) server-index)
+              p (plr/create-poller (fn []
+                                     (println "state:" state)
+                                     (println "poll agents for:" (get (:servers state) server-index))
+                                     ((load-agents-action-creator current-server) dispatch state))
+                                   3000
+                                   60000)]
+          (do
+            (plr/start p)
+            (dispatch {:type :attach-poll-agent-timer
+                       :poll-agent-timer p})))))))
+
 (defn get-server-list-action-creator [dispatch store]
   (ajax/GET
    "/servers/list"
@@ -111,14 +164,13 @@
         (do
 
           (if has-any-server?
-          ((load-agents-action-creator (get servers 0)) dispatch store))
+            ((load-agents-action-creator (get servers 0)) dispatch store))
 
           (dispatch {:type :new-server-list
                      :servers servers})
 
-          ;; (if has-any-server?
-          ;; (.onServerSelect this 0))
-          )))}))
+          (if has-any-server?
+            ((select-server-action-creator 0) dispatch store)))))}))
 
 (defn info-message []
   (r/create-class
@@ -163,11 +215,7 @@
                                     on-run-custom-build]} data]
   (let [disabled (not enabled)]
     (if (and visible enabled)
-      [:div {:style {:position "fixed"
-                     :bottom "0"
-                     :left "0"
-                     :width "100%"
-                     :z-index 1}}
+      [:div {:class-name "multi-action-toolbar-container"}
        [:div {:class-name "navbar-default multi-action-panel"}
         [:div {:class-name "container"
                :style {}}
@@ -290,16 +338,15 @@
        :message nil
        :show-agent-list-loader false})
     :reset-timer
-    (fn [this timer]
-      (when-let [timer (:poll-agent-timer (r/state this))]
-        (plr/stop timer)))
+    (fn [this]
+      (rcore/dispatch (rcur/make-cursor)
+                      reset-timer-action-creator))
     :component-did-mount
     (fn [this]
 
       (rs/defsubscriber
         (rcur/nest (rcur/make-cursor) :page)
         (fn [state]
-          (println "page state has changed to: " state)
           (r/set-state this state)))
 
       (dispatch (rcur/make-cursor)
@@ -314,27 +361,9 @@
       nil)
     :on-server-select
     (fn [this server-index]
-      (let [state (r/state this)]
-        (if (= server-index
-               (:selected-server-index state))
-          nil
-          (do
-            (r/set-state this
-                         {:show-agent-list-loader true
-                          :selected-server-index server-index
-                          :selected-agents #{}
-                          :manually-selected-agents #{}
-                          :agents []})
-            (.resetTimer this)
-            (let [current-server (get (:servers state) server-index)
-                  p (plr/create-poller (fn []
-                                         (.loadAgents this current-server))
-                                       3000
-                                       60000)]
-              (do
-                (plr/start p)
-                (r/set-state this
-                             {:poll-agent-timer p})))))))
+      (rcore/dispatch (rcur/nest (rcur/make-cursor)
+                                 :page)
+                      (select-server-action-creator server-index)))
     :handle-select-agent
     (fn [this agent selected?]
       (let [s (r/state this)

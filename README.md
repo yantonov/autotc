@@ -1,6 +1,6 @@
 ## autotc-web
 
-tiny clojure/clojurescript/react app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
+tiny [clojure](http://clojure.org)/[clojurescript](https://github.com/clojure/clojurescript)/[react](https://facebook.github.io/react/) app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
 
 ## Prerequisites
 
