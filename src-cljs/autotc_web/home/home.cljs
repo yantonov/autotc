@@ -5,17 +5,17 @@
             [goog.string :as gstring]
             [autotc-web.util.poller :as plr]))
 
-(defonce Nav (r/adapt-react-class js/ReactBootstrap.Nav))
-(defonce NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
-(defonce Grid (r/adapt-react-class js/ReactBootstrap.Grid))
-(defonce Row (r/adapt-react-class js/ReactBootstrap.Row))
-(defonce Col (r/adapt-react-class js/ReactBootstrap.Col))
-(defonce ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
-(defonce ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
-(defonce ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
-(defonce Button (r/adapt-react-class js/ReactBootstrap.Button))
-(defonce Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
-(defonce Loader (r/adapt-react-class js/Halogen.ScaleLoader))
+(def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
+(def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
+(def Grid (r/adapt-react-class js/ReactBootstrap.Grid))
+(def Row (r/adapt-react-class js/ReactBootstrap.Row))
+(def Col (r/adapt-react-class js/ReactBootstrap.Col))
+(def ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
+(def ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
+(def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
+(def Button (r/adapt-react-class js/ReactBootstrap.Button))
+(def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
+(def Loader (r/adapt-react-class js/Halogen.ScaleLoader))
 
 (defn info-message []
   (r/create-class
