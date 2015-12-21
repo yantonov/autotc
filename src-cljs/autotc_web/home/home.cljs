@@ -432,126 +432,120 @@
                         :on-change (fn [checked] (on-select-agent a checked))}])]])
 
 (defn home-page []
-  (r/create-class
-   {:get-initial-state
-    (fn [_]
-      {:servers []
-       :selected-server-index nil
-       :agents []
-       :selected-agents #{}
-       :manually-selected-agents #{}
-       :message nil
-       :show-agent-list-loader false})
-    :reset-timer
-    (fn [this]
-      (rcore/dispatch (rcur/make-cursor)
-                      reset-timer-action-creator))
-    :component-did-mount
-    (fn [this]
+  (let [page-cursor (rcur/nest (rcur/make-cursor)
+                               :page)]
+    (r/create-class
+     {:get-initial-state
+      (fn [_]
+        {:servers []
+         :selected-server-index nil
+         :agents []
+         :selected-agents #{}
+         :manually-selected-agents #{}
+         :message nil
+         :show-agent-list-loader false})
+      :reset-timer
+      (fn [this]
+        (rcore/dispatch nil
+                        reset-timer-action-creator))
+      :component-did-mount
+      (fn [this]
 
-      (rs/defsubscriber
-        (rcur/nest (rcur/make-cursor) :page)
-        (fn [state]
-          (r/set-state this state)))
+        (rs/defsubscriber
+          page-cursor
+          (fn [state]
+            (r/set-state this state)))
 
-      (dispatch (rcur/make-cursor)
-                {:type :init-page})
+        (dispatch nil
+                  {:type :init-page})
 
-      (rcore/dispatch (rcur/nest (rcur/make-cursor)
-                                 :page)
-                      get-server-list-action-creator))
-    :component-unmount
-    (fn [this]
-      (this.resetTimer)
-      nil)
-    :on-server-select
-    (fn [this server-index]
-      (rcore/dispatch (rcur/nest (rcur/make-cursor)
-                                 :page)
-                      (select-server-action-creator server-index)))
-    :handle-select-agent
-    (fn [this agent selected?]
-      (dispatch (rcur/nest (rcur/make-cursor)
-                           :page)
-                {:type :agent-selected
-                 :agent agent
-                 :selected? selected?}))
-    :handle-select-all
-    (fn [this checked?]
-      (dispatch (rcur/nest (rcur/make-cursor)
-                           :page)
-                {:type :select-all-agents}))
-    :handle-start-build
-    (fn [this]
-      (this.execActionForAgents
-       "/agents/startBuild"
-       "request to trigger build was sent"
-       "build triggered"))
-    :handle-stop-build
-    (fn [this]
-      (this.execActionForAgents
-       "/agents/stopBuild"
-       "request to stop build was sent"
-       "build stopped"))
-    :handle-reboot-agent
-    (fn [this]
-      (this.execActionForAgents
-       "/agents/rebootAgent"
-       "request to reboot agent was sent"
-       "reboot triggered"))
-    :handle-run-custom-build
-    (fn [this]
-      (this.execActionForAgents
-       "/agents/runCustomBuild"
-       "request to run custom build was sent"
-       "custom build has triggered"))
-    :show-message
-    (fn [this message]
-      (rcore/dispatch (rcur/nest (rcur/make-cursor)
-                                 :page)
-                      (show-message-action-creator message)))
-    :close-message
-    (fn [this]
-      (rcore/dispatch (rcur/nest (rcur/make-cursor)
-                                 :page)
-                      hide-message-action-creator))
-    :exec-action-for-agents
-    (fn [this url trigger-message completed-message]
-      ;; TODO: too many links to :page cursor, think about it
-      (rcore/dispatch (rcur/nest (rcur/make-cursor)
-                                 :page)
-                      (exec-action-for-agents url trigger-message completed-message)))
-    :render
-    (fn [this]
-      (let [{:keys [servers
-                    selected-server-index
-                    message
-                    selected-agents
-                    agents
-                    show-agent-list-loader] :or {:show-agent-list-loader false}}
-            (r/state this)]
-        [:div
-         [info-message message]
-         [server-list
-          servers
-          selected-server-index
-          this.onServerSelect]
-         [Grid nil
-          [Row {:className "show-grid"}
-           [Col {:xs 12
-                 :md 6}
-            [:br]
-            [multi-action-toolbar {:enabled (not (empty? selected-agents))
-                                   :visible (not (empty? agents))
-                                   :on-start this.handleStartBuild
-                                   :on-stop this.handleStopBuild
-                                   :on-reboot this.handleRebootAgent
-                                   :on-run-custom-build this.handleRunCustomBuild}]
-            [agent-list {:agents agents
-                         :selected-agents selected-agents
-                         :on-select-agent this.handleSelectAgent
-                         :on-select-all this.handleSelectAll
-                         :show-loader show-agent-list-loader}]]]]]))}))
+        (rcore/dispatch page-cursor
+                        get-server-list-action-creator))
+      :component-unmount
+      (fn [this]
+        (this.resetTimer)
+        nil)
+      :on-server-select
+      (fn [this server-index]
+        (rcore/dispatch page-cursor
+                        (select-server-action-creator server-index)))
+      :handle-select-agent
+      (fn [this agent selected?]
+        (dispatch page-cursor
+                  {:type :agent-selected
+                   :agent agent
+                   :selected? selected?}))
+      :handle-select-all
+      (fn [this checked?]
+        (dispatch page-cursor
+                  {:type :select-all-agents}))
+      :handle-start-build
+      (fn [this]
+        (this.execActionForAgents
+         "/agents/startBuild"
+         "request to trigger build was sent"
+         "build triggered"))
+      :handle-stop-build
+      (fn [this]
+        (this.execActionForAgents
+         "/agents/stopBuild"
+         "request to stop build was sent"
+         "build stopped"))
+      :handle-reboot-agent
+      (fn [this]
+        (this.execActionForAgents
+         "/agents/rebootAgent"
+         "request to reboot agent was sent"
+         "reboot triggered"))
+      :handle-run-custom-build
+      (fn [this]
+        (this.execActionForAgents
+         "/agents/runCustomBuild"
+         "request to run custom build was sent"
+         "custom build has triggered"))
+      :show-message
+      (fn [this message]
+        (rcore/dispatch page-cursor
+                        (show-message-action-creator message)))
+      :close-message
+      (fn [this]
+        (rcore/dispatch page-cursor
+                        hide-message-action-creator))
+      :exec-action-for-agents
+      (fn [this url trigger-message completed-message]
+        (rcore/dispatch page-cursor
+                        (exec-action-for-agents url trigger-message completed-message)))
+      :render
+      (fn [this]
+        (let [{:keys [servers
+                      selected-server-index
+                      message
+                      selected-agents
+                      agents
+                      show-agent-list-loader] :or {:show-agent-list-loader false}}
+              (r/state this)]
+          [:div
+           [info-message message]
+           [server-list
+            servers
+            selected-server-index
+            this.onServerSelect]
+           [Grid nil
+            [Row {:className "show-grid"}
+             [Col {:xs 12
+                   :md 6}
+              [:br]
+              [multi-action-toolbar {:enabled (not (empty? selected-agents))
+                                     :visible (not (empty? agents))
+                                     :on-start this.handleStartBuild
+                                     :on-stop this.handleStopBuild
+                                     :on-reboot this.handleRebootAgent
+                                     :on-run-custom-build this.handleRunCustomBuild}]
+              [agent-list {:agents agents
+                           :selected-agents selected-agents
+                           :on-select-agent this.handleSelectAgent
+                           :on-select-all this.handleSelectAll
+                           :show-loader show-agent-list-loader}]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]
