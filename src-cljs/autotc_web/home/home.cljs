@@ -5,9 +5,12 @@
             [goog.string :as gstring]
             [autotc-web.util.poller :as plr]
             [rex.core :as rcore]
-            [rex.cursor :as rcur]
+            [rex.ext.cursor :as rcur]
             [rex.reducer :as rr]
-            [rex.subscriber :as rs]))
+            [rex.subscriber :as rs]
+            [rex.middleware :as rmw]
+            [rex.ext.action-creator :as acm]
+            [rex.ext.reducer-for-type :as rrtype]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -21,11 +24,6 @@
 (def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
 (def Loader (r/adapt-react-class js/Halogen.ScaleLoader))
 
-(defn dispatch [cursor action]
-  (rcore/dispatch cursor
-                  (fn [dispatch state]
-                    action)))
-
 (defn is-agent-selected? [selected-agents agent]
   (contains? selected-agents (:id agent)))
 
@@ -36,164 +34,162 @@
   ;; TODO: reduce boilerplace
   ;; 1. check for event type
   ;; 2. thinks about abstract merge state
-  (rr/defreducer :init-page-reducer
-    (fn [state event-type event]
-      (if (= event-type :init-page)
-        (assoc state :page {})
-        state)))
+  (rrtype/reducer-for-type :init-page-reducer
+                           :init-page
+                           (fn [state action]
+                             (assoc state :page {})))
 
-  (rr/defreducer :new-server-list
-    (fn [state event-type event cursor]
-      (if (= event-type :new-server-list)
-        (rcur/update-state cursor
-                           state
-                           {:servers (:servers event)
-                            :agents []
-                            :selected-agents #{}
-                            :manually-selected-agents #{}})
-        state)))
+  (rrtype/reducer-for-type :new-server-list
+                           :new-server-list
+                           (fn [state action]
+                             (rcur/update-state (:cursor action)
+                                                state
+                                                {:servers (:servers action)
+                                                 :agents []
+                                                 :selected-agents #{}
+                                                 :manually-selected-agents #{}})))
 
-  (rr/defreducer :new-agent-list
-    (fn [state event-type event cursor]
-      (if (= event-type :new-agent-list)
-        (let [old-state (rcur/get-state cursor state)
-              new-state (merge old-state
-                               {:agents (:agents event)
-                                :show-agent-list-loader false})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :new-agent-list
+                           :new-agent-list
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   new-state (merge old-state
+                                                    {:agents (:agents action)
+                                                     :show-agent-list-loader false})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :reset-agent-list
-    (fn [state event-type event cursor]
-      (if (= event-type :reset-agent-list)
-        (let [old-state (rcur/get-state cursor state)
-              new-state (merge old-state
-                               {:agents []
-                                :show-agent-list-loader false
-                                :selected-agents #{}
-                                :manually-selected-agents #{}})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :reset-agent-list
+                           :reset-agent-list
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   new-state (merge old-state
+                                                    {:agents []
+                                                     :show-agent-list-loader false
+                                                     :selected-agents #{}
+                                                     :manually-selected-agents #{}})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :init-load-agent-list
-    (fn [state event-type event cursor]
-      (if (= event-type :init-load-agent-list)
-        (let [old-state (rcur/get-state cursor state)
-              new-state (merge old-state
-                               {:show-agent-list-loader true
-                                :selected-server-index (:server-index event)
-                                :selected-agents #{}
-                                :manually-selected-agents #{}
-                                :agents []})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :init-load-agent-list
+                           :init-load-agent-list
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   new-state (merge old-state
+                                                    {:show-agent-list-loader true
+                                                     :selected-server-index (:server-index action)
+                                                     :selected-agents #{}
+                                                     :manually-selected-agents #{}
+                                                     :agents []})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :attach-poll-agent-timer
-    (fn [state event-type event cursor]
-      (if (= event-type :attach-poll-agent-timer)
-        (let [old-state (rcur/get-state cursor state)
-              new-state (merge old-state
-                               {:poll-agent-timer (:poll-agent-timer event)})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :attach-poll-agent-timer
+                           :attach-poll-agent-timer
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   new-state (merge old-state
+                                                    {:poll-agent-timer (:poll-agent-timer action)})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :agent-selected
-    (fn [state event-type event cursor]
-      (if (= event-type :agent-selected)
-        (let [old-state (rcur/get-state cursor state)
-              {:keys [selected-agents
-                      manually-selected-agents]} old-state
-              {:keys [agent
-                      selected?]} event
-              new-state (merge old-state
-                               {:selected-agents (update-agent-selection selected-agents
-                                                                         agent
-                                                                         selected?)
-                                :manually-selected-agents (update-agent-selection manually-selected-agents
-                                                                                  agent
-                                                                                  selected?)})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :agent-selected
+                           :agent-selected
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   {:keys [selected-agents
+                                           manually-selected-agents]} old-state
+                                   {:keys [agent
+                                           selected?]} action
+                                   new-state (merge old-state
+                                                    {:selected-agents (update-agent-selection selected-agents
+                                                                                              agent
+                                                                                              selected?)
+                                                     :manually-selected-agents (update-agent-selection manually-selected-agents
+                                                                                                       agent
+                                                                                                       selected?)})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :select-all-agents
-    (fn [state event-type event cursor]
-      (if (= event-type :select-all-agents)
-        (let [old-state (rcur/get-state cursor state)
-              {agents :agents
-               selected-agents :selected-agents
-               manually-selected-agents :manually-selected-agents} old-state
-              new-selected-agents
-              (if (empty? selected-agents)
-                (if (empty? manually-selected-agents)
-                  (apply hash-set (map :id agents))
-                  (apply hash-set manually-selected-agents))
-                (if (< (count selected-agents) (count agents))
-                  (apply hash-set (map :id agents))
-                  #{}))
-              new-state (merge old-state
-                               {:selected-agents new-selected-agents})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :select-all-agents
+                           :select-all-agents
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   {agents :agents
+                                    selected-agents :selected-agents
+                                    manually-selected-agents :manually-selected-agents} old-state
+                                   new-selected-agents
+                                   (if (empty? selected-agents)
+                                     (if (empty? manually-selected-agents)
+                                       (apply hash-set (map :id agents))
+                                       (apply hash-set manually-selected-agents))
+                                     (if (< (count selected-agents) (count agents))
+                                       (apply hash-set (map :id agents))
+                                       #{}))
+                                   new-state (merge old-state
+                                                    {:selected-agents new-selected-agents})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :show-message
-    (fn [state event-type event cursor]
-      (if (= event-type :show-message)
-        (let [old-state (rcur/get-state cursor state)
-              {:keys [message
-                      message-timer]} event
-              new-state (merge old-state
-                               {:message message
-                                :message-timer message-timer})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :show-message
+                           :show-message
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   {:keys [message
+                                           message-timer]} action
+                                   new-state (merge old-state
+                                                    {:message message
+                                                     :message-timer message-timer})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
 
-  (rr/defreducer :hide-message
-    (fn [state event-type event cursor]
-      (if (= event-type :hide-message)
-        (let [old-state (rcur/get-state cursor state)
-              new-state (merge old-state
-                               {:message nil})]
-          (rcur/update-state cursor
-                             state
-                             new-state))
-        state)))
+  (rrtype/reducer-for-type :hide-message
+                           :hide-message
+                           (fn [state action]
+                             (let [cursor (:cursor action)
+                                   old-state (rcur/get-state cursor state)
+                                   new-state (merge old-state
+                                                    {:message nil})]
+                               (rcur/update-state cursor
+                                                  state
+                                                  new-state))))
   )
 
-(defn hide-message-action-creator [dispatch get-store cursor]
-  {:type :hide-message})
+(defn hide-message-action-creator [cursor]
+  (fn [dispatch get-store]
+    (dispatch {:type :hide-message
+               :cursor cursor})))
 
-(defn show-message-action-creator [message]
-  (fn [dispatch get-store cursor]
-    (let [state (get-store)]
+(defn show-message-action-creator [message cursor]
+  (fn [dispatch get-state]
+    (let [state (rcur/get-state cursor (get-state))]
       (when-let [message-timer (:message-timer state)]
         (js/clearTimeout message-timer))
-      (dispatch cursor
-                {:type :show-message
+      (dispatch {:type :show-message
+                 :cursor cursor
                  :message message
-                 :message-timer (js/setTimeout (fn [] (dispatch cursor
-                                                                (hide-message-action-creator dispatch
-                                                                                             get-store
-                                                                                             cursor)))
+                 :message-timer (js/setTimeout (fn [] ((hide-message-action-creator cursor) dispatch get-state))
                                                5000)}))))
 
-(defn reset-timer-action-creator [dispatch get-store cursor]
-  (when-let [timer (:poll-agent-timer (get-store))]
-    (plr/stop timer))
-  nil)
+(defn reset-timer-action-creator [cursor]
+  (fn [dispatch get-store]
+    (when-let [timer (:poll-agent-timer (get-store))]
+      (plr/stop timer))
+    nil))
 
 (defn other-server-selected? [state load-agents-for-server]
   (if (nil? load-agents-for-server)
@@ -204,10 +200,10 @@
            (not (= (:id selected-server)
                    (:id load-agents-for-server)))))))
 
-(defn load-agents-action-creator [server]
-  (fn [dispatch get-store cursor]
+(defn load-agents-action-creator [server cursor]
+  (fn [dispatch get-state]
     (if (other-server-selected? (rcur/get-state cursor
-                                                (get-store))
+                                                (get-state))
                                 server)
       nil
       (do
@@ -217,70 +213,69 @@
            {:response-format (ajax/json-response-format {:keywords? true})
             :handler (fn [response]
                        (if (other-server-selected? (rcur/get-state cursor
-                                                                   (get-store))
+                                                                   (get-state))
                                                    server)
                          nil
-                         (do
-                           (dispatch cursor
-                                     {:type :new-agent-list
-                                      :agents (:agents response)}))))
+                         (dispatch {:type :new-agent-list
+                                    :cursor cursor
+                                    :agents (:agents response)})))
             :error-handler (fn [response]
-                             (dispatch cursor
-                                       {:type :reset-agent-list}))}))))))
+                             (dispatch {:type :reset-agent-list
+                                        :cursor cursor}))}))))))
 
-(defn select-server-action-creator [server-index]
-  (fn [dispatch get-state cursor]
+(defn select-server-action-creator [server-index cursor]
+  (fn [dispatch get-state]
     (let [state (rcur/get-state cursor (get-state))]
       (if (= server-index
              (:selected-server-index state))
         nil
         (do
-          (dispatch cursor
-                    {:type :init-load-agent-list
+          (dispatch {:type :init-load-agent-list
+                     :cursor cursor
                      :server-index server-index})
-          (reset-timer-action-creator dispatch get-state cursor)
+          (dispatch (reset-timer-action-creator cursor))
           (let [current-server (get (:servers state) server-index)
                 p (plr/create-poller (fn []
-                                       ((load-agents-action-creator current-server) dispatch get-state cursor))
+                                       ((load-agents-action-creator current-server cursor) dispatch get-state))
                                      3000
                                      60000)]
             (do
               (plr/start p)
-              (dispatch cursor
-                        {:type :attach-poll-agent-timer
+              (dispatch {:type :attach-poll-agent-timer
+                         :cursor cursor
                          :poll-agent-timer p}))))))))
 
-(defn get-server-list-action-creator [dispatch get-store cursor]
-  (ajax/GET
-   "/servers/list"
-   {:params {}
-    :response-format (ajax/json-response-format {:keywords? true})
-    :handler
-    (fn [response]
-      (let [servers (:servers response)
-            has-any-server? (and (not (nil? servers))
-                                 (> (count servers)))]
-        (do
-          (dispatch cursor
-                    {:type :new-server-list
-                     :servers servers})
+(defn get-server-list-action-creator [cursor]
+  (fn [dispatch get-state]
+    (ajax/GET
+     "/servers/list"
+     {:params {}
+      :response-format (ajax/json-response-format {:keywords? true})
+      :handler
+      (fn [response]
+        (let [servers (:servers response)
+              has-any-server? (and (not (nil? servers))
+                                   (> (count servers)))]
+          (do
+            (dispatch {:type :new-server-list
+                       :cursor cursor
+                       :servers servers})
+            (if has-any-server?
+              ((select-server-action-creator 0 cursor) dispatch get-state)))))})))
 
-          (if has-any-server?
-            ((select-server-action-creator 0) dispatch get-store cursor)))))}))
-
-(defn exec-action-for-agents [url trigger-message completed-message]
-  (fn [dispatch get-store cursor]
+(defn exec-action-for-agents [cursor url trigger-message completed-message]
+  (fn [dispatch get-store]
     (let [s (rcur/get-state cursor (get-store))
           current-server-id (:id (get (:servers s) (:selected-server-index s)))
           agent-ids (clj->js (map identity (:selected-agents s)))]
       (do
-        ((show-message-action-creator trigger-message) dispatch get-store cursor)
+        ((show-message-action-creator trigger-message cursor) dispatch get-store)
         (ajax/POST url
                    {:params {"serverId" current-server-id
                              "agentIds[]" agent-ids}
                     :format (ajax/url-request-format)
                     :handler (fn [response]
-                               ((show-message-action-creator completed-message) dispatch get-store cursor))
+                               ((show-message-action-creator completed-message cursor) dispatch get-store))
                     :error-handler (fn [response] (println response))})))))
 
 (defn info-message []
@@ -446,39 +441,33 @@
          :show-agent-list-loader false})
       :reset-timer
       (fn [this]
-        (rcore/dispatch nil
-                        reset-timer-action-creator))
+        (rcore/dispatch (reset-timer-action-creator page-cursor)))
       :component-did-mount
       (fn [this]
 
         (rs/defsubscriber
-          page-cursor
-          (fn [state]
-            (r/set-state this state)))
+          (fn [old-state new-state]
+            (r/set-state this (rcur/get-state page-cursor new-state))))
 
-        (dispatch nil
-                  {:type :init-page})
-
-        (rcore/dispatch page-cursor
-                        get-server-list-action-creator))
+        (rcore/dispatch {:type :init-page})
+        (rcore/dispatch (get-server-list-action-creator page-cursor)))
       :component-unmount
       (fn [this]
         (this.resetTimer)
         nil)
       :on-server-select
       (fn [this server-index]
-        (rcore/dispatch page-cursor
-                        (select-server-action-creator server-index)))
+        (rcore/dispatch (select-server-action-creator server-index page-cursor)))
       :handle-select-agent
       (fn [this agent selected?]
-        (dispatch page-cursor
-                  {:type :agent-selected
-                   :agent agent
-                   :selected? selected?}))
+        (rcore/dispatch {:type :agent-selected
+                         :cursor page-cursor
+                         :agent agent
+                         :selected? selected?}))
       :handle-select-all
       (fn [this checked?]
-        (dispatch page-cursor
-                  {:type :select-all-agents}))
+        (rcore/dispatch {:type :select-all-agents
+                         :cursor page-cursor}))
       :handle-start-build
       (fn [this]
         (this.execActionForAgents
@@ -505,16 +494,16 @@
          "custom build has triggered"))
       :show-message
       (fn [this message]
-        (rcore/dispatch page-cursor
-                        (show-message-action-creator message)))
+        (rcore/dispatch (show-message-action-creator message page-cursor)))
       :close-message
       (fn [this]
-        (rcore/dispatch page-cursor
-                        hide-message-action-creator))
+        (rcore/dispatch (hide-message-action-creator page-cursor)))
       :exec-action-for-agents
       (fn [this url trigger-message completed-message]
-        (rcore/dispatch page-cursor
-                        (exec-action-for-agents url trigger-message completed-message)))
+        (rcore/dispatch (exec-action-for-agents page-cursor
+                                                url
+                                                trigger-message
+                                                completed-message)))
       :render
       (fn [this]
         (let [{:keys [servers
@@ -550,6 +539,7 @@
 (defn ^:export init []
   (let [page (home-page)]
     (do
+      (rmw/defmiddleware acm/action-creator-middleware)
       (define-reducers)
       (r/render-component [page]
                           (js/document.getElementById "main-content")))))
