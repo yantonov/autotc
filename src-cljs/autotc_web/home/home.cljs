@@ -7,7 +7,7 @@
             [rex.core :as rcore]
             [rex.ext.cursor :as rcur]
             [rex.reducer :as rr]
-            [rex.subscriber :as rs]
+            [rex.watcher :as rwt]
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
             [rex.ext.reducer-for-type :as rrtype]))
@@ -445,7 +445,7 @@
       :component-did-mount
       (fn [this]
 
-        (rs/defsubscriber
+        (rwt/defwatcher
           (fn [old-state new-state]
             (r/set-state this (rcur/get-state page-cursor new-state))))
 
