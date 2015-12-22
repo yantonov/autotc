@@ -378,7 +378,10 @@
                                selected
                                on-change]} data]
   [ListGroupItem
-   {:key key}
+   {:key key
+    :style {:padding "0"}}
+   [:div {:on-click (fn [] (on-change (not selected)))
+          :class-name "agent__row"}
    [:input {:type "checkbox"
             :checked selected
             :on-change (fn [event] (on-change event.target.checked))
@@ -389,11 +392,14 @@
    (gstring/unescapeEntities "&nbsp;")
    [:span {:class-name "agent__text agent__name"}
     [:a {:href (:webUrl agent)
-         :target "_blank"}
+         :target "_blank"
+         :on-click (fn [event]
+                     (.stopPropagation event)
+                     true)}
      (:name agent)]]
    (gstring/unescapeEntities "&nbsp;")
    [:span {:class-name "agent__text agent__status"}
-    (str "["(get-agent-status agent) "]")]])
+    (str "["(get-agent-status agent) "]")]]])
 
 (defn agent-list [{:keys [agents
                           selected-agents
