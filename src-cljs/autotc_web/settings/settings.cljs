@@ -8,7 +8,8 @@
             [rex.watcher :as rwt]
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
-            [rex.ext.reducer-for-type :as rrtype]))
+            [rex.ext.reducer-for-type :as rrtype]
+            [autotc-web.util.reducer-helpers :as rhp]))
 
 (def Table (r/adapt-react-class js/ReactBootstrap.Table))
 (def Button (r/adapt-react-class js/ReactBootstrap.Button))
@@ -33,33 +34,21 @@
 
   (rrtype/reducer-for-type :server-list-loaded
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:servers (:servers action)})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:servers (:servers action)})))
 
   (rrtype/reducer-for-type :toggle-list
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:show-list (:visible action)})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:show-list (:visible action)})))
 
   (rrtype/reducer-for-type :confirm-delete-server
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:server-to-delete (:server action)})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:server-to-delete (:server action)})))
 
   (rrtype/reducer-for-type :text-input-changed
                            (fn [state action]

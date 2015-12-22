@@ -10,7 +10,8 @@
             [rex.watcher :as rwt]
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
-            [rex.ext.reducer-for-type :as rrtype]))
+            [rex.ext.reducer-for-type :as rrtype]
+            [autotc-web.util.reducer-helpers :as rhp]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -46,70 +47,51 @@
 
   (rrtype/reducer-for-type :new-agent-list
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:agents (:agents action)
-                                                     :show-agent-list-loader false})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:agents (:agents action)
+                                               :show-agent-list-loader false})))
 
   (rrtype/reducer-for-type :reset-agent-list
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:agents []
-                                                     :show-agent-list-loader false
-                                                     :selected-agents #{}
-                                                     :manually-selected-agents #{}})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:agents []
+                                               :show-agent-list-loader false
+                                               :selected-agents #{}
+                                               :manually-selected-agents #{}})))
 
   (rrtype/reducer-for-type :init-load-agent-list
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:show-agent-list-loader true
-                                                     :selected-server-index (:server-index action)
-                                                     :selected-agents #{}
-                                                     :manually-selected-agents #{}
-                                                     :agents []})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:show-agent-list-loader true
+                                               :selected-server-index (:server-index action)
+                                               :selected-agents #{}
+                                               :manually-selected-agents #{}
+                                               :agents []})))
 
   (rrtype/reducer-for-type :attach-poll-agent-timer
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:poll-agent-timer (:poll-agent-timer action)})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:poll-agent-timer (:poll-agent-timer action)})))
 
   (rrtype/reducer-for-type :agent-selected
                            (fn [state action]
                              (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
                                    {:keys [selected-agents
-                                           manually-selected-agents]} old-state
+                                           manually-selected-agents]} (rcur/get-state cursor state)
                                    {:keys [agent
-                                           selected?]} action
-                                   new-state (merge old-state
-                                                    {:selected-agents (update-agent-selection selected-agents
-                                                                                              agent
-                                                                                              selected?)
-                                                     :manually-selected-agents (update-agent-selection manually-selected-agents
-                                                                                                       agent
-                                                                                                       selected?)})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                                           selected?]} action]
+                               (rhp/merge-state state
+                                                cursor
+                                                {:selected-agents (update-agent-selection selected-agents
+                                                                                          agent
+                                                                                          selected?)
+                                                 :manually-selected-agents (update-agent-selection manually-selected-agents
+                                                                                                   agent
+                                                                                                   selected?)}))))
 
   (rrtype/reducer-for-type :select-all-agents
                            (fn [state action]
@@ -125,35 +107,25 @@
                                        (apply hash-set manually-selected-agents))
                                      (if (< (count selected-agents) (count agents))
                                        (apply hash-set (map :id agents))
-                                       #{}))
-                                   new-state (merge old-state
-                                                    {:selected-agents new-selected-agents})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                                       #{}))]
+                               (rhp/merge-state state
+                                                cursor
+                                                {:selected-agents new-selected-agents}))))
 
   (rrtype/reducer-for-type :show-message
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   {:keys [message
-                                           message-timer]} action
-                                   new-state (merge old-state
-                                                    {:message message
-                                                     :message-timer message-timer})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (let [{:keys [message
+                                           message-timer]} action]
+                               (rhp/merge-state state
+                                                (:cursor action)
+                                                {:message message
+                                                 :message-timer message-timer}))))
 
   (rrtype/reducer-for-type :hide-message
                            (fn [state action]
-                             (let [cursor (:cursor action)
-                                   old-state (rcur/get-state cursor state)
-                                   new-state (merge old-state
-                                                    {:message nil})]
-                               (rcur/update-state cursor
-                                                  state
-                                                  new-state))))
+                             (rhp/merge-state state
+                                              (:cursor action)
+                                              {:message nil})))
   )
 
 (defn hide-message-action-creator [cursor]
@@ -382,24 +354,24 @@
     :style {:padding "0"}}
    [:div {:on-click (fn [] (on-change (not selected)))
           :class-name "agent__row"}
-   [:input {:type "checkbox"
-            :checked selected
-            :on-change (fn [event] (on-change event.target.checked))
-            :class-name "agent__checkbox"}]
-   (gstring/unescapeEntities "&nbsp;")
-   [agent-status {:running (:running agent)
-                  :status (:status agent)}]
-   (gstring/unescapeEntities "&nbsp;")
-   [:span {:class-name "agent__text agent__name"}
-    [:a {:href (:webUrl agent)
-         :target "_blank"
-         :on-click (fn [event]
-                     (.stopPropagation event)
-                     true)}
-     (:name agent)]]
-   (gstring/unescapeEntities "&nbsp;")
-   [:span {:class-name "agent__text agent__status"}
-    (str "["(get-agent-status agent) "]")]]])
+    [:input {:type "checkbox"
+             :checked selected
+             :on-change (fn [event] (on-change event.target.checked))
+             :class-name "agent__checkbox"}]
+    (gstring/unescapeEntities "&nbsp;")
+    [agent-status {:running (:running agent)
+                   :status (:status agent)}]
+    (gstring/unescapeEntities "&nbsp;")
+    [:span {:class-name "agent__text agent__name"}
+     [:a {:href (:webUrl agent)
+          :target "_blank"
+          :on-click (fn [event]
+                      (.stopPropagation event)
+                      true)}
+      (:name agent)]]
+    (gstring/unescapeEntities "&nbsp;")
+    [:span {:class-name "agent__text agent__status"}
+     (str "["(get-agent-status agent) "]")]]])
 
 (defn agent-list [{:keys [agents
                           selected-agents
