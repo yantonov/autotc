@@ -10,11 +10,13 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]
+                 [ch.qos.logback/logback-classic "1.1.3"] ;logging
                  ;; cljs
                  [org.clojure/clojurescript "1.7.170"]
                  [reagent "0.5.1"]
                  [cljsjs/react-bootstrap "0.27.3-0" :exclusions [org.webjars.bower/jquery]]
-                 [cljs-ajax "0.5.2"]]
+                 [cljs-ajax "0.5.2"]
+                 [rex "0.0.1-SNAPSHOT"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.1"]]
   :ring {:handler autotc-web.handler/app

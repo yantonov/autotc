@@ -61,6 +61,10 @@ git checkout v0.0.1
 mvn install
 cd ../
 
+git clone git@github.com:yantonov/rex.git
+cd  rex
+lein install
+cd ../
 
 cd ../
 
@@ -69,4 +73,3 @@ rm -rf tmp
 cd ../
 
 lein deps
-
