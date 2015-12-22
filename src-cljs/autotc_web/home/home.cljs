@@ -31,16 +31,11 @@
   ((if selected? conj disj) set (:id agent)))
 
 (defn- define-reducers []
-  ;; TODO: reduce boilerplace
-  ;; 1. check for event type
-  ;; 2. thinks about abstract merge state
-  (rrtype/reducer-for-type :init-page-reducer
-                           :init-page
+  (rrtype/reducer-for-type :init-page
                            (fn [state action]
                              (assoc state :page {})))
 
   (rrtype/reducer-for-type :new-server-list
-                           :new-server-list
                            (fn [state action]
                              (rcur/update-state (:cursor action)
                                                 state
@@ -50,7 +45,6 @@
                                                  :manually-selected-agents #{}})))
 
   (rrtype/reducer-for-type :new-agent-list
-                           :new-agent-list
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -62,7 +56,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :reset-agent-list
-                           :reset-agent-list
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -76,7 +69,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :init-load-agent-list
-                           :init-load-agent-list
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -91,7 +83,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :attach-poll-agent-timer
-                           :attach-poll-agent-timer
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -102,7 +93,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :agent-selected
-                           :agent-selected
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -122,7 +112,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :select-all-agents
-                           :select-all-agents
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -144,7 +133,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :show-message
-                           :show-message
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
@@ -158,7 +146,6 @@
                                                   new-state))))
 
   (rrtype/reducer-for-type :hide-message
-                           :hide-message
                            (fn [state action]
                              (let [cursor (:cursor action)
                                    old-state (rcur/get-state cursor state)
