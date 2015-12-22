@@ -223,7 +223,7 @@
           (dispatch (reset-timer-action-creator cursor))
           (let [current-server (get (:servers state) server-index)
                 p (plr/create-poller (fn []
-                                       ((load-agents-action-creator current-server cursor) dispatch get-state))
+                                       (dispatch (load-agents-action-creator current-server cursor)))
                                      3000
                                      60000)]
             (do
@@ -248,7 +248,7 @@
                        :cursor cursor
                        :servers servers})
             (if has-any-server?
-              ((select-server-action-creator 0 cursor) dispatch get-state)))))})))
+              (dispatch (select-server-action-creator 0 cursor))))))})))
 
 (defn exec-action-for-agents [cursor url trigger-message completed-message]
   (fn [dispatch get-store]
