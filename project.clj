@@ -10,6 +10,7 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]
+                 [ch.qos.logback/logback-classic "1.1.3"] ;logging
                  ;; cljs
                  [org.clojure/clojurescript "1.7.170"]
                  [reagent "0.5.1"]

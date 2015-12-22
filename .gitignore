@@ -11,6 +11,9 @@
 # data
 /db.sq3
 
+# logs
+*.log
+
 # ide specific files
 /.nrepl-port
 .lein-deps-sum

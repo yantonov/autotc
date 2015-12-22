@@ -8,7 +8,9 @@
             [autotc-web.routes.home :refer [home-routes]]
             [autotc-web.routes.settings :refer [settings-routes]]
             [autotc-web.models.db :as db]
-            [ring.middleware.json :as rmj]))
+            [ring.middleware.json :as rmj]
+            [autotc-web.log :as log]
+            [clojure.pprint :as pprint]))
 
 (defn init []
   (println "autotc-web is starting")
@@ -22,6 +24,11 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
+(defn log-exception [handler]
+  (fn [request]
+    (try (handler request)
+         (catch Exception e (log/error e (str "Error occured for request :" (pprint/pprint request)))))))
+
 (def app
   (-> (routes home-routes
               settings-routes
@@ -29,4 +36,5 @@
       (rmj/wrap-json-response)
       (wrap-base-url)
       (ringdefaults/wrap-defaults (-> ringdefaults/site-defaults
-                                      (assoc-in [:security :anti-forgery] false )))))
+                                      (assoc-in [:security :anti-forgery] false )))
+      (log-exception)))
