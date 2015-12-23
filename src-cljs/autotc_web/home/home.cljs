@@ -141,7 +141,7 @@
       (dispatch {:type :show-message
                  :cursor cursor
                  :message message
-                 :message-timer (js/setTimeout (fn [] ((hide-message-action-creator cursor) dispatch get-state))
+                 :message-timer (js/setTimeout (fn [] (dispatch (hide-message-action-creator cursor)))
                                                5000)}))))
 
 (defn reset-timer-action-creator [cursor]
@@ -228,13 +228,13 @@
           current-server-id (:id (get (:servers s) (:selected-server-index s)))
           agent-ids (clj->js (map identity (:selected-agents s)))]
       (do
-        ((show-message-action-creator trigger-message cursor) dispatch get-store)
+        (dispatch (show-message-action-creator trigger-message cursor))
         (ajax/POST url
                    {:params {"serverId" current-server-id
                              "agentIds" agent-ids}
                     :format (ajax/json-request-format)
                     :handler (fn [response]
-                               ((show-message-action-creator completed-message cursor) dispatch get-store))
+                               (dispatch (show-message-action-creator completed-message cursor)))
                     :error-handler (fn [response] (println response))})))))
 
 (defn info-message []
