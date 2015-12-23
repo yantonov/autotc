@@ -72,6 +72,8 @@ rm -rf tmp
 
 cd ../
 
+cd ../
+
 # generate js from clojurescript
 ./bin/dev/generate-production-js.sh
 
