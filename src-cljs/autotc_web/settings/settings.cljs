@@ -1,15 +1,12 @@
 (ns autotc-web.settings.settings
   (:require [cljsjs.react-bootstrap]
             [reagent.core :as r]
-            [ajax.core :as ajax]
-            [rex.core :as rcore]
             [rex.ext.cursor :as rcur]
-            [rex.reducer :as rr]
             [rex.watcher :as rwt]
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
-            [rex.ext.reducer-for-type :as rrtype]
-            [autotc-web.util.reducer-helpers :as rhp]))
+            [autotc-web.settings.reducers :as reducers]
+            [autotc-web.settings.actions :as a]))
 
 (def Table (r/adapt-react-class js/ReactBootstrap.Table))
 (def Button (r/adapt-react-class js/ReactBootstrap.Button))
@@ -23,83 +20,6 @@
 (def ModalTitle (r/adapt-react-class js/ReactBootstrap.Modal.Title))
 (def ModalFooter (r/adapt-react-class js/ReactBootstrap.Modal.Footer))
 (def Modal (r/adapt-react-class js/ReactBootstrap.Modal.Dialog))
-
-(defn- define-reducers []
-  (rrtype/reducer-for-type :init-page
-                           (fn [state action]
-                             (rcur/update-state (:cursor action)
-                                                state
-                                                {:show-list true
-                                                 :servers []})))
-
-  (rrtype/reducer-for-type :server-list-loaded
-                           (fn [state action]
-                             (rhp/merge-state state
-                                              (:cursor action)
-                                              {:servers (:servers action)})))
-
-  (rrtype/reducer-for-type :toggle-list
-                           (fn [state action]
-                             (rhp/merge-state state
-                                              (:cursor action)
-                                              {:show-list (:visible action)})))
-
-  (rrtype/reducer-for-type :confirm-delete-server
-                           (fn [state action]
-                             (rhp/merge-state state
-                                              (:cursor action)
-                                              {:server-to-delete (:server action)})))
-
-  (rrtype/reducer-for-type :text-input-changed
-                           (fn [state action]
-                             (let [cursor (:cursor action)
-                                   value (:value action) ]
-                               (rcur/update-state cursor
-                                                  state
-                                                  value))))
-  )
-
-(defn load-server-list-action-creator [cursor]
-  (fn [dispatch get-state]
-    (ajax/GET "/settings/servers/list"
-              {:response-format (ajax/json-response-format {:keywords? true})
-               :handler (fn [response]
-                          (dispatch {:type :server-list-loaded
-                                     :cursor cursor
-                                     :servers (:servers response)}))
-               :error-handler (fn [response]
-                                (println response))})))
-
-(defn show-list-command [cursor visible]
-  {:type :toggle-list
-   :cursor cursor
-   :visible visible})
-
-(defn confirm-delete-server-command [cursor server]
-  {:type :confirm-delete-server
-   :cursor cursor
-   :server server})
-
-(defn save-server-action-creator [form-cursor page-cursor]
-  (fn [dispatch get-state]
-    (let [server (rcur/get-state form-cursor (get-state))]
-      (ajax/POST "/settings/servers/add"
-                 {:params server
-                  :format (ajax/url-request-format)
-                  :handler (fn [response]
-                             (dispatch (load-server-list-action-creator page-cursor))
-                             (dispatch (show-list-command page-cursor true)))}))))
-
-(defn delete-server-action-creator [cursor server]
-  (fn [dispatch get-state]
-    (ajax/POST "/settings/servers/delete"
-               {:params {:id (:id server)}
-                :format (ajax/url-request-format)
-                :handler (fn [response]
-                           (dispatch (load-server-list-action-creator cursor))
-                           (dispatch (confirm-delete-server-command cursor nil)))
-                :error-handler (fn [response]
-                                 (println response))})))
 
 (defn server-element [{:keys [key
                               index
@@ -169,12 +89,9 @@
                                 on-cancel]} data]
   (let [update-fn (fn [field-key]
                     (fn [e]
-                      (rcore/dispatch {:type :text-input-changed
-                                       :cursor (rcur/nest form-cursor
-                                                          field-key)
-                                       :value (-> e
-                                                  .-target
-                                                  .-value)})))]
+                      (a/text-input-changed (rcur/nest form-cursor
+                                                       field-key)
+                                            e)))]
     [:form {:action ""
             :method "POST"
             :on-submit (fn [e]
@@ -217,47 +134,19 @@
           "Cancel"]]]]]]))
 
 (defn settings-page []
-  (let [page-cursor (rcur/nest (rcur/make-cursor)
-                               :page)
-        edit-server-form-cursor (rcur/nest page-cursor
+  (let [cursor (rcur/nest (rcur/make-cursor)
+                          :page)
+        edit-server-form-cursor (rcur/nest cursor
                                            :edit-server-form)]
     (r/create-class
-     {:begin-add-server
-      (fn [this]
-        (rcore/dispatch (show-list-command page-cursor false)))
-      :show-list
-      (fn [this]
-        (rcore/dispatch (show-list-command page-cursor true)))
-      :save-server
-      (fn [this]
-        (rcore/dispatch (save-server-action-creator edit-server-form-cursor
-                                                    page-cursor)))
-      :cancel-edit-server
-      (fn [this]
-        (.showList this))
-      :load-server-list
-      (fn [this]
-        (rcore/dispatch (load-server-list-action-creator page-cursor)))
+     {
       :component-did-mount
       (fn [this]
         (rwt/defwatcher
           (fn [old-state new-state]
-            (r/set-state this (rcur/get-state page-cursor new-state))))
-        (rcore/dispatch {:type :init-page
-                         :cursor page-cursor})
-        (.loadServerList this))
-      :handle-delete
-      (fn [this server]
-        (rcore/dispatch (delete-server-action-creator page-cursor server)))
-      :confirm-delete
-      (fn [this server]
-        (rcore/dispatch (confirm-delete-server-command page-cursor server)))
-      :hide-delete-confirmation-dialog
-      (fn [this]
-        (rcore/dispatch (confirm-delete-server-command page-cursor nil)))
-      :cancel-delete
-      (fn [this]
-        (.hideDeleteConfirmationDialog this))
+            (r/set-state this (rcur/get-state cursor new-state))))
+        (a/init-page cursor)
+        (a/load-server-list cursor))
       :render
       (fn [this]
         (let [{:keys [show-list
@@ -266,21 +155,21 @@
               show-confirm-delete-dialog? (not (nil? server-to-delete))]
           (if show-list
             [:div nil
-             [add-server-form this.beginAddServer]
+             [add-server-form (fn [] (a/begin-add-server cursor))]
              [:br]
              [server-list {:servers servers
-                           :on-delete (fn [server]  (.confirmDelete this server))}]
+                           :on-delete (fn [server] (a/confirm-delete-server cursor server))}]
              (if show-confirm-delete-dialog?
                [delete-confirmation-dialog {:server server-to-delete
-                                            :on-ok (fn [] (this.handleDelete server-to-delete))
-                                            :on-cancel this.cancelDelete}])]
+                                            :on-ok (fn [] (a/delete-server cursor server-to-delete))
+                                            :on-cancel (fn [] (a/cancel-delete-server cursor))}])]
             [edit-server-form {:form-cursor edit-server-form-cursor
-                               :on-save this.saveServer
-                               :on-cancel this.cancelEditServer}])))})))
+                               :on-save (fn [] (a/save-server cursor edit-server-form-cursor))
+                               :on-cancel (fn [] (a/cancel-edit-server cursor))}])))})))
 
 (defn ^:export init []
   (rmw/defmiddleware acm/action-creator-middleware)
-  (define-reducers)
+  (reducers/define-reducers)
   (r/render-component [settings-page]
                       (js/document.getElementById "main-content")))
 
