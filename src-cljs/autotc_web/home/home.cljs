@@ -134,12 +134,17 @@
                                   on-change
                                   checked]} data]
   (if visible
-    [ListGroupItem
-     [:input {:type "checkbox"
-              :on-change (fn [event] (on-change event.target.checked))
-              :checked checked}]
-     (gstring/unescapeEntities "&nbsp;")
-     "All agents"]))
+    (letfn [(on-click [event] (on-change event.target.checked))]
+      [ListGroupItem
+       {:class-name "agent-container"}
+       [:div {:on-click on-click
+              :class-name "agent__row"}
+        [:input {:type "checkbox"
+                 :on-change on-click
+                 :checked checked
+                 :class-name "agent__checkbox"}]
+        (gstring/unescapeEntities "&nbsp;")
+        "All agents"]])))
 
 (defn- get-agent-status [agent]
   (let [status (:statusText agent)]
@@ -173,7 +178,7 @@
                                on-change]} data]
   [ListGroupItem
    {:key key
-    :style {:padding "0"}}
+    ::class-name "agent-container"}
    [:div {:on-click (fn [] (on-change (not selected)))
           :class-name "agent__row"}
     [:input {:type "checkbox"
