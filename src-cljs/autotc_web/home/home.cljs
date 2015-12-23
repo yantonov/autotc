@@ -146,7 +146,7 @@
 
 (defn reset-timer-action-creator [cursor]
   (fn [dispatch get-store]
-    (when-let [timer (:poll-agent-timer (get-store))]
+    (when-let [timer (:poll-agent-timer (rcur/get-state cursor (get-store)))]
       (plr/stop timer))
     nil))
 
