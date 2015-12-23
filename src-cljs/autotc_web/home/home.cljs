@@ -231,8 +231,8 @@
         ((show-message-action-creator trigger-message cursor) dispatch get-store)
         (ajax/POST url
                    {:params {"serverId" current-server-id
-                             "agentIds[]" agent-ids}
-                    :format (ajax/url-request-format)
+                             "agentIds" agent-ids}
+                    :format (ajax/json-request-format)
                     :handler (fn [response]
                                ((show-message-action-creator completed-message cursor) dispatch get-store))
                     :error-handler (fn [response] (println response))})))))

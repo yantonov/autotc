@@ -33,8 +33,10 @@
   (-> (routes home-routes
               settings-routes
               app-routes)
+      (rmj/wrap-json-params)
       (rmj/wrap-json-response)
       (wrap-base-url)
       (ringdefaults/wrap-defaults (-> ringdefaults/site-defaults
-                                      (assoc-in [:security :anti-forgery] false )))
+                                      (assoc-in [:security :anti-forgery] false )
+                                      (assoc-in [:params :urlencoded] true)))
       (log-exception)))

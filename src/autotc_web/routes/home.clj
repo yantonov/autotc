@@ -2,7 +2,9 @@
   (:require [compojure.core :refer :all]
             [autotc-web.views.layout :as layout]
             [autotc-web.models.db :as db]
-            [ring.util.response :as rur])
+            [ring.util.response :as rur]
+            [autotc-web.log :as log]
+            [clojure.pprint :as pprint])
   (:import api.http.teamcity.domain.TeamCityServer)
   (:import api.http.teamcity.io.TeamCityProxy)
   (:import api.http.teamcity.io.TeamCitySession))
@@ -54,7 +56,7 @@
 
 (defn- exec-action-for-agents [server-id agent-ids session-action]
   (try
-    (let [server (db/get-server-by-id (Long/parseLong server-id))
+    (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
           session (TeamCitySession/create server)
           ids-set (set agent-ids)
           agents (filter #(contains? ids-set (. % getId))
@@ -111,14 +113,26 @@
   (GET "/servers/list" [] (get-servers))
   (GET "/agents/list/:id" [id] (agents-for-server id))
   (POST "/agents/startBuild"
-        [serverId agentIds]
-        (start-build serverId agentIds))
+        request
+        (fn [request]
+          (let [{serverId "serverId"
+                 agentIds "agentIds"} (:params request)]
+            (start-build serverId agentIds))))
   (POST "/agents/stopBuild"
-        [serverId agentIds]
-        (stop-build serverId agentIds))
+        request
+        (fn [request]
+          (let [{serverId "serverId"
+                 agentIds "agentIds"} (:params request)]
+            (stop-build serverId agentIds))))
   (POST "/agents/rebootAgent"
-        [serverId agentIds]
-        (reboot-agent serverId agentIds))
+        request
+        (fn [request]
+          (let [{serverId "serverId"
+                 agentIds "agentIds"} (:params request)]
+            (reboot-agent serverId agentIds))))
   (POST "/agents/runCustomBuild"
-        [serverId agentIds]
-        (run-custom-build serverId agentIds)))
+        request
+        (fn [request]
+          (let [{serverId "serverId"
+                 agentIds "agentIds"} (:params request)]
+            (run-custom-build serverId agentIds)))))
