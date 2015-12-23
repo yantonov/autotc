@@ -485,7 +485,7 @@
             selected-server-index
             this.onServerSelect]
            [Grid nil
-            [Row {:className "show-grid"}
+            [Row {:class-name "agent-list"}
              [Col {:xs 12
                    :md 6}
               [:br]

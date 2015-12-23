@@ -1,3 +1,7 @@
+.agent-list {
+    margin-bottom: 70px;
+}
+
 .agent__row {
     cursor: pointer;
     padding: 10px 15px;
