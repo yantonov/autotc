@@ -57,12 +57,28 @@
                 :href "#"}
        (:alias server)])]])
 
+(defn filter-link [visible enabled text on-click]
+  (if visible
+    (let [css {:class-name "filter-selection-link"}]
+      (if enabled
+        [:span css text]
+        [:a (-> css
+                (assoc :href "#" text)
+                (assoc :on-click on-click))
+         text]))))
+
 (defn multi-action-toolbar [{:keys [enabled
                                     visible
+                                    all-agents-count
+                                    selected-agents-count
                                     on-start
                                     on-stop
                                     on-reboot
-                                    on-run-custom-build]} data]
+                                    on-run-custom-build
+                                    filter-value
+                                    filter-all
+                                    filter-selected
+                                    filter-not-selected]} data]
   (let [disabled (not enabled)]
     (if (and visible enabled)
       [:div {:class-name "multi-action-toolbar-container"}
@@ -85,7 +101,28 @@
           [Button {:disabled disabled
                    :on-click on-run-custom-build}
            [Glyphicon {:glyph "th"}]
-           (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]]]])))
+           (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
+         [:div {:class-name "filter-panel"}
+
+          [filter-link
+           (< selected-agents-count all-agents-count)
+           (or (= filter-value :all)
+               (nil? filter-value))
+           "All"
+           filter-all]
+
+          [filter-link
+           true
+           (or (= filter-value :selected)
+               (= all-agents-count selected-agents-count))
+           (str "Selected (" selected-agents-count ")")
+           filter-selected]
+
+          [filter-link
+           (< selected-agents-count all-agents-count)
+           (= filter-value :not-selected)
+           (str "Not selected (" (- all-agents-count selected-agents-count) ")")
+           filter-not-selected]]]]])))
 
 (defn loader [{:keys [visible]} data]
   (if visible
@@ -162,7 +199,8 @@
                           selected-agents
                           on-select-agent
                           on-select-all
-                          show-loader]} data]
+                          show-loader
+                          filter-value]} data]
   (letfn [(is-agent-selected? [selected-agents agent]
             (contains? selected-agents (:id agent)))]
     [:div
@@ -172,7 +210,18 @@
       [select-all-element {:visible (> (count agents) 0)
                            :on-change on-select-all
                            :checked (= (count agents) (count selected-agents))}]
-      (for [[a i] (map vector agents (iterate inc 0))]
+      (for [[a i] (map vector
+                       (filter (fn [a]
+                                 (cond
+                                   (nil? filter-value) true
+
+                                   (= filter-value :all) true
+
+                                   (= filter-value :selected) (is-agent-selected? selected-agents a)
+
+                                   :else (not (is-agent-selected? selected-agents a))))
+                               agents)
+                       (iterate inc 0))]
         [agent-list-item {:key i
                           :agent a
                           :selected (is-agent-selected? selected-agents a)
@@ -200,7 +249,8 @@
                       message
                       selected-agents
                       agents
-                      show-agent-list-loader] :or {:show-agent-list-loader false}}
+                      show-agent-list-loader
+                      filter-value] :or {:show-agent-list-loader false}}
               (r/state this)]
           [:div
            [info-message message]
@@ -215,12 +265,21 @@
               [:br]
               [multi-action-toolbar {:enabled (not (empty? selected-agents))
                                      :visible (not (empty? agents))
+                                     :all-agents-count (count agents)
+                                     :selected-agents-count (count selected-agents)
                                      :on-start (fn [] (actions/start-build cursor))
                                      :on-stop (fn [] (actions/stop-build cursor))
                                      :on-reboot (fn [] (actions/reboot-agent cursor))
-                                     :on-run-custom-build (fn [] (actions/run-custom-build cursor))}]
+                                     :on-run-custom-build (fn [] (actions/run-custom-build cursor))
+                                     :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
+                                     :filter-value filter-value
+                                     :filter-all (fn [] (actions/filter-show-all cursor))
+                                     :filter-selected (fn [] (actions/filter-show-selected cursor))
+                                     :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))
+                                     }]
               [agent-list {:agents agents
                            :selected-agents selected-agents
+                           :filter-value filter-value
                            :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
                            :on-select-all (fn [selected?] (actions/all-agents-selected selected? cursor))
                            :show-loader show-agent-list-loader}]]]]]))})))

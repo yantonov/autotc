@@ -137,6 +137,11 @@
   (r/dispatch {:type :select-all-agents
                :cursor cursor}))
 
+(defn filter-changed-action [cursor value]
+  {:type :filter-changed
+   :cursor cursor
+   :value value})
+
 (defn exec-action-for-agents [cursor url trigger-message completed-message]
   (r/dispatch (exec-action-for-agents-action-creator cursor
                                                      url
@@ -172,3 +177,16 @@
 
 (defn hide-message-dialog [cursor]
   (r/dispatch (hide-message-action-creator cursor)))
+
+(defn change-show-selected-only [cursor]
+  (r/dispatch {:type :invert-show-selected-only
+               :cursor cursor}))
+
+(defn filter-show-all [cursor]
+  (r/dispatch (filter-changed-action cursor :all)))
+
+(defn filter-show-selected [cursor]
+  (r/dispatch (filter-changed-action cursor :selected)))
+
+(defn filter-show-not-selected [cursor]
+  (r/dispatch (filter-changed-action cursor :not-selected)))

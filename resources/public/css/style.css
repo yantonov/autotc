@@ -20,6 +20,14 @@
     vertical-align: middle;
 }
 
+.filter-panel {
+    margin-top: 10px;
+}
+
+.filter-selection-link {
+    margin-right: 10px;
+}
+
 .agent__name {
     width: 20%;
 }
