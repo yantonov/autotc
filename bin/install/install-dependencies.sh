@@ -20,7 +20,7 @@ if [ -z "$JAVA_HOME" ]; then
     exit 0
 fi
 
-output=`$JAVA_HOME/bin/javac 2>&1 >/dev/null | grep "Usage: javac"`
+output=`"$JAVA_HOME"/bin/javac 2>&1 >/dev/null | grep "Usage: javac"`
 if [ -z "$output" ]; then
     echo "[ERROR] - JAVA_HOME is not point to JDK"
     exit 0
