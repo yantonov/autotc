@@ -61,7 +61,7 @@ git checkout v0.0.1
 mvn install
 cd ../
 
-git clone git@github.com:yantonov/rex.git
+git clone https://github.com/yantonov/rex.git
 cd  rex
 lein install
 cd ../
