@@ -72,4 +72,8 @@ rm -rf tmp
 
 cd ../
 
+# generate js from clojurescript
+./bin/dev/generate-production.js
+
+# install mvn dependencies
 lein deps
