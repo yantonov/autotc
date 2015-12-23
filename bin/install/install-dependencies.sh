@@ -75,7 +75,7 @@ cd ../
 cd ../
 
 # generate js from clojurescript
-./bin/dev/generate-production-js.sh
+./bin/dev/generate-js.sh
 
 # install mvn dependencies
 lein deps
