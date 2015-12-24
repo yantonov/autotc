@@ -44,7 +44,8 @@
                                         :selected-server-index (:server-index action)
                                         :selected-agents #{}
                                         :manually-selected-agents #{}
-                                        :agents []})))
+                                        :agents []
+                                        :filter-value nil})))
 
   (r/reducer-for-type :attach-poll-agent-timer
                       (fn [state action]
