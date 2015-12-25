@@ -6,12 +6,19 @@
 (defn update-agent-selection [set agent selected?]
   ((if selected? conj disj) set (:id agent)))
 
+(defn adjust-filter-value [old-filter-value all-agents new-selected-agents]
+  (if (or (= (count new-selected-agents)
+             (count all-agents))
+          (= 0 (count new-selected-agents)))
+    :all
+    old-filter-value))
+
 (defn- define-reducers []
   (r/reducer-for-type :init-page
                       (fn [state action]
                         (c/update-state (:cursor action) state {})))
 
-  (r/reducer-for-type :new-server-list
+  (r/reducer-for-type :on-server-list-loaded
                       (fn [state action]
                         (c/update-state (:cursor action)
                                         state
@@ -20,7 +27,7 @@
                                          :selected-agents #{}
                                          :manually-selected-agents #{}})))
 
-  (r/reducer-for-type :new-agent-list
+  (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
                         (h/merge-state state
                                        (:cursor action)
@@ -71,11 +78,9 @@
                                           :manually-selected-agents (update-agent-selection manually-selected-agents
                                                                                             agent
                                                                                             selected?)
-                                          :filter-value (if (or (= (count new-selected-agents)
-                                                                   (count agents))
-                                                                (= 0 (count new-selected-agents)))
-                                                          :all
-                                                          filter-value)}))))
+                                          :filter-value (adjust-filter-value filter-value
+                                                                             agents
+                                                                             new-selected-agents)}))))
 
   (r/reducer-for-type :select-all-agents
                       (fn [state action]
@@ -96,11 +101,9 @@
                           (h/merge-state state
                                          cursor
                                          {:selected-agents new-selected-agents
-                                          :filter-value (if (or (= (count new-selected-agents)
-                                                                   (count agents))
-                                                                (= 0 (count new-selected-agents)))
-                                                          :all
-                                                          filter-value)}))))
+                                          :filter-value (adjust-filter-value filter-value
+                                                                             agents
+                                                                             new-selected-agents)}))))
 
   (r/reducer-for-type :show-message
                       (fn [state action]
@@ -119,7 +122,6 @@
 
   (r/reducer-for-type :filter-changed
                       (fn [state action]
-                        (println action)
                         (let [cursor (:cursor action)
                               old-state (c/get-state cursor state)
                               {:keys [selected-agents
@@ -136,9 +138,7 @@
                                 :all
 
                                 true
-                                (:value action))
-
-                              x (do (println new-filter-value) 1)]
+                                (:value action))]
                           (h/merge-state state
                                          (:cursor action)
                                          {:filter-value new-filter-value}))))

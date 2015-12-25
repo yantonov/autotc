@@ -51,7 +51,7 @@
                                                                   (get-state))
                                                    server)
                          nil
-                         (dispatch {:type :new-agent-list
+                         (dispatch {:type :on-agents-list-loaded
                                     :cursor cursor
                                     :agents (:agents response)})))
             :error-handler (fn [response]
@@ -92,7 +92,7 @@
               has-any-server? (and (not (nil? servers))
                                    (> (count servers)))]
           (do
-            (dispatch {:type :new-server-list
+            (dispatch {:type :on-server-list-loaded
                        :cursor cursor
                        :servers servers})
             (if has-any-server?
