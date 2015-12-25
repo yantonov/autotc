@@ -29,10 +29,29 @@
 
   (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
-                        (h/merge-state state
-                                       (:cursor action)
-                                       {:agents (:agents action)
-                                        :show-agent-list-loader false})))
+                        (let [{:keys [cursor
+                                      agents]}
+                              action
+
+                              {:keys [selected-agents
+                                      manually-selected-agents]}
+                              (c/get-state cursor state)
+
+                              agents-ids (vec (map :id agents))]
+                          (h/merge-state state
+                                         (:cursor action)
+                                         {:agents
+                                          (:agents action)
+
+                                          :show-agent-list-loader
+                                          false
+
+                                          :selected-agents
+                                          (apply hash-set (filter (fn [a] (contains? selected-agents a))
+                                                                  agents-ids))
+                                          :manually-selected-agents
+                                          (apply hash-set (filter (fn [a] (contains? manually-selected-agents a))
+                                                                  agents-ids))}))))
 
   (r/reducer-for-type :reset-agent-list
                       (fn [state action]
