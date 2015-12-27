@@ -18,7 +18,7 @@
                  [cljs-ajax "0.5.2"]
                  [rex "0.0.1-SNAPSHOT"]]
   :plugins [[lein-ring "0.9.7"]
-            [lein-cljsbuild "1.1.1"]]
+            [lein-cljsbuild "1.1.2"]]
   :ring {:handler autotc-web.handler/app
          :init autotc-web.handler/init
          :destroy autotc-web.handler/destroy}
