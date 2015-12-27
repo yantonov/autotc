@@ -71,7 +71,7 @@
                      (assoc result :count (inc (:count result))))
                    (catch Exception e
                      (do
-                       (. (System/err) println (.getMessage e))
+                       (log/error e (str "cant exec action for server:" server-id " agent: " (. agent getId)))
                        (assoc result :error
                               (str (:error result)
                                    " "
@@ -81,7 +81,7 @@
                agents)))
     (catch Exception e
       (let [error (pretty-print-exception e)]
-        (. (System/err) println error)
+        (log/error e (str "cant exec action for server:" server-id " agents: " agent-ids))
         (rur/response {:error error})))))
 
 (defn- start-build [server-id agent-ids]
