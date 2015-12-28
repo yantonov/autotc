@@ -160,6 +160,12 @@
                           "request to stop build was sent"
                           "build stopped"))
 
+(defn restart-build [cursor]
+  (exec-action-for-agents cursor
+                          "/agents/restartBuild"
+                          "request to restart build was sent"
+                          "build restarted"))
+
 (defn reboot-agent [cursor]
   (exec-action-for-agents cursor
                           "/agents/rebootAgent"

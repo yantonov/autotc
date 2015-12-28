@@ -96,6 +96,16 @@
                           (fn [session agent]
                             (. session stop agent))))
 
+(defn- restart-build [server-id agent-ids]
+  (exec-action-for-agents server-id
+                          agent-ids
+                          (fn [session agent]
+
+                            (try (. session stop agent)
+                                 (catch Exception e))
+                            (try (. session start agent)
+                                 (catch Exception e)))))
+
 (defn- reboot-agent [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
@@ -124,6 +134,12 @@
           (let [{serverId "serverId"
                  agentIds "agentIds"} (:params request)]
             (stop-build serverId agentIds))))
+  (POST "/agents/restartBuild"
+        request
+        (fn [request]
+          (let [{serverId "serverId"
+                 agentIds "agentIds"} (:params request)]
+            (restart-build serverId agentIds))))
   (POST "/agents/rebootAgent"
         request
         (fn [request]

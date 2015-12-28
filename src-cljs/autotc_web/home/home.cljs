@@ -73,6 +73,7 @@
                                     selected-agents-count
                                     on-start
                                     on-stop
+                                    on-restart
                                     on-reboot
                                     on-run-custom-build
                                     filter-value
@@ -94,6 +95,10 @@
                    :on-click on-stop}
            [Glyphicon {:glyph "stop"}]
            " Stop"]
+          [Button {:disabled disabled
+                   :on-click on-restart}
+           [Glyphicon {:glyph "repeat"}]
+           " Restart"]
           [Button {:disabled disabled
                    :on-click on-reboot}
            [Glyphicon {:glyph "eject"}]
@@ -274,6 +279,7 @@
                                      :selected-agents-count (count selected-agents)
                                      :on-start (fn [] (actions/start-build cursor))
                                      :on-stop (fn [] (actions/stop-build cursor))
+                                     :on-restart (fn [] (actions/restart-build cursor))
                                      :on-reboot (fn [] (actions/reboot-agent cursor))
                                      :on-run-custom-build (fn [] (actions/run-custom-build cursor))
                                      :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
