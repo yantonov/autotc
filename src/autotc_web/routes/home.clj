@@ -102,9 +102,11 @@
                           (fn [session agent]
 
                             (try (. session stop agent)
-                                 (catch Exception e))
+                                 (catch Exception e
+                                   (log/error e)))
                             (try (. session start agent)
-                                 (catch Exception e)))))
+                                 (catch Exception e
+                                   (log/error e))))))
 
 (defn- reboot-agent [server-id agent-ids]
   (exec-action-for-agents server-id
