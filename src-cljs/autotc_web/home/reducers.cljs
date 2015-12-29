@@ -53,14 +53,11 @@
                                           (apply hash-set (filter (fn [a] (contains? manually-selected-agents a))
                                                                   agents-ids))}))))
 
-  (r/reducer-for-type :reset-agent-list
+  (r/reducer-for-type :agent-list-is-loading
                       (fn [state action]
                         (h/merge-state state
                                        (:cursor action)
-                                       {:agents []
-                                        :show-agent-list-loader false
-                                        :selected-agents #{}
-                                        :manually-selected-agents #{}})))
+                                       {:show-agent-list-loader true})))
 
   (r/reducer-for-type :init-load-agent-list
                       (fn [state action]

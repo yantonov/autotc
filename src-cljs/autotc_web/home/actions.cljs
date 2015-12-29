@@ -55,7 +55,7 @@
                                     :cursor cursor
                                     :agents (:agents response)})))
             :error-handler (fn [response]
-                             (dispatch {:type :reset-agent-list
+                             (dispatch {:type :agent-list-is-loading
                                         :cursor cursor}))}))))))
 
 (defn select-server-action-creator [server-index cursor]
