@@ -2,6 +2,7 @@
   (:require [compojure.core :refer :all]
             [autotc-web.views.layout :as layout]
             [autotc-web.models.db :as db]
+            [autotc-web.models.agent-service :as agent-service]
             [ring.util.response :as rur]
             [autotc-web.log :as log]
             [clojure.pprint :as pprint])
@@ -47,14 +48,14 @@
                                (db/read-servers))}))
 
 (defn- agents-for-server [server-id]
-  (let [server (db/get-server-by-id server-id)
-        session (TeamCitySession/create server)]
-    (rur/response {:agents (map tc-agent-to-json
-                                (-> session
-                                    .getProject
-                                    .getConfigurations))})))
+  (let [agents (:agents (.get-value (agent-service/get-agents server-id)))]
+    (rur/response {:agents (if (not (nil? agents))
+                             (map tc-agent-to-json agents)
+                             nil)})))
 
 (defn- exec-action-for-agents [server-id agent-ids session-action]
+  ;; holy shit
+  ;; TODO: decompose this method
   (try
     (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
           session (TeamCitySession/create server)

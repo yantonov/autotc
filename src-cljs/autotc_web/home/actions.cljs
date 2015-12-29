@@ -51,9 +51,13 @@
                                                                   (get-state))
                                                    server)
                          nil
-                         (dispatch {:type :on-agents-list-loaded
-                                    :cursor cursor
-                                    :agents (:agents response)})))
+                         (do
+                           (println response)
+                           (if (not (nil? (:agents response)))
+                            (dispatch {:type :on-agents-list-loaded
+                                       :cursor cursor
+                                       :agents (:agents response)})
+                            (println "oops no agents")))))
             :error-handler (fn [response]
                              (dispatch {:type :agent-list-is-loading
                                         :cursor cursor}))}))))))
@@ -75,6 +79,7 @@
                                         3000
                                         60000)]
             (do
+              (dispatch (load-agents-action-creator current-server cursor))
               (poller/start p)
               (dispatch {:type :attach-poll-agent-timer
                          :cursor cursor

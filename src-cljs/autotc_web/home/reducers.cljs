@@ -57,7 +57,8 @@
                       (fn [state action]
                         (h/merge-state state
                                        (:cursor action)
-                                       {:show-agent-list-loader true})))
+                                       {:show-agent-list-loader true
+                                        :agents []})))
 
   (r/reducer-for-type :init-load-agent-list
                       (fn [state action]
