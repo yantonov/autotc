@@ -2,7 +2,7 @@
   (:require [autotc-web.models.db :as db])
   (:import api.http.teamcity.io.TeamCitySession))
 
-(def CACHED_TIME_IN_SECONDS 5)
+(def CACHED_TIME_IN_SECONDS 3)
 
 (def cache (ref {}))
 
