@@ -51,13 +51,10 @@
                                                                   (get-state))
                                                    server)
                          nil
-                         (do
-                           (println response)
-                           (if (not (nil? (:agents response)))
-                            (dispatch {:type :on-agents-list-loaded
-                                       :cursor cursor
-                                       :agents (:agents response)})
-                            (println "oops no agents")))))
+                         (if (not (nil? (:agents response)))
+                           (dispatch {:type :on-agents-list-loaded
+                                      :cursor cursor
+                                      :agents (:agents response)}))))
             :error-handler (fn [response]
                              (dispatch {:type :agent-list-is-loading
                                         :cursor cursor}))}))))))
