@@ -9,7 +9,7 @@
     (include-css "/css/style.css")
     (include-js "/js/lib/jquery-2.1.3.min.js")
     (include-js "/js/lib/react-0.13.1.js")
-    (include-js "/js/lib/react-bootstrap-0.17.0.min.js")
+    (include-js "/js/lib/react-bootstrap-0.28.1.min.js")
     (include-js "/js/lib/halogen.0.1.2.min.js")
     [:link {:rel "shortcut icon"
             :href "/img/favicon.ico"}]]
