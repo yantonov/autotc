@@ -135,7 +135,7 @@
                :agent agent
                :selected? selected?}))
 
-(defn all-agents-selected [selected? cursor]
+(defn on-all-agents-selected [selected? cursor]
   (r/dispatch {:type :select-all-agents
                :cursor cursor}))
 
