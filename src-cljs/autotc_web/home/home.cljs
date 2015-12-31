@@ -20,7 +20,6 @@
 (def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
 (def Button (r/adapt-react-class js/ReactBootstrap.Button))
 (def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
-(def Loader (r/adapt-react-class js/Halogen.ScaleLoader))
 
 (defn info-message []
   (r/create-class
@@ -131,9 +130,10 @@
 
 (defn loader [{:keys [visible]} data]
   (if visible
-    [Loader {:color "#ddd"
-             :size "16px"
-             :margin "4px"}]))
+    [:div nil
+     [:img {:src "/img/facebook.svg"
+            :alt "loader"
+            :class "facebook-loader"}]]))
 
 (defn select-all-element [{:keys [visible
                                   on-change
