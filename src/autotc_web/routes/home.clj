@@ -17,8 +17,8 @@
                            :src "/cljs/home/home.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
-  (hash-map :alias (. server getAlias)
-            :id (. server getId)))
+  (hash-map :alias (.getAlias server)
+            :id (.getId server)))
 
 (defn- pretty-print-exception [e]
   (clojure.string/join
@@ -33,15 +33,15 @@
                 (.getStackTrace e)))))
 
 (defn- tc-agent-to-json [agent]
-  (let [build (. agent getLastBuild)]
-    (hash-map :id (. agent getId)
-              :name (. agent toString)
-              :webUrl (. agent getWebUrl)
-              :running (. build isRunning)
+  (let [build (.getLastBuild agent)]
+    (hash-map :id (.getId agent )
+              :name (str agent)
+              :webUrl (.getWebUrl agent)
+              :running (.isRunning build)
               :status (-> build
                           .getStatus
                           .toString)
-              :statusText (. build getStatusText))))
+              :statusText (.getStatusText build))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json
@@ -60,7 +60,7 @@
     (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
           session (TeamCitySession/create server)
           ids-set (set agent-ids)
-          agents (filter #(contains? ids-set (. % getId))
+          agents (filter #(contains? ids-set (.getId %))
                          (-> session
                              .getProject
                              .getConfigurations))]
@@ -69,14 +69,11 @@
                  (try
                    (do
                      (session-action session agent)
-                     (assoc result :count (inc (:count result))))
+                     (assoc-in result [:count] inc))
                    (catch Exception e
                      (do
-                       (log/error e (str "cant exec action for server:" server-id " agent: " (. agent getId)))
-                       (assoc result :error
-                              (str (:error result)
-                                   " "
-                                   (pretty-print-exception e)))))))
+                       (log/error e (str "cant exec action for server:" server-id " agent: " (.getId agent)))
+                       (assoc-in result  [:error] str " " (pretty-print-exception e))))))
                {:count 0
                 :error ""}
                agents)))
@@ -89,23 +86,23 @@
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent]
-                            (. session start agent))))
+                            (.start session agent))))
 
 (defn- stop-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent]
-                            (. session stop agent))))
+                            (.stop session agent))))
 
 (defn- restart-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent]
 
-                            (try (. session stop agent)
+                            (try (.stop session agent)
                                  (catch Exception e
                                    (log/error e)))
-                            (try (. session start agent)
+                            (try (.start session agent)
                                  (catch Exception e
                                    (log/error e))))))
 
@@ -113,13 +110,13 @@
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent]
-                            (. session rebootMachine agent))))
+                            (.rebootMachine session agent))))
 
 (defn- run-custom-build [server-id agent-ids]
   (exec-action-for-agents server-id
                           agent-ids
                           (fn [session agent]
-                            (. session runCustomBuild agent))))
+                            (.runCustomBuild session agent))))
 
 (defroutes home-routes
   (GET "/" [] (home))

@@ -12,11 +12,11 @@
                            :src "/cljs/settings/settings.js"}]))
 
 (defn- tc-server-to-json [^TeamCityServer server]
-  (hash-map :alias (. server getAlias)
-            :host (. server getHost)
-            :port (. server getPort)
-            :project (. server getProject)
-            :id (. server getId)))
+  (hash-map :alias (.getAlias server)
+            :host (.getHost server)
+            :port (.getPort server)
+            :project (.getProject server)
+            :id (.getId server)))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json

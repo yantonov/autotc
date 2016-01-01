@@ -37,14 +37,13 @@
      (let [{last-updated :last-updated
             a :agent}
            (get-in @cache [server-id])]
-       (if (update-needed? last-updated now)
-         (do
-           (alter cache assoc-in [server-id :last-updated] now)
-           (send a (fn [_]
-                     (try
-                       {:agents (get-agents-info server-id)}
-                       (catch Exception e
-                         {:error e}))))))
+       (when (update-needed? last-updated now)
+         (alter cache assoc-in [server-id :last-updated] now)
+         (send a (fn [_]
+                   (try
+                     {:agents (get-agents-info server-id)}
+                     (catch Exception e
+                       {:error e})))))
        (AgentInfo. a)))))
 
 (defn get-now []
