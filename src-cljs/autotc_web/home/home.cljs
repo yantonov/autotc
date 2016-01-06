@@ -242,7 +242,7 @@
      {:component-did-mount
       (fn [this]
         (rwt/defwatcher
-          (fn [old-state new-state]
+          (fn [old-state action new-state]
             (r/set-state this (rcur/get-state cursor new-state))))
         (actions/init-page cursor)
         (actions/load-server-list cursor))
