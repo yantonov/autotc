@@ -74,6 +74,9 @@ cd ../
 
 cd ../
 
+# clean leiningen artifacts
+lein clean
+
 # generate js from clojurescript
 ./bin/dev/generate-js.sh
 
