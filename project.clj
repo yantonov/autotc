@@ -33,7 +33,7 @@
   {:builds
    {:production
     {:source-paths ["src-cljs"]
-     :compiler {:output-to "target/autotc-web.js"
+     :compiler {:output-to "resources/public/cljs/dev/autotc-web.js"
                 :optimizations :advanced
                 :pretty-print false}}
     :development
