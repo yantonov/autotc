@@ -4,9 +4,9 @@ tiny [clojure](http://clojure.org)/[clojurescript](https://github.com/clojure/cl
 
 ## Prerequisites
 
-1. [JDK][1];
-2. [Apache maven][2]
-3. [Leiningen][3] 1.7.0. or above.
+1. [jdk][1];
+2. [maven][2];
+3. [leiningen][3];
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.htmla
 [2]: http://maven.apache.org
