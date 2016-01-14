@@ -174,12 +174,6 @@
                           "request to reboot agent was sent"
                           "reboot triggered"))
 
-(defn run-custom-build [cursor]
-  (exec-action-for-agents cursor
-                          "/agents/runCustomBuild"
-                          "request to run custom build was sent"
-                          "custom build has triggered"))
-
 (defn show-message-dialog [cursor message]
   (r/dispatch (show-message-action-creator message cursor)))
 

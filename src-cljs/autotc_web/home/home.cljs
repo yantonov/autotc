@@ -101,11 +101,7 @@
           [Button {:disabled disabled
                    :on-click on-reboot}
            [Glyphicon {:glyph "eject"}]
-           " Reboot"]
-          [Button {:disabled disabled
-                   :on-click on-run-custom-build}
-           [Glyphicon {:glyph "th"}]
-           (str " Clean" (gstring/unescapeEntities "&amp;") "Build")]]
+           " Reboot"]]
          [:div {:class-name "filter-panel"}
 
           [filter-link
