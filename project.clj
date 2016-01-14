@@ -16,7 +16,7 @@
                  [cljsjs/react-bootstrap "0.27.3-0" :exclusions [org.webjars.bower/jquery]]
                  [cljs-ajax "0.5.2"]
                  ;; libs
-                 [rex "0.0.1-SNAPSHOT"]
+                 [rex "0.1.0-SNAPSHOT"]
                  [clj-teamcity-api "0.1.0-SNAPSHOT"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.2"]]
