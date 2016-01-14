@@ -52,7 +52,7 @@ cd tmp
 git clone https://github.com/yantonov/clj-teamcity-api.git
 cd clj-teamcity-api
 git checkout master
-mvn install
+lein install
 cd ../
 
 git clone https://github.com/yantonov/rex.git
