@@ -2,8 +2,7 @@
   (:require [compojure.core :refer :all]
             [autotc-web.views.layout :as layout]
             [autotc-web.models.db :as db]
-            [ring.util.response :as rur])
-  (:import api.http.teamcity.domain.TeamCityServer))
+            [ring.util.response :as rur]))
 
 (defn settings []
   (layout/common [:script {:type "text/javascript"
@@ -11,12 +10,8 @@
                  [:script {:type "text/javascript"
                            :src "/cljs/settings/settings.js"}]))
 
-(defn- tc-server-to-json [^TeamCityServer server]
-  (hash-map :alias (.getAlias server)
-            :host (.getHost server)
-            :port (.getPort server)
-            :project (.getProject server)
-            :id (.getId server)))
+(defn- tc-server-to-json [server]
+  (select-keys server [:id :alias :host :port :project]))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json

@@ -1,7 +1,6 @@
 (ns autotc-web.models.db
   (:require [clojure.java.jdbc :as sql])
-  (:import java.sql.DriverManager)
-  (:import api.http.teamcity.domain.TeamCityServer))
+  (:import java.sql.DriverManager))
 
 (def ^:private db {:classname "org.sqlite.JDBC",
                    :subprotocol "sqlite",
@@ -27,14 +26,13 @@
                :result-set-fn doall)))
 
 (defn to-tc-server [row]
-  (new TeamCityServer
-       (:id row)
-       (:alias row)
-       (:host row)
-       (:port row)
-       (:project row)
-       (:username row)
-       (:password row)))
+  {:id (:id row)
+   :alias (:alias row)
+   :host (:host row)
+   :port (:port row)
+   :project (:project row)
+   :username (:username row)
+   :password (:password row)})
 
 (defn read-servers []
   (map to-tc-server (read-servers-internal)))

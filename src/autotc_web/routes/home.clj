@@ -16,9 +16,8 @@
                  [:script {:type "text/javascript"
                            :src "/cljs/home/home.js"}]))
 
-(defn- tc-server-to-json [^TeamCityServer server]
-  (hash-map :alias (.getAlias server)
-            :id (.getId server)))
+(defn- tc-server-to-json [server]
+  (select-keys server [:alias :id]))
 
 (defn- pretty-print-exception [e]
   (clojure.string/join
@@ -57,7 +56,14 @@
   ;; holy shit
   ;; TODO: decompose this method
   (try
-    (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
+    (let [server-data (db/get-server-by-id (Long/parseLong (str server-id)))
+          server (TeamCityServer. (:id server-data)
+                                  (:alias server-data)
+                                  (:host server-data)
+                                  (:port server-data)
+                                  (:project server-data)
+                                  (:username server-data)
+                                  (:password server-data))
           session (TeamCitySession/create server)
           ids-set (set agent-ids)
           agents (filter #(contains? ids-set (.getId %))
@@ -123,32 +129,32 @@
   (GET "/servers/list" [] (get-servers))
   (GET "/agents/list/:id" [id] (agents-for-server id))
   (POST "/agents/startBuild"
-        request
-        (fn [request]
-          (let [{serverId "serverId"
-                 agentIds "agentIds"} (:params request)]
-            (start-build serverId agentIds))))
+      request
+    (fn [request]
+      (let [{serverId "serverId"
+             agentIds "agentIds"} (:params request)]
+        (start-build serverId agentIds))))
   (POST "/agents/stopBuild"
-        request
-        (fn [request]
-          (let [{serverId "serverId"
-                 agentIds "agentIds"} (:params request)]
-            (stop-build serverId agentIds))))
+      request
+    (fn [request]
+      (let [{serverId "serverId"
+             agentIds "agentIds"} (:params request)]
+        (stop-build serverId agentIds))))
   (POST "/agents/restartBuild"
-        request
-        (fn [request]
-          (let [{serverId "serverId"
-                 agentIds "agentIds"} (:params request)]
-            (restart-build serverId agentIds))))
+      request
+    (fn [request]
+      (let [{serverId "serverId"
+             agentIds "agentIds"} (:params request)]
+        (restart-build serverId agentIds))))
   (POST "/agents/rebootAgent"
-        request
-        (fn [request]
-          (let [{serverId "serverId"
-                 agentIds "agentIds"} (:params request)]
-            (reboot-agent serverId agentIds))))
+      request
+    (fn [request]
+      (let [{serverId "serverId"
+             agentIds "agentIds"} (:params request)]
+        (reboot-agent serverId agentIds))))
   (POST "/agents/runCustomBuild"
-        request
-        (fn [request]
-          (let [{serverId "serverId"
-                 agentIds "agentIds"} (:params request)]
-            (run-custom-build serverId agentIds)))))
+      request
+    (fn [request]
+      (let [{serverId "serverId"
+             agentIds "agentIds"} (:params request)]
+        (run-custom-build serverId agentIds)))))

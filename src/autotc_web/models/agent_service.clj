@@ -1,5 +1,6 @@
 (ns autotc-web.models.agent-service
   (:require [autotc-web.models.db :as db])
+  (:import api.http.teamcity.domain.TeamCityServer)
   (:import api.http.teamcity.io.TeamCitySession))
 
 (def CACHED_TIME_IN_SECONDS 3)
@@ -62,7 +63,14 @@
      CACHED_TIME_IN_SECONDS))
 
 (defn request-agents-from-teamcity [server-id]
-  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
+  (let [server-data (db/get-server-by-id (Long/parseLong (str server-id)))
+        server (TeamCityServer. (:id server-data)
+                                (:alias server-data)
+                                (:host server-data)
+                                (:port server-data)
+                                (:project server-data)
+                                (:username server-data)
+                                (:password server-data))
         session (TeamCitySession/create server)]
     (-> session
         .getProject
