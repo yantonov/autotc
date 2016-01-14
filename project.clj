@@ -6,7 +6,6 @@
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [hiccup "1.0.5"]
-                 [api.http/teamcity "0.0.1"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]
@@ -16,7 +15,9 @@
                  [reagent "0.5.1"]
                  [cljsjs/react-bootstrap "0.27.3-0" :exclusions [org.webjars.bower/jquery]]
                  [cljs-ajax "0.5.2"]
-                 [rex "0.0.1-SNAPSHOT"]]
+                 ;; libs
+                 [rex "0.0.1-SNAPSHOT"]
+                 [clj-teamcity-api "0.1.0-SNAPSHOT"]]
   :plugins [[lein-ring "0.9.7"]
             [lein-cljsbuild "1.1.2"]]
   :ring {:handler autotc-web.handler/app

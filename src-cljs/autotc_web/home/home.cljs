@@ -157,12 +157,12 @@
 
 (defn- get-image [status running]
   (cond
-    (= status "Failure")
+    (= status "FAILURE")
     (if running
       "running_red.gif"
       "stopped_red.gif")
 
-    (= status "Success")
+    (= status "SUCCESS")
     (if running
       "running_green.gif"
       "stopped_green.gif")

@@ -1,14 +1,12 @@
 (ns autotc-web.routes.home
-  (:require [compojure.core :refer :all]
-            [autotc-web.views.layout :as layout]
-            [autotc-web.models.db :as db]
+  (:require [autotc-web.log :as log]
             [autotc-web.models.agent-service :as agent-service]
-            [ring.util.response :as rur]
-            [autotc-web.log :as log]
-            [clojure.pprint :as pprint])
-  (:import api.http.teamcity.domain.TeamCityServer)
-  (:import api.http.teamcity.io.TeamCityProxy)
-  (:import api.http.teamcity.io.TeamCitySession))
+            [autotc-web.models.db :as db]
+            [autotc-web.models.tc :as tc]
+            [autotc-web.views.layout :as layout]
+            [clojure.pprint :as pprint]
+            [compojure.core :refer :all]
+            [ring.util.response :as rur]))
 
 (defn- home []
   (layout/common [:script {:type "text/javascript"
@@ -32,97 +30,81 @@
                 (.getStackTrace e)))))
 
 (defn- tc-agent-to-json [agent]
-  (let [build (.getLastBuild agent)]
-    (hash-map :id (.getId agent )
-              :name (str agent)
-              :webUrl (.getWebUrl agent)
-              :running (.isRunning build)
-              :status (-> build
-                          .getStatus
-                          .toString)
-              :statusText (.getStatusText build))))
+  (let [build-type (:build-type agent)
+        last-build (:last-build agent)]
+    (hash-map :id (:id build-type)
+              :name (:name build-type)
+              :webUrl (:webUrl build-type)
+              :running (:running last-build)
+              :status (:status last-build)
+              :statusText (get-in agent [:last-build-details :status-text]))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json
                                (db/read-servers))}))
 
 (defn- agents-for-server [server-id]
-  (let [agents (:agents (.get-value (agent-service/get-agents server-id)))]
+  (let [{:keys [agents error]}
+        (.get-value
+         (agent-service/get-agents server-id))]
     (rur/response {:agents (if (not (nil? agents))
                              (map tc-agent-to-json agents)
-                             nil)})))
+                             nil)
+                   :error error})))
 
-(defn- exec-action-for-agents [server-id agent-ids session-action]
+(defn- exec-action-for-agents [server-id build-type-ids action]
   ;; holy shit
   ;; TODO: decompose this method
   (try
-    (let [server-data (db/get-server-by-id (Long/parseLong (str server-id)))
-          server (TeamCityServer. (:id server-data)
-                                  (:alias server-data)
-                                  (:host server-data)
-                                  (:port server-data)
-                                  (:project server-data)
-                                  (:username server-data)
-                                  (:password server-data))
-          session (TeamCitySession/create server)
-          ids-set (set agent-ids)
-          agents (filter #(contains? ids-set (.getId %))
-                         (-> session
-                             .getProject
-                             .getConfigurations))]
+    (let [{:keys [host port username password]}
+          (db/get-server-by-id (Long/parseLong (str server-id)))]
       (rur/response
-       (reduce (fn [result agent]
+       (reduce (fn [result build-type-id]
                  (try
                    (do
-                     (session-action session agent)
+                     (action host port username password build-type-id)
                      (assoc-in result [:count] inc))
                    (catch Exception e
                      (do
-                       (log/error e (str "cant exec action for server:" server-id " agent: " (.getId agent)))
-                       (assoc-in result  [:error] str " " (pretty-print-exception e))))))
+                       (log/error e
+                                  (str "cant exec action for server:"
+                                       server-id
+                                       " build type id: "
+                                       build-type-id))
+                       (assoc-in result [:error] (str " " (pretty-print-exception e)))))))
                {:count 0
                 :error ""}
-               agents)))
+               build-type-ids)))
     (catch Exception e
       (let [error (pretty-print-exception e)]
-        (log/error e (str "cant exec action for server:" server-id " agents: " agent-ids))
+        (log/error e (str "cant exec action for server:" server-id " agents: " build-type-ids))
         (rur/response {:error error})))))
 
-(defn- start-build [server-id agent-ids]
+(defn- start-build [server-id build-type-ids]
   (exec-action-for-agents server-id
-                          agent-ids
-                          (fn [session agent]
-                            (.start session agent))))
+                          build-type-ids
+                          tc/trigger-build))
 
-(defn- stop-build [server-id agent-ids]
+(defn- stop-build [server-id build-type-ids]
   (exec-action-for-agents server-id
-                          agent-ids
-                          (fn [session agent]
-                            (.stop session agent))))
+                          build-type-ids
+                          tc/cancel-build))
 
-(defn- restart-build [server-id agent-ids]
+(defn- restart-build [server-id build-type-ids]
   (exec-action-for-agents server-id
-                          agent-ids
-                          (fn [session agent]
-
-                            (try (.stop session agent)
+                          build-type-ids
+                          (fn [host port user pass build-type-id]
+                            (try (tc/cancel-build host port user pass build-type-id)
                                  (catch Exception e
                                    (log/error e)))
-                            (try (.start session agent)
+                            (try (tc/trigger-build host port user pass build-type-id)
                                  (catch Exception e
                                    (log/error e))))))
 
-(defn- reboot-agent [server-id agent-ids]
+(defn- reboot-agent [server-id build-type-ids]
   (exec-action-for-agents server-id
-                          agent-ids
-                          (fn [session agent]
-                            (.rebootMachine session agent))))
-
-(defn- run-custom-build [server-id agent-ids]
-  (exec-action-for-agents server-id
-                          agent-ids
-                          (fn [session agent]
-                            (.runCustomBuild session agent))))
+                          build-type-ids
+                          tc/reboot-agent))
 
 (defroutes home-routes
   (GET "/" [] (home))
@@ -151,10 +133,4 @@
     (fn [request]
       (let [{serverId "serverId"
              agentIds "agentIds"} (:params request)]
-        (reboot-agent serverId agentIds))))
-  (POST "/agents/runCustomBuild"
-      request
-    (fn [request]
-      (let [{serverId "serverId"
-             agentIds "agentIds"} (:params request)]
-        (run-custom-build serverId agentIds)))))
+        (reboot-agent serverId agentIds)))))
