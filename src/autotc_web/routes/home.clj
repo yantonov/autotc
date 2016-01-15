@@ -63,7 +63,7 @@
                  (try
                    (do
                      (action host port username password build-type-id)
-                     (assoc-in result [:count] inc))
+                     (update-in result [:count] inc))
                    (catch Exception e
                      (do
                        (log/error e
@@ -71,7 +71,7 @@
                                        server-id
                                        " build type id: "
                                        build-type-id))
-                       (assoc-in result [:error] (str " " (pretty-print-exception e)))))))
+                       (assoc-in result [:error] (pretty-print-exception e))))))
                {:count 0
                 :error ""}
                build-type-ids)))
