@@ -275,7 +275,6 @@
                                      :on-stop (fn [] (actions/stop-build cursor))
                                      :on-restart (fn [] (actions/restart-build cursor))
                                      :on-reboot (fn [] (actions/reboot-agent cursor))
-                                     :on-run-custom-build (fn [] (actions/run-custom-build cursor))
                                      :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
                                      :filter-value filter-value
                                      :filter-all (fn [] (actions/filter-show-all cursor))
