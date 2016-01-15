@@ -1,6 +1,7 @@
 (ns autotc-web.models.agent-service
-  (:require [autotc-web.models.db :as db])
-  (:require [autotc-web.models.tc :as tc]))
+  (:require [autotc-web.models.db :as db]
+            [autotc-web.models.tc :as tc]
+            [autotc-web.models.exception :as exception]))
 
 (def CACHED_TIME_IN_SECONDS 3)
 
@@ -43,7 +44,7 @@
                    (try
                      {:agents (get-agents-info server-id)}
                      (catch Exception e
-                       {:error e})))))
+                       {:error (exception/pretty-print-exception e)})))))
        (AgentInfo. a)))))
 
 (defn get-now []

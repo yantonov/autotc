@@ -3,6 +3,7 @@
             [autotc-web.models.agent-service :as agent-service]
             [autotc-web.models.db :as db]
             [autotc-web.models.tc :as tc]
+            [autotc-web.models.exception :as exception]
             [autotc-web.views.layout :as layout]
             [clojure.pprint :as pprint]
             [compojure.core :refer :all]
@@ -16,18 +17,6 @@
 
 (defn- tc-server-to-json [server]
   (select-keys server [:alias :id]))
-
-(defn- pretty-print-exception [e]
-  (clojure.string/join
-   "\n"
-   (concat [(.getMessage e)]
-           (map (fn [item]
-                  (format "%s %s.%s:%d"
-                          (.getFileName item)
-                          (.getClassName item)
-                          (.getMethodName item)
-                          (.getLineNumber item)))
-                (.getStackTrace e)))))
 
 (defn- tc-agent-to-json [agent]
   (let [build-type (:build-type agent)
@@ -71,12 +60,12 @@
                                        server-id
                                        " build type id: "
                                        build-type-id))
-                       (assoc-in result [:error] (pretty-print-exception e))))))
+                       (assoc-in result [:error] (exception/pretty-print-exception e))))))
                {:count 0
                 :error ""}
                build-type-ids)))
     (catch Exception e
-      (let [error (pretty-print-exception e)]
+      (let [error (exception/pretty-print-exception e)]
         (log/error e (str "cant exec action for server:" server-id " agents: " build-type-ids))
         (rur/response {:error error})))))
 
