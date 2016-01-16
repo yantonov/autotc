@@ -264,8 +264,8 @@
             servers
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
-           [:span nil (string/join "," branches)]
-           [Grid nil
+           [:div nil (string/join "," branches)]
+           [Grid {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12
                    :md 6}
