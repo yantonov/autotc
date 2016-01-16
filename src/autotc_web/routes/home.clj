@@ -1,6 +1,6 @@
 (ns autotc-web.routes.home
   (:require [autotc-web.log :as log]
-            [autotc-web.models.agent-service :as agent-service]
+            [autotc-web.models.poll-service :as poll-service]
             [autotc-web.models.db :as db]
             [autotc-web.models.tc :as tc]
             [autotc-web.models.exception :as exception]
@@ -18,26 +18,27 @@
 (defn- tc-server-to-json [server]
   (select-keys server [:alias :id]))
 
-(defn- tc-agent-to-json [agent]
-  (let [build-type (:build-type agent)
-        last-build (:last-build agent)]
+(defn- build-type-info-to-json [build-type-info]
+  (let [build-type (:build-type build-type-info)
+        last-build (:last-build build-type-info)]
     (hash-map :id (:id build-type)
               :name (:name build-type)
               :webUrl (:webUrl build-type)
               :running (:running last-build)
               :status (:status last-build)
-              :statusText (get-in agent [:last-build-details :status-text]))))
+              :statusText (get-in build-type-info [:last-build-details :status-text]))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json
                                (db/read-servers))}))
 
 (defn- agents-for-server [server-id]
-  (let [{:keys [agents error]}
+  (let [{:keys [info error]}
         (.get-value
-         (agent-service/get-agents server-id))]
-    (rur/response {:agents (if (not (nil? agents))
-                             (map tc-agent-to-json agents)
+         (poll-service/info server-id))
+        build-types (:build-types info)]
+    (rur/response {:agents (if (not (nil? build-types))
+                             (map build-type-info-to-json build-types)
                              nil)
                    :error error})))
 

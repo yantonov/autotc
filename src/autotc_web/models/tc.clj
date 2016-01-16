@@ -75,7 +75,7 @@
 
 ;;     properties))
 
-(defn build-types [host port project-name user pass]
+(defn project-info [host port project-name user pass]
   (let [server (TeamCityServer. host port)
         credentials (Credentials. user pass)
         project-id (:id (project-by-name (tc/projects server credentials) project-name))
@@ -100,7 +100,7 @@
                                    (log/error e (format "cant get info for build type id=[%s]" build-type-id))
                                    {:error (exception/pretty-print-exception e)})))
                           build-type-ids)]
-    build-types))
+    {:build-types build-types}))
 
 (defn trigger-build [host port user pass build-type-id]
   (let [server (TeamCityServer. host port)

@@ -1,4 +1,4 @@
-(ns autotc-web.models.agent-service
+(ns autotc-web.models.poll-service
   (:require [autotc-web.models.db :as db]
             [autotc-web.models.tc :as tc]
             [autotc-web.models.exception :as exception]))
@@ -7,13 +7,13 @@
 
 (def cache (ref {}))
 
-(defprotocol IAgentInfo
+(defprotocol IProjectInfo
   (get-value [this])
 
   (wait-value [this]))
 
-(defrecord AgentInfo [agent]
-  IAgentInfo
+(defrecord ProjectInfo [agent]
+  IProjectInfo
   (get-value [_]
     @agent)
 
@@ -24,11 +24,11 @@
   (dosync
    (ref-set cache {})))
 
-(defn get-memoized-agents [server-id
-                           get-agents-info
-                           get-now
-                           get-initial-last-updated
-                           update-needed?]
+(defn get-memoized-info [server-id
+                         get-project-info
+                         get-now
+                         get-initial-last-updated
+                         update-needed?]
   (dosync
    (let [server-info (get @cache server-id)
          now (get-now)]
@@ -42,10 +42,10 @@
          (alter cache assoc-in [server-id :last-updated] now)
          (send a (fn [_]
                    (try
-                     {:agents (get-agents-info server-id)}
+                     {:info (get-project-info server-id)}
                      (catch Exception e
                        {:error (exception/pretty-print-exception e)})))))
-       (AgentInfo. a)))))
+       (ProjectInfo. a)))))
 
 (defn get-now []
   (java.time.LocalDateTime/now))
@@ -62,18 +62,18 @@
       now)
      CACHED_TIME_IN_SECONDS))
 
-(defn request-agents-from-teamcity [server-id]
+(defn- request-project-info-from-teamcity [server-id]
   (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
-        build-types (tc/build-types (:host server)
-                                    (:port server)
-                                    (:project server)
-                                    (:username server)
-                                    (:password server))]
-    build-types))
+        project-info (tc/project-info (:host server)
+                                      (:port server)
+                                      (:project server)
+                                      (:username server)
+                                      (:password server))]
+    project-info))
 
-(defn get-agents [server-id]
-  (get-memoized-agents server-id
-                       request-agents-from-teamcity
-                       get-now
-                       get-initial-last-updated
-                       update-needed?))
+(defn info [server-id]
+  (get-memoized-info server-id
+                     request-project-info-from-teamcity
+                     get-now
+                     get-initial-last-updated
+                     update-needed?))
