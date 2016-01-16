@@ -210,7 +210,6 @@
             (contains? selected-agents (:id agent)))]
     [:div
      [loader {:visible show-loader}]
-     [:br]
      [ListGroup
       [select-all-element {:visible (> (count agents) 0)
                            :on-change on-select-all
@@ -269,7 +268,6 @@
             [Row {:class-name "agent-list"}
              [Col {:xs 12
                    :md 6}
-              [:br]
               [multi-action-toolbar {:enabled (not (empty? selected-agents))
                                      :visible (not (empty? agents))
                                      :all-agents-count (count agents)
