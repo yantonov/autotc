@@ -1,6 +1,6 @@
 (defproject autotc-web "0.1.0-SNAPSHOT"
   :description "apply action to multiple teamcity agents"
-  :url "https://github.com/yantonov/autotc-web"
+  :url "https://github.com/yantonov/autotc"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [compojure "1.4.0"]
                  [ring-server "0.4.0"]
