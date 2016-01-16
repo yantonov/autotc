@@ -54,8 +54,10 @@
                          (if (not (nil? (:agents response)))
                            (dispatch {:type :on-agents-list-loaded
                                       :cursor cursor
-                                      :agents (:agents response)}))))
+                                      :agents (:agents response)
+                                      :branches (:branches response)}))))
             :error-handler (fn [response]
+                             (println response)
                              (dispatch {:type :agent-list-is-loading
                                         :cursor cursor}))}))))))
 

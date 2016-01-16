@@ -32,15 +32,21 @@
   (rur/response {:servers (map tc-server-to-json
                                (db/read-servers))}))
 
+;; TODO: not agent but build types
 (defn- agents-for-server [server-id]
-  (let [{:keys [info error]}
-        (.get-value
-         (poll-service/info server-id))
-        build-types (:build-types info)]
-    (rur/response {:agents (if (not (nil? build-types))
-                             (map build-type-info-to-json build-types)
-                             nil)
-                   :error error})))
+  (let [{:keys [info error]} (.get-value (poll-service/info server-id))
+        build-types (:build-types info)
+        branches (:branches info)]
+    (rur/response {:branches
+                   branches
+
+                   :agents
+                   (if (not (nil? build-types))
+                     (map build-type-info-to-json build-types)
+                     nil)
+
+                   :error
+                   error})))
 
 (defn- exec-action-for-agents [server-id build-type-ids action]
   ;; holy shit

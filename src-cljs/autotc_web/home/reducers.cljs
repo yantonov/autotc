@@ -24,6 +24,7 @@
                                         state
                                         {:servers (:servers action)
                                          :agents []
+                                         :branches []
                                          :selected-agents #{}
                                          :manually-selected-agents #{}})))
 
@@ -43,6 +44,9 @@
                                          {:agents
                                           (:agents action)
 
+                                          :branches
+                                          (:branches action)
+
                                           :show-agent-list-loader
                                           false
 
@@ -58,7 +62,8 @@
                         (h/merge-state state
                                        (:cursor action)
                                        {:show-agent-list-loader true
-                                        :agents []})))
+                                        :agents []
+                                        :branches []})))
 
   (r/reducer-for-type :init-load-agent-list
                       (fn [state action]

@@ -1,5 +1,6 @@
 (ns autotc-web.home.home
-  (:require [cljsjs.react-bootstrap]
+  (:require [clojure.string :as string]
+            [cljsjs.react-bootstrap]
             [reagent.core :as r]
             [goog.string :as gstring]
             [rex.core :as rcore]
@@ -252,6 +253,7 @@
                       selected-server-index
                       message
                       selected-agents
+                      branches
                       agents
                       show-agent-list-loader
                       filter-value] :or {:show-agent-list-loader false}}
@@ -262,6 +264,7 @@
             servers
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
+           [:span nil (string/join "," branches)]
            [Grid nil
             [Row {:class-name "agent-list"}
              [Col {:xs 12
