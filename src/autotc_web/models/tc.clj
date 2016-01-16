@@ -81,25 +81,25 @@
         project-id (:id (project-by-name (tc/projects server credentials) project-name))
         project (tc/project server credentials project-id)
         build-type-ids (project-build-type-ids project)
-        build-types (pmap (fn [build-type-id]
-                            (try (let [last-build (->> build-type-id
-                                                       (tc/last-builds server credentials)
-                                                       last-builds-view
-                                                       first)
-                                       build-type (->> build-type-id
-                                                       (tc/build-type server credentials)
-                                                       :attrs)
-                                       last-build-details (->> last-build
-                                                               :id
-                                                               (tc/build server credentials)
-                                                               build-view)]
-                                   {:last-build last-build
-                                    :build-type build-type
-                                    :last-build-details last-build-details})
-                                 (catch Exception e
-                                   (log/error e (format "cant get info for build type id=[%s]" build-type-id))
-                                   {:error (exception/pretty-print-exception e)})))
-                          build-type-ids)]
+        build-types (doall (pmap (fn [build-type-id]
+                                   (try (let [last-build (->> build-type-id
+                                                              (tc/last-builds server credentials)
+                                                              last-builds-view
+                                                              first)
+                                              build-type (->> build-type-id
+                                                              (tc/build-type server credentials)
+                                                              :attrs)
+                                              last-build-details (->> last-build
+                                                                      :id
+                                                                      (tc/build server credentials)
+                                                                      build-view)]
+                                          {:last-build last-build
+                                           :build-type build-type
+                                           :last-build-details last-build-details})
+                                        (catch Exception e
+                                          (log/error e (format "cant get info for build type id=[%s]" build-type-id))
+                                          {:error (exception/pretty-print-exception e)})))
+                                 build-type-ids))]
     {:build-types build-types}))
 
 (defn trigger-build [host port user pass build-type-id]
