@@ -28,7 +28,8 @@
               :running (:running last-build)
               :status (:status last-build)
               :statusText (get-in build-type-info [:last-build-details :status-text])
-              :queue-webUrl (:webUrl queue))))
+              :queue-webUrl (:webUrl queue)
+              :last-build-webUrl (:webUrl last-build))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json

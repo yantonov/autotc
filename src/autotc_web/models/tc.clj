@@ -38,6 +38,9 @@
   (let [info
         (:content build)
 
+        web-url
+        (get-in build [:attrs :webUrl])
+
         test-occurences
         (->> info
              (filter (tag? :testOccurrences))
@@ -66,7 +69,8 @@
     {:test-occurences (empty-list-if-nil test-occurences)
      :changes (empty-list-if-nil changes)
      :status-text status-text
-     :agent agent}))
+     :agent agent
+     :webUrl web-url}))
 
 (defn vcs-roots-view [roots]
   (->> roots
