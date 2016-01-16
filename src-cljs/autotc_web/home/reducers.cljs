@@ -74,6 +74,7 @@
                                         :selected-agents #{}
                                         :manually-selected-agents #{}
                                         :agents []
+                                        :branches []
                                         :filter-value nil})))
 
   (r/reducer-for-type :attach-poll-agent-timer
