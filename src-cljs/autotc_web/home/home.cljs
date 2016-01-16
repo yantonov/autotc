@@ -198,7 +198,11 @@
       (:name agent)]]
     (gstring/unescapeEntities "&nbsp;")
     [:a {:class-name "agent__text agent__status"
-         :href (:last-build-webUrl agent)}
+         :href (:last-build-webUrl agent)
+         :target "_blank"
+         :on-click (fn [event]
+                     (.stopPropagation event)
+                     true)}
      (str "["(get-agent-status agent) "]")]
     (if-let [queue-url (:queue-webUrl agent)]
       [:a {:href queue-url} "queued"])]])
