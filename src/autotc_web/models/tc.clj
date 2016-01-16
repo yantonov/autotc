@@ -87,6 +87,11 @@
        (apply concat)
        (apply hash-map)))
 
+(defn project-queue-view [queue]
+  (->> queue
+       :content
+       (map :attrs)))
+
 (defn project-info [host port project-name user pass]
   (let [server
         (TeamCityServer. host port)
@@ -138,9 +143,27 @@
                                 (catch Exception e
                                   (log/error e (format "cant get vcs root id=[%s]" %))
                                   {}))
-                          vcs-roots-ids)))]
+                          vcs-roots-ids)))
+
+        project-queue
+        (reduce (fn [m item]
+                  (assoc m (:buildTypeId item) item))
+                {}
+                (try (project-queue-view
+                      (tc/project-queue server credentials project-id))
+                     (catch Exception e
+                       (log/error e (format "cant get build queue for project id=[%s]" project-id))
+                       [])))
+
+        build-types-with-queue
+        (doall
+         (map (fn [build-type]
+                (let [build-type-id (get-in build-type [:build-type :id])
+                      queue (get project-queue build-type-id)]
+                  (assoc build-type :queue queue)))
+              build-types))]
     {:branches branches
-     :build-types build-types}))
+     :build-types build-types-with-queue}))
 
 (defn trigger-build [host port user pass build-type-id]
   (let [server (TeamCityServer. host port)

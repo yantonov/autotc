@@ -20,13 +20,15 @@
 
 (defn- build-type-info-to-json [build-type-info]
   (let [build-type (:build-type build-type-info)
-        last-build (:last-build build-type-info)]
+        last-build (:last-build build-type-info)
+        queue (:queue build-type-info)]
     (hash-map :id (:id build-type)
               :name (:name build-type)
               :webUrl (:webUrl build-type)
               :running (:running last-build)
               :status (:status last-build)
-              :statusText (get-in build-type-info [:last-build-details :status-text]))))
+              :statusText (get-in build-type-info [:last-build-details :status-text])
+              :queue-webUrl (:webUrl queue))))
 
 (defn- get-servers []
   (rur/response {:servers (map tc-server-to-json

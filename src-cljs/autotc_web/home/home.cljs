@@ -198,7 +198,9 @@
       (:name agent)]]
     (gstring/unescapeEntities "&nbsp;")
     [:span {:class-name "agent__text agent__status"}
-     (str "["(get-agent-status agent) "]")]]])
+     (str "["(get-agent-status agent) "]")]
+    (if-let [queue-url (:queue-webUrl agent)]
+      [:a {:href queue-url} "queued"])]])
 
 (defn agent-list [{:keys [agents
                           selected-agents
