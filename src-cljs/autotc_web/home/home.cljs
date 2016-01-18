@@ -205,7 +205,11 @@
                       true)}
       (str "["(get-agent-status agent) "]")]]
     (if-let [queue-url (:queue-webUrl agent)]
-      [:a {:href queue-url} "queued"])]])
+      [:a {:href queue-url
+           :target "_blank"
+           :on-click (fn [event]
+                       (.stopPropagation event)
+                       true)} "queued"])]])
 
 (defn agent-list [{:keys [agents
                           selected-agents
