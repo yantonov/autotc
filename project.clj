@@ -9,12 +9,12 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]
-                 [ch.qos.logback/logback-classic "1.1.3"] ;logging
+                 [ch.qos.logback/logback-classic "1.1.6"] ;logging
                  ;; cljs
                  [org.clojure/clojurescript "1.7.228"]
                  [reagent "0.5.1"]
-                 [cljsjs/react-bootstrap "0.27.3-0" :exclusions [org.webjars.bower/jquery]]
-                 [cljs-ajax "0.5.2"]
+                 [cljsjs/react-bootstrap "0.28.1-1" :exclusions [org.webjars.bower/jquery]]
+                 [cljs-ajax "0.5.3"]
                  ;; libs
                  [rex "0.1.0-SNAPSHOT"]
                  [clj-teamcity-api "0.1.0-SNAPSHOT"]]
