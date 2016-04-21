@@ -1,9 +1,8 @@
 (ns autotc-web.models.tc
   (:require [clj-teamcity-api.api :as tc]
+            [clj-teamcity-api.net :as tcn]
             [autotc-web.log :as log]
-            [autotc-web.models.exception :as exception])
-  (:import clj_teamcity_api.net.TeamCityServer)
-  (:import clj_teamcity_api.net.Credentials))
+            [autotc-web.models.exception :as exception]))
 
 (defn- tag? [tag-name]
   #(= tag-name (:tag %)))
@@ -98,10 +97,10 @@
 
 (defn project-info [host port project-name user pass]
   (let [server
-        (TeamCityServer. host port)
+        (tcn/make-server host :port port)
 
         credentials
-        (Credentials. user pass)
+        (tcn/make-credentials user pass)
 
         project-id
         (:id (project-by-name (tc/projects server credentials) project-name))
@@ -170,13 +169,13 @@
      :build-types build-types-with-queue}))
 
 (defn trigger-build [host port user pass build-type-id]
-  (let [server (TeamCityServer. host port)
-        credentials (Credentials. user pass)]
+  (let [server (tcn/make-server host :port port)
+        credentials (tcn/make-credentials user pass)]
     (tc/trigger-build server credentials build-type-id)))
 
 (defn cancel-build [host port user pass build-type-id]
-  (let [server (TeamCityServer. host port)
-        credentials (Credentials. user pass)
+  (let [server (tcn/make-server host :port port)
+        credentials (tcn/make-credentials user pass)
         running-build-id (->> (tc/running-build server credentials build-type-id)
                               last-builds-view
                               first
@@ -186,10 +185,10 @@
 
 (defn reboot-agent [host port user pass build-type-id]
   (let [server
-        (TeamCityServer. host port)
+        (tcn/make-server host :port port)
 
         credentials
-        (Credentials. user pass)
+        (tcn/make-credentials user pass)
 
         ;; TODO: think to replace this heuristics to agent requirement parameters
         last-build-id
