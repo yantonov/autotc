@@ -1,7 +1,5 @@
 (ns autotc-web.models.poll-service
-  (:require [autotc-web.models.db :as db]
-            [autotc-web.models.tc :as tc]
-            [autotc-web.models.exception :as exception]))
+  (:require [autotc-web.models.exception :as exception]))
 
 (def CACHED_TIME_IN_SECONDS 3)
 
@@ -62,18 +60,9 @@
       now)
      CACHED_TIME_IN_SECONDS))
 
-(defn- request-project-info-from-teamcity [server-id]
-  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
-        project-info (tc/project-info (:host server)
-                                      (:port server)
-                                      (:project server)
-                                      (:username server)
-                                      (:password server))]
-    project-info))
-
-(defn info [server-id]
+(defn cached [server-id retrieve-data-fn]
   (get-memoized-info server-id
-                     request-project-info-from-teamcity
+                     retrieve-data-fn
                      get-now
                      get-initial-last-updated
                      update-needed?))

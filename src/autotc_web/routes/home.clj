@@ -35,9 +35,20 @@
   (rur/response {:servers (map tc-server-to-json
                                (db/read-servers))}))
 
+(defn- request-project-info-from-teamcity [server-id]
+  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
+        project-info (tc/project-info (:host server)
+                                      (:port server)
+                                      (:project server)
+                                      (:username server)
+                                      (:password server))]
+    project-info))
+
 ;; TODO: not agent but build types
 (defn- agents-for-server [server-id]
-  (let [{:keys [info error]} (.get-value (poll-service/info server-id))
+  (let [{:keys [info error]}
+        (.get-value (poll-service/cached server-id
+                                         request-project-info-from-teamcity))
         build-types (:build-types info)
         branches (:branches info)]
     (rur/response {:branches
