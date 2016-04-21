@@ -1,4 +1,4 @@
-(ns autotc-web.models.poll-service
+(ns autotc-web.models.cache
   (:require [autotc-web.models.exception :as exception]))
 
 (def CACHED_TIME_IN_SECONDS 3)

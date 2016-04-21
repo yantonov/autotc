@@ -1,5 +1,5 @@
-(ns autotc-web.models.poll-service-test
-  (:require [autotc-web.models.poll-service :as sut]
+(ns autotc-web.models.cache-test
+  (:require [autotc-web.models.cache :as sut]
             [clojure.test :as t]))
 
 (t/deftest multiple-requests-for-same-server

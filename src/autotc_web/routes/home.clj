@@ -1,6 +1,6 @@
 (ns autotc-web.routes.home
   (:require [autotc-web.log :as log]
-            [autotc-web.models.poll-service :as poll-service]
+            [autotc-web.models.cache :as chc]
             [autotc-web.models.db :as db]
             [autotc-web.models.tc :as tc]
             [autotc-web.models.exception :as exception]
@@ -47,8 +47,8 @@
 ;; TODO: not agent but build types
 (defn- agents-for-server [server-id]
   (let [{:keys [info error]}
-        (.get-value (poll-service/cached server-id
-                                         request-project-info-from-teamcity))
+        (.get-value (chc/cached server-id
+                                request-project-info-from-teamcity))
         build-types (:build-types info)
         branches (:branches info)]
     (rur/response {:branches
