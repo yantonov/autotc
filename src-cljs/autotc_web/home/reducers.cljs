@@ -165,4 +165,11 @@
                           (h/merge-state state
                                          (:cursor action)
                                          {:filter-value new-filter-value}))))
+
+  (r/reducer-for-type :on-current-problems-list-loaded
+                      (fn [state action]
+                        (h/merge-state state
+                                       (:cursor action)
+                                       {:current-problems
+                                        (:current-problems action)})))
   )

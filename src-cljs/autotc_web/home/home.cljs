@@ -242,6 +242,17 @@
                           :selected (is-agent-selected? selected-agents a)
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
+(defn current-problems-list [problems]
+  [:div
+   nil
+   [:ol
+    nil
+    (map (fn [problem]
+           [:li
+            nil
+            [:a {:href (:webUrl problem)} (:name problem)]])
+         problems)]])
+
 (defn home-page []
   (let [cursor (rcur/nest (rcur/make-cursor)
                           :page)]
@@ -266,7 +277,9 @@
                       branches
                       agents
                       show-agent-list-loader
-                      filter-value] :or {:show-agent-list-loader false}}
+                      filter-value
+                      current-problems]
+               :or {:show-agent-list-loader false}}
               (r/state this)]
           [:div
            [info-message message]
@@ -298,7 +311,10 @@
                            :filter-value filter-value
                            :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
                            :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
-                           :show-loader show-agent-list-loader}]]]]]))})))
+                           :show-loader show-agent-list-loader}]]
+             [Col {:xs 12
+                   :md 6}
+              [current-problems-list current-problems]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]

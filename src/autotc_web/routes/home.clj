@@ -36,13 +36,20 @@
                                (db/read-servers))}))
 
 (defn- request-project-info-from-teamcity [server-id]
-  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))
-        project-info (tc/project-info (:host server)
-                                      (:port server)
-                                      (:project server)
-                                      (:username server)
-                                      (:password server))]
-    project-info))
+  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))]
+    (tc/project-info (:host server)
+                     (:port server)
+                     (:project server)
+                     (:username server)
+                     (:password server))))
+
+(defn- request-current-problems [server-id]
+  (let [server (db/get-server-by-id (Long/parseLong (str server-id)))]
+    (tc/current-problems (:host server)
+                         (:port server)
+                         (:project server)
+                         (:username server)
+                         (:password server))))
 
 ;; TODO: not agent but build types
 (defn- agents-for-server [server-id]
@@ -59,6 +66,17 @@
                    (if (not (nil? build-types))
                      (map build-type-info-to-json build-types)
                      nil)
+
+                   :error
+                   error})))
+
+(defn- current-problems [server-id]
+  (let [{:keys [info error]}
+        (.get-value (chc/cached (keyword (str "current-problems-" server-id))
+                                (fn []
+                                  (request-current-problems server-id))))]
+    (rur/response {:current-problems
+                   (:current-problems info)
 
                    :error
                    error})))
@@ -121,6 +139,7 @@
   (GET "/" [] (home))
   (GET "/servers/list" [] (get-servers))
   (GET "/agents/list/:id" [id] (agents-for-server id))
+  (GET "/current-problems/:id" [id] (current-problems id))
   (POST "/agents/startBuild"
       request
     (fn [request]

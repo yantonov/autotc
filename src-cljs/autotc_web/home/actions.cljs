@@ -44,22 +44,44 @@
       (do
         (let [url (str "/agents/list/" (:id server))]
           (ajax/GET
-           url
-           {:response-format (ajax/json-response-format {:keywords? true})
-            :handler (fn [response]
-                       (if (other-server-selected? (cur/get-state cursor
-                                                                  (get-state))
-                                                   server)
-                         nil
-                         (if (not (nil? (:agents response)))
-                           (dispatch {:type :on-agents-list-loaded
-                                      :cursor cursor
-                                      :agents (:agents response)
-                                      :branches (:branches response)}))))
-            :error-handler (fn [response]
-                             (println response)
-                             (dispatch {:type :agent-list-is-loading
-                                        :cursor cursor}))}))))))
+              url
+              {:response-format (ajax/json-response-format {:keywords? true})
+               :handler (fn [response]
+                          (if (other-server-selected? (cur/get-state cursor
+                                                                     (get-state))
+                                                      server)
+                            nil
+                            (if (not (nil? (:agents response)))
+                              (dispatch {:type :on-agents-list-loaded
+                                         :cursor cursor
+                                         :agents (:agents response)
+                                         :branches (:branches response)}))))
+               :error-handler (fn [response]
+                                (println response)
+                                (dispatch {:type :agent-list-is-loading
+                                           :cursor cursor}))}))))))
+
+(defn get-current-problems-action-creator [server cursor]
+  (fn [dispatch get-state]
+    (if (other-server-selected? (cur/get-state cursor
+                                               (get-state))
+                                server)
+      nil
+      (let [url (str "/current-problems/" (:id server))]
+        (ajax/GET
+            url
+            {:response-format (ajax/json-response-format {:keywords? true})
+             :handler (fn [response]
+                        (if (other-server-selected? (cur/get-state cursor
+                                                                   (get-state))
+                                                    server)
+                          nil
+                          (if (not (nil? (:current-problems response)))
+                            (dispatch {:type :on-current-problems-list-loaded
+                                       :cursor cursor
+                                       :current-problems (:current-problems response)}))))
+             :error-handler (fn [response]
+                              (println response))})))))
 
 (defn select-server-action-creator [server-index cursor]
   (fn [dispatch get-state]
@@ -74,7 +96,9 @@
           (dispatch (reset-timer-action-creator cursor))
           (let [current-server (get (:servers state) server-index)
                 p (poller/create-poller (fn []
-                                          (dispatch (load-agents-action-creator current-server cursor)))
+                                          (dispatch (load-agents-action-creator current-server cursor))
+                                          (dispatch (get-current-problems-action-creator current-server cursor)))
+
                                         3000
                                         60000)]
             (do
@@ -87,20 +111,20 @@
 (defn get-server-list-action-creator [cursor]
   (fn [dispatch get-state]
     (ajax/GET
-     "/servers/list"
-     {:params {}
-      :response-format (ajax/json-response-format {:keywords? true})
-      :handler
-      (fn [response]
-        (let [servers (:servers response)
-              has-any-server? (and (not (nil? servers))
-                                   (> (count servers)))]
-          (do
-            (dispatch {:type :on-server-list-loaded
-                       :cursor cursor
-                       :servers servers})
-            (if has-any-server?
-              (dispatch (select-server-action-creator 0 cursor))))))})))
+        "/servers/list"
+        {:params {}
+         :response-format (ajax/json-response-format {:keywords? true})
+         :handler
+         (fn [response]
+           (let [servers (:servers response)
+                 has-any-server? (and (not (nil? servers))
+                                      (> (count servers)))]
+             (do
+               (dispatch {:type :on-server-list-loaded
+                          :cursor cursor
+                          :servers servers})
+               (if has-any-server?
+                 (dispatch (select-server-action-creator 0 cursor))))))})))
 
 (defn exec-action-for-agents-action-creator [cursor url trigger-message completed-message]
   (fn [dispatch get-store]
@@ -110,12 +134,12 @@
       (do
         (dispatch (show-message-action-creator trigger-message cursor))
         (ajax/POST url
-                   {:params {"serverId" current-server-id
-                             "agentIds" agent-ids}
-                    :format (ajax/json-request-format)
-                    :handler (fn [response]
-                               (dispatch (show-message-action-creator completed-message cursor)))
-                    :error-handler (fn [response] (println response))})))))
+            {:params {"serverId" current-server-id
+                      "agentIds" agent-ids}
+             :format (ajax/json-request-format)
+             :handler (fn [response]
+                        (dispatch (show-message-action-creator completed-message cursor)))
+             :error-handler (fn [response] (println response))})))))
 
 
 (defn reset-timer [cursor]
