@@ -26,7 +26,8 @@
                                          :agents []
                                          :branches []
                                          :selected-agents #{}
-                                         :manually-selected-agents #{}})))
+                                         :manually-selected-agents #{}
+                                         :current-problems []})))
 
   (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
@@ -75,7 +76,8 @@
                                         :manually-selected-agents #{}
                                         :agents []
                                         :branches []
-                                        :filter-value nil})))
+                                        :filter-value nil
+                                        :current-problems []})))
 
   (r/reducer-for-type :attach-poll-agent-timer
                       (fn [state action]

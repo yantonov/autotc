@@ -74,9 +74,11 @@
   (let [{:keys [info error]}
         (.get-value (chc/cached (keyword (str "current-problems-" server-id))
                                 (fn []
-                                  (request-current-problems server-id))))]
+                                  (request-current-problems server-id))
+                                :cache-seconds 10
+                                ))]
     (rur/response {:current-problems
-                   (:current-problems info)
+                   (get info :current-problems [])
 
                    :error
                    error})))

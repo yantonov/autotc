@@ -112,25 +112,25 @@
         (project-build-type-ids project)
 
         build-types
-        (doall (pmap (fn [build-type-id]
-                       (try (let [last-build (->> build-type-id
-                                                  (tc/last-builds server credentials)
-                                                  last-builds-view
-                                                  first)
-                                  build-type (->> build-type-id
-                                                  (tc/build-type server credentials)
-                                                  :attrs)
-                                  last-build-details (->> last-build
-                                                          :id
-                                                          (tc/build server credentials)
-                                                          build-view)]
-                              {:last-build last-build
-                               :build-type build-type
-                               :last-build-details last-build-details})
-                            (catch Exception e
-                              (log/error e (format "cant get info for build type id=[%s]" build-type-id))
-                              {:error (exception/pretty-print-exception e)})))
-                     build-type-ids))
+        (doall (map (fn [build-type-id]
+                      (try (let [last-build (->> build-type-id
+                                                 (tc/last-builds server credentials)
+                                                 last-builds-view
+                                                 first)
+                                 build-type (->> build-type-id
+                                                 (tc/build-type server credentials)
+                                                 :attrs)
+                                 last-build-details (->> last-build
+                                                         :id
+                                                         (tc/build server credentials)
+                                                         build-view)]
+                             {:last-build last-build
+                              :build-type build-type
+                              :last-build-details last-build-details})
+                           (catch Exception e
+                             (log/error e (format "cant get info for build type id=[%s]" build-type-id))
+                             {:error (exception/pretty-print-exception e)})))
+                    build-type-ids))
 
         vcs-roots-ids
         (map :id
@@ -142,11 +142,11 @@
 
         branches
         (map (comp :branchName vcs-root-view)
-             (doall (pmap #(try (tc/vcs-root server credentials %)
-                                (catch Exception e
-                                  (log/error e (format "cant get vcs root id=[%s]" %))
-                                  {}))
-                          vcs-roots-ids)))
+             (doall (map #(try (tc/vcs-root server credentials %)
+                               (catch Exception e
+                                 (log/error e (format "cant get vcs root id=[%s]" %))
+                                 {}))
+                         vcs-roots-ids)))
 
         project-queue
         (reduce (fn [m item]
@@ -200,36 +200,36 @@
         (project-build-type-ids project)
 
         current-problems
-        (doall (pmap (fn [test-id]
-                       (->> test-id
-                            (tc/test-occurences server credentials)
-                            (test-occurence-detail-view host port project-id)))
-                     (apply concat
-                            (doall (pmap (fn [build-type-id]
-                                           (try (let [last-build
-                                                      (->> build-type-id
-                                                           (tc/last-builds server credentials)
-                                                           last-builds-view
-                                                           first)
+        (doall (map (fn [test-id]
+                      (->> test-id
+                           (tc/test-occurences server credentials)
+                           (test-occurence-detail-view host port project-id)))
+                    (apply concat
+                           (doall (map (fn [build-type-id]
+                                         (try (let [last-build
+                                                    (->> build-type-id
+                                                         (tc/last-builds server credentials)
+                                                         last-builds-view
+                                                         first)
 
-                                                      build-type-problems
-                                                      (->> last-build
-                                                           :id
-                                                           (tc/tests-occurences server credentials)
-                                                           test-occurences-view
-                                                           (filter (fn [t]
-                                                                     (let [attrs (:attrs t)]
-                                                                       (and (not (get attrs :ignored false))
-                                                                            (not (= "SUCCESS" (:status attrs)))))))
-                                                           (map #(->> %
-                                                                      :attrs
-                                                                      :id
-                                                                      )))]
-                                                  build-type-problems)
-                                                (catch Exception e
-                                                  (log/error e (format "cant get test occurences for type id=[%s]" build-type-id))
-                                                  {:error (exception/pretty-print-exception e)})))
-                                         build-type-ids)))))]
+                                                    build-type-problems
+                                                    (->> last-build
+                                                         :id
+                                                         (tc/tests-occurences server credentials)
+                                                         test-occurences-view
+                                                         (filter (fn [t]
+                                                                   (let [attrs (:attrs t)]
+                                                                     (and (not (get attrs :ignored false))
+                                                                          (not (= "SUCCESS" (:status attrs)))))))
+                                                         (map #(->> %
+                                                                    :attrs
+                                                                    :id
+                                                                    )))]
+                                                build-type-problems)
+                                              (catch Exception e
+                                                (log/error e (format "cant get test occurences for type id=[%s]" build-type-id))
+                                                {:error (exception/pretty-print-exception e)})))
+                                       build-type-ids)))))]
     {:current-problems current-problems}))
 
 (defn trigger-build [host port user pass build-type-id]

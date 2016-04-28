@@ -26,17 +26,18 @@
                          retrieve-data-fn
                          get-now
                          get-initial-last-updated
-                         update-needed?]
+                         update-needed?
+                         cache-seconds]
   (dosync
-   (let [server-info (get @cache cache-key)
+   (let [info (get @cache cache-key)
          now (get-now)]
-     (if (nil? server-info)
+     (if (nil? info)
        (alter cache assoc cache-key {:agent (agent {})
-                                     :last-updated (get-initial-last-updated now)}))
+                                     :last-updated (get-initial-last-updated now cache-seconds)}))
      (let [{last-updated :last-updated
             a :agent}
            (get-in @cache [cache-key])]
-       (when (update-needed? last-updated now)
+       (when (update-needed? last-updated now cache-seconds)
          (alter cache assoc-in [cache-key :last-updated] now)
          (send a (fn [_]
                    (try
@@ -48,21 +49,25 @@
 (defn get-now []
   (java.time.LocalDateTime/now))
 
-(defn get-initial-last-updated [now]
+(defn get-initial-last-updated [now cache-seconds]
   (.plusSeconds
    now
-   (- (* 2 CACHED_TIME_IN_SECONDS))))
+   (- (* 2 cache-seconds))))
 
-(defn update-needed? [last-updated now]
+(defn update-needed? [last-updated now cache-time]
   (> (.between
       java.time.temporal.ChronoUnit/SECONDS
       last-updated
       now)
-     CACHED_TIME_IN_SECONDS))
+     cache-time))
 
-(defn cached [cache-key retrieve-data-fn]
+(defn cached [cache-key
+              retrieve-data-fn
+              & {:keys [cache-seconds]
+                 :or {cache-seconds CACHED_TIME_IN_SECONDS}}]
   (get-memoized-info cache-key
                      retrieve-data-fn
                      get-now
                      get-initial-last-updated
-                     update-needed?))
+                     update-needed?
+                     cache-seconds))

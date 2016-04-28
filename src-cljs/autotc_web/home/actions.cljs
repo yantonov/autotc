@@ -103,6 +103,7 @@
                                         60000)]
             (do
               (dispatch (load-agents-action-creator current-server cursor))
+              (dispatch (get-current-problems-action-creator current-server cursor))
               (poller/start p)
               (dispatch {:type :attach-poll-agent-timer
                          :cursor cursor

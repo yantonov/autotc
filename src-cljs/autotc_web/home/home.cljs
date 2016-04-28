@@ -243,16 +243,16 @@
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
 (defn current-problems-list [problems]
-  [:div
+  [:ol
    nil
-   [:ol
-    nil
-    (map (fn [problem]
-           [:li
-            {:style {:word-break "break-all"
-                     :padding-bottom "10px"}}
-            [:a {:href (:webUrl problem)} (:name problem)]])
-         problems)]])
+   (map (fn [problem index]
+          [:li
+           {:key index
+            :style {:word-break "break-all"
+                    :padding-bottom "10px"}}
+           [:a {:href (:webUrl problem)} (:name problem)]])
+        problems
+        (iterate inc 1))])
 
 (defn home-page []
   (let [cursor (rcur/nest (rcur/make-cursor)
