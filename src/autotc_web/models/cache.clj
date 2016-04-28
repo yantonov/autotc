@@ -22,25 +22,25 @@
   (dosync
    (ref-set cache {})))
 
-(defn get-memoized-info [server-id
-                         get-project-info
+(defn get-memoized-info [cache-key
+                         retrieve-data-fn
                          get-now
                          get-initial-last-updated
                          update-needed?]
   (dosync
-   (let [server-info (get @cache server-id)
+   (let [server-info (get @cache cache-key)
          now (get-now)]
      (if (nil? server-info)
-       (alter cache assoc server-id {:agent (agent {})
+       (alter cache assoc cache-key {:agent (agent {})
                                      :last-updated (get-initial-last-updated now)}))
      (let [{last-updated :last-updated
             a :agent}
-           (get-in @cache [server-id])]
+           (get-in @cache [cache-key])]
        (when (update-needed? last-updated now)
-         (alter cache assoc-in [server-id :last-updated] now)
+         (alter cache assoc-in [cache-key :last-updated] now)
          (send a (fn [_]
                    (try
-                     {:info (get-project-info server-id)}
+                     {:info (retrieve-data-fn)}
                      (catch Exception e
                        {:error (exception/pretty-print-exception e)})))))
        (ProjectInfo. a)))))
@@ -60,8 +60,8 @@
       now)
      CACHED_TIME_IN_SECONDS))
 
-(defn cached [server-id retrieve-data-fn]
-  (get-memoized-info server-id
+(defn cached [cache-key retrieve-data-fn]
+  (get-memoized-info cache-key
                      retrieve-data-fn
                      get-now
                      get-initial-last-updated

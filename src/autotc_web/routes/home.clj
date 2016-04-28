@@ -47,8 +47,9 @@
 ;; TODO: not agent but build types
 (defn- agents-for-server [server-id]
   (let [{:keys [info error]}
-        (.get-value (chc/cached server-id
-                                request-project-info-from-teamcity))
+        (.get-value (chc/cached (keyword (str "project-info-" server-id))
+                                (fn []
+                                  (request-project-info-from-teamcity server-id))))
         build-types (:build-types info)
         branches (:branches info)]
     (rur/response {:branches
