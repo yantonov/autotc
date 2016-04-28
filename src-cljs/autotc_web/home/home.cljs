@@ -250,7 +250,8 @@
            {:key index
             :style {:word-break "break-all"
                     :padding-bottom "10px"}}
-           [:a {:href (:webUrl problem)} (:name problem)]])
+           [:a {:href (:webUrl problem)
+                :target "_blank"} (:name problem)]])
         problems
         (iterate inc 1))])
 
