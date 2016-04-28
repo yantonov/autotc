@@ -178,7 +178,7 @@
                                on-change]} data]
   [ListGroupItem
    {:key key
-    ::class-name "agent-container"}
+    :class-name "agent-container"}
    [:div {:on-click (fn [] (on-change (not selected)))
           :class-name "agent__row"}
     [:input {:type "checkbox"
@@ -249,7 +249,8 @@
     nil
     (map (fn [problem]
            [:li
-            nil
+            {:style {:word-break "break-all"
+                     :padding-bottom "10px"}}
             [:a {:href (:webUrl problem)} (:name problem)]])
          problems)]])
 
@@ -288,7 +289,7 @@
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
            [:div nil (string/join "," branches)]
-           [Grid {:style {:padding-left "0px"}}
+           [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12
                    :md 6}
