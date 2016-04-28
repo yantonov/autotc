@@ -168,6 +168,57 @@
     {:branches branches
      :build-types build-types-with-queue}))
 
+(defn- test-occurences-view [response]
+  (->> response
+       :content))
+
+(defn- test-occurence-view [response]
+  (-> response
+      :attrs
+      (select-keys [:name :href])))
+
+(defn current-problems [host port project-name user pass]
+  (let [server
+        (tcn/make-server host :port port)
+
+        credentials
+        (tcn/make-credentials user pass)
+
+        project-id
+        (:id (project-by-name (tc/projects server credentials) project-name))
+
+        project
+        (tc/project server credentials project-id)
+
+        build-type-ids
+        (project-build-type-ids project)
+
+        current-problems
+        (apply concat
+               (doall (pmap (fn [build-type-id]
+                              (try (let [last-build
+                                         (->> build-type-id
+                                              (tc/last-builds server credentials)
+                                              last-builds-view
+                                              first)
+
+                                         build-type-problems
+                                         (->> last-build
+                                              :id
+                                              (tc/test-occurences server credentials)
+                                              test-occurences-view
+                                              (filter (fn [t]
+                                                        (let [attrs (:attrs t)]
+                                                          (and (not (get attrs :ignored false))
+                                                               (not (= "SUCCESS" (:status attrs)))))))
+                                              (map test-occurence-view))]
+                                     build-type-problems)
+                                   (catch Exception e
+                                     (log/error e (format "cant get test occurences for type id=[%s]" build-type-id))
+                                     {:error (exception/pretty-print-exception e)})))
+                            build-type-ids)))]
+    {:current-problems current-problems}))
+
 (defn trigger-build [host port user pass build-type-id]
   (let [server (tcn/make-server host :port port)
         credentials (tcn/make-credentials user pass)]
