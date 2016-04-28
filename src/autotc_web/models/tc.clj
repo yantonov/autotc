@@ -172,7 +172,7 @@
   (->> response
        :content))
 
-(defn- test-occurence-detail-view [host port project-id response]
+(defn- test-occurence-detail-view [project-web-url project-id response]
   (let [attrs (:attrs response)
         test-tag (->> response
                       :content
@@ -180,6 +180,12 @@
                       first
                       :attrs)
         test-id (:id test-tag)
+        project-parsed-url (java.net.URL. project-web-url)
+        host (.getHost project-parsed-url)
+        port (let [port-number (.getPort project-parsed-url)]
+               (if (= -1 port-number)
+                 80
+                 port-number))
         web-url (format "http://%s:%d/project.html?projectId=%s&testNameId=%s&tab=testDetails" host port project-id test-id)
         name (:name attrs)
         pattern-matches  (re-matches #"(.*)\.([^.]+\.[^.]+)" name)]
@@ -197,8 +203,11 @@
         credentials
         (tcn/make-credentials user pass)
 
-        project-id
-        (:id (project-by-name (tc/projects server credentials) project-name))
+        project
+        (project-by-name (tc/projects server credentials) project-name)
+
+        project-id (:id project)
+        project-web-url (:webUrl project)
 
         project
         (tc/project server credentials project-id)
@@ -212,7 +221,8 @@
          (map (fn [test-id]
                 (->> test-id
                      (tc/test-occurences server credentials)
-                     (test-occurence-detail-view host port project-id)))
+                     (test-occurence-detail-view project-web-url
+                                                 project-id)))
               (apply concat
                      (map (fn [build-type-id]
                             (try
