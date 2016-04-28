@@ -242,6 +242,25 @@
                           :selected (is-agent-selected? selected-agents a)
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
+(defn copy [element text]
+  (let [element-id "elbaId"
+        text-node (or (.getElementById js/document element-id)
+                      (.createElement js/document "span"))]
+    (set! (.-id text-node) element-id)
+    (set! (.-innerText text-node) text)
+    (set! (.-style text-node) "display: none:")
+    (.appendChild (.-body js/document) text-node)
+    (let [sel (.getSelection js/window)
+          range (.createRange js/document)]
+      (.selectNodeContents range text-node)
+      (.removeAllRanges sel)
+      (.addRange sel range)
+      (.execCommand js/document "copy")
+      (.selectNodeContents range element)
+      (.removeAllRanges sel)
+      (.addRange sel range)
+      (.removeChild (.-body js/document) text-node))))
+
 (defn current-problems-list [problems]
   [:ol
    nil
@@ -250,8 +269,16 @@
            {:key index
             :style {:word-break "break-all"
                     :padding-bottom "10px"}}
+           [:img {:src "/img/copy.png"
+                  :alt "copy"
+                  :on-click (fn [event]
+                              (copy (.-target event) (:name problem))
+                              (.stopPropagation event)
+                              false)}]
            [:a {:href (:webUrl problem)
-                :target "_blank"} (:name problem)]])
+                :target "_blank"
+                :style {:padding-left "4px"}}
+            (:name problem)]])
         problems
         (iterate inc 1))])
 
