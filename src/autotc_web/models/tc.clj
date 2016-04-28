@@ -179,9 +179,16 @@
                       (filter (tag? :test))
                       first
                       :attrs)
-        test-id (:id test-tag)]
-    {:name (:name attrs)
-     :webUrl (format "http://%s:%d/project.html?projectId=%s&testNameId=%s&tab=testDetails" host port project-id test-id)}))
+        test-id (:id test-tag)
+        web-url (format "http://%s:%d/project.html?projectId=%s&testNameId=%s&tab=testDetails" host port project-id test-id)
+        name (:name attrs)
+        pattern-matches  (re-matches #"(.*)\.([^.]+\.[^.]+)" name)]
+    (if (not (nil? pattern-matches))
+      {:namespace (nth pattern-matches 1)
+       :name (nth pattern-matches 2)
+       :webUrl web-url}
+      {:name (:name attrs)
+       :webUrl web-url})))
 
 (defn current-problems [host port project-name user pass]
   (let [server
