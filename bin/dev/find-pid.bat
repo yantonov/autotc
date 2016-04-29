@@ -1,1 +1,1 @@
-netstat -a -b -n -o | find "7777"
+netstat -a -n -o | find "7777"
