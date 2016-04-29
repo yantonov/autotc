@@ -172,9 +172,12 @@
   (->> response
        :content))
 
-(defn- test-occurence-detail-view [project-web-url project-id response]
-  (let [attrs (:attrs response)
-        test-tag (->> response
+(defn- test-occurence-detail-view [project-web-url
+                                   project-id
+                                   build
+                                   test-details-response]
+  (let [attrs (:attrs test-details-response)
+        test-tag (->> test-details-response
                       :content
                       (filter (tag? :test))
                       first
@@ -189,12 +192,15 @@
         web-url (format "http://%s:%d/project.html?projectId=%s&testNameId=%s&tab=testDetails" host port project-id test-id)
         name (:name attrs)
         pattern-matches  (re-matches #"(.*)\.([^.]+\.[^.]+)" name)]
-    (if (not (nil? pattern-matches))
-      {:namespace (nth pattern-matches 1)
-       :name (nth pattern-matches 2)
-       :webUrl web-url}
-      {:name (:name attrs)
-       :webUrl web-url})))
+    (let [result {:webUrl web-url
+                  :build build}]
+      (-> result
+          (assoc :name (if (not (nil? pattern-matches))
+                         (nth pattern-matches 2)
+                         name))
+          (assoc :namespace (if (not (nil? pattern-matches))
+                              (nth pattern-matches 1)
+                              nil))))))
 
 (defn current-problems [host port project-name user pass]
   (let [server
@@ -217,12 +223,20 @@
 
         current-problems
         (sort-by
-         :name
-         (map (fn [test-id]
-                (->> test-id
+         (fn [item] (str "%s:%s"
+                         (-> item
+                             :build
+                             :build-type
+                             :name)
+                         (-> item
+                             :name)))
+         (map (fn [test-handle]
+                (->> test-handle
+                     :test-id
                      (tc/test-occurences server credentials)
                      (test-occurence-detail-view project-web-url
-                                                 project-id)))
+                                                 project-id
+                                                 (:build test-handle))))
               (apply concat
                      (map (fn [build-type-id]
                             (try
@@ -231,6 +245,11 @@
                                          (tc/last-builds server credentials)
                                          last-builds-view
                                          first)
+
+                                    last-build-details
+                                    (->> last-build
+                                         :id
+                                         (tc/build server credentials))
 
                                     build-type-problems
                                     (->> last-build
@@ -241,7 +260,15 @@
                                                    (let [attrs (:attrs t)]
                                                      (and (not (get attrs :ignored false))
                                                           (not (= "SUCCESS" (:status attrs)))))))
-                                         (map #(->> % :attrs :id)))]
+                                         (map (fn [content]
+                                                (let [attrs (:attrs content)]
+                                                  {:test-id (:id attrs)
+                                                   :build {:attrs (:attrs last-build-details)
+                                                           :build-type (->> last-build-details
+                                                                            :content
+                                                                            (filter (tag? :buildType))
+                                                                            first
+                                                                            :attrs)}}))))]
                                 build-type-problems)
                               (catch Exception e
                                 (log/error e (format "cant get test occurences for type id=[%s]" build-type-id))

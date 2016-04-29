@@ -262,23 +262,39 @@
       (.removeChild (.-body js/document) text-node))))
 
 (defn current-problems-list [problems]
-  [:ol
+  [:div
    nil
    (map (fn [problem]
-          [:li
-           {:key (:name problem)
-            :class-name "current_problem_item"}
-           [:img {:src "/img/copy.png"
-                  :class-name "copy_test_name_icon"
-                  :alt "copy"
-                  :on-click (fn [event]
-                              (copy (.-target event) (:name problem))
-                              (.stopPropagation event)
-                              false)}]
-           [:a {:href (:webUrl problem)
-                :target "_blank"
-                :style {:padding-left "4px"}}
-            (:name problem)]])
+          [:div
+           {:key (:name problem)}
+           [Row nil
+            [Col {:xs 2
+                  :md 1}
+             [:img {:src "/img/copy.png"
+                    :class-name "copy_test_name_icon"
+                    :alt "copy"
+                    :on-click (fn [event]
+                                (copy (.-target event) (:name problem))
+                                (.stopPropagation event)
+                                false)}]]
+            [Col {:xs 18
+                  :md 9}
+             [:a {:href (:webUrl problem)
+                  :target "_blank"
+                  :class-name "current_problem_item"}
+              (:name problem)]]
+            [Col {:xs 4
+                  :md 2}
+             [:a {:href (->> problem
+                             :build
+                             :attrs
+                             :webUrl)
+                  :target "_blank"
+                  :class-name "huj"}
+              (->> problem
+                   :build
+                   :build-type
+                   :name)]]]])
         problems)])
 
 (defn home-page []
