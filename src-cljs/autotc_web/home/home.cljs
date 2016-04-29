@@ -267,9 +267,9 @@
    (map (fn [problem]
           [:li
            {:key (:name problem)
-            :style {:word-break "break-all"
-                    :padding-bottom "10px"}}
+            :class-name "current_problem_item"}
            [:img {:src "/img/copy.png"
+                  :class-name "copy_test_name_icon"
                   :alt "copy"
                   :on-click (fn [event]
                               (copy (.-target event) (:name problem))

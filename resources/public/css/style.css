@@ -65,3 +65,13 @@
     top: 75px;
     right: -42px;
 }
+
+.current_problem_item {
+    word-break: break-all;
+    padding-bottom 10px;
+
+}
+
+.copy_test_name_icon {
+    cursor: pointer;
+}
