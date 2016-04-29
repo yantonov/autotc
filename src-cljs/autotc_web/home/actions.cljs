@@ -76,10 +76,9 @@
                                                                    (get-state))
                                                     server)
                           nil
-                          (if (not (nil? (:current-problems response)))
-                            (dispatch {:type :on-current-problems-list-loaded
-                                       :cursor cursor
-                                       :current-problems (:current-problems response)}))))
+                          (dispatch {:type :on-current-problems-list-loaded
+                                     :cursor cursor
+                                     :current-problems (get response :current-problems [])})))
              :error-handler (fn [response]
                               (println response))})))))
 
