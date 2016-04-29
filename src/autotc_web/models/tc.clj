@@ -202,6 +202,11 @@
                               (nth pattern-matches 1)
                               nil))))))
 
+(defn- test-failed? [t]
+  (let [attrs (:attrs t)]
+    (and (not (get attrs :ignored false))
+         (not (= "SUCCESS" (:status attrs))))))
+
 (defn current-problems [host port project-name user pass]
   (let [server
         (tcn/make-server host :port port)
@@ -256,10 +261,7 @@
                                          :id
                                          (tc/tests-occurences server credentials)
                                          test-occurences-view
-                                         (filter (fn [t]
-                                                   (let [attrs (:attrs t)]
-                                                     (and (not (get attrs :ignored false))
-                                                          (not (= "SUCCESS" (:status attrs)))))))
+                                         (filter test-failed?)
                                          (map (fn [content]
                                                 (let [attrs (:attrs content)]
                                                   {:test-id (:id attrs)
