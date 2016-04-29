@@ -264,9 +264,9 @@
 (defn current-problems-list [problems]
   [:ol
    nil
-   (map (fn [problem index]
+   (map (fn [problem]
           [:li
-           {:key index
+           {:key (:name problem)
             :style {:word-break "break-all"
                     :padding-bottom "10px"}}
            [:img {:src "/img/copy.png"
@@ -279,8 +279,7 @@
                 :target "_blank"
                 :style {:padding-left "4px"}}
             (:name problem)]])
-        problems
-        (iterate inc 1))])
+        problems)])
 
 (defn home-page []
   (let [cursor (rcur/nest (rcur/make-cursor)
