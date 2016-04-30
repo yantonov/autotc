@@ -291,7 +291,7 @@
                   :target "_blank"}
               (->> problem
                    :build
-                   :buildTypeId)]]]])
+                   :name)]]]])
         problems)])
 
 (defn home-page []

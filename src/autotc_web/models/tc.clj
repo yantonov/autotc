@@ -274,12 +274,26 @@
                (tc/test-occurences server credentials)
                parse-test-details-response))
 
+        parse-build-response
+        (fn [build-response]
+          (let [build-type-info (->> build-response
+                                     :content
+                                     (filter (tag? :buildType))
+                                     first
+                                     :attrs)]
+            (assoc build-type-info :webUrl (->> build-response
+                                                :attrs
+                                                :webUrl))))
+
         get-tests-from-latest-builds
         (fn [build-type-ids]
           (map (fn [build-type-id]
                  {:build-type-id build-type-id
                   :builds (doall (map (fn [build]
-                                        {:build build
+                                        {:build (->> build
+                                                     :id
+                                                     (tc/build server credentials)
+                                                     parse-build-response)
                                          :tests (->> build
                                                      :id
                                                      (tc/tests-occurences server credentials)
