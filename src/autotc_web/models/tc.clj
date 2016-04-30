@@ -260,6 +260,20 @@
         build-type-ids
         (project-build-type-ids project)
 
+        parse-test-details-response
+        (fn [test-details-response]
+          (->> test-details-response
+               :content
+               (filter (tag? :test))
+               first
+               :attrs))
+
+        get-test-details
+        (fn [test-id]
+          (->> test-id
+               (tc/test-occurences server credentials)
+               parse-test-details-response))
+
         get-tests-from-latest-builds
         (fn [build-type-ids]
           (map (fn [build-type-id]
@@ -282,15 +296,17 @@
         patch-test-info
         (fn [test-handle]
           (let [name (:name test-handle)
-                pattern-matches (re-matches test-name-pattern name)]
-            (-> test-handle
-                (assoc :webUrl (format "http://%s/project.html?projectId=%s&testNameId=%s&tab=testDetails" project-domain project-id (:id test-handle)))
+                pattern-matches (re-matches test-name-pattern name)
+                test-details (get-test-details (:id test-handle))]
+            (-> test-details
+                (assoc :webUrl (format "http://%s/project.html?projectId=%s&testNameId=%s&tab=testDetails" project-domain project-id (:id test-details)))
                 (assoc :name (if (not (nil? pattern-matches))
                                (nth pattern-matches 2)
                                name))
                 (assoc :namespace (if (not (nil? pattern-matches))
                                     (nth pattern-matches 1)
-                                    nil)))))
+                                    nil))
+                (assoc :build (:build test-handle)))))
 
         problems
         (->> build-type-ids
