@@ -75,8 +75,7 @@
         (.get-value (chc/cached (keyword (str "current-problems-" server-id))
                                 (fn []
                                   (request-current-problems server-id))
-                                :cache-seconds 10
-                                ))]
+                                :cache-seconds 30))]
     (rur/response {:current-problems
                    (get info :current-problems [])
 
