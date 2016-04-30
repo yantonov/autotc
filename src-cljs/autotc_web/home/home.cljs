@@ -3,6 +3,7 @@
             [cljsjs.react-bootstrap]
             [reagent.core :as r]
             [goog.string :as gstring]
+            [goog.string.format]
             [rex.core :as rcore]
             [rex.ext.cursor :as rcur]
             [rex.watcher :as rwt]
@@ -328,7 +329,15 @@
             servers
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
-           [:div nil (string/join "," branches)]
+           [:div nil
+            [Col {:xs 12
+                  :md 6}
+             (string/join "," branches)]
+            [Col {:xs 12
+                  :md 6}
+             (if (empty? current-problems)
+               nil
+               (gstring/format "Current problems: %d" (count current-problems)))]]
            [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12
