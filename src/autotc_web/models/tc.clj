@@ -168,41 +168,6 @@
     {:branches branches
      :build-types build-types-with-queue}))
 
-(defn- test-occurences-view [response]
-  (->> response
-       :content
-       (map :attrs)))
-
-(defn- test-occurence-detail-view [project-web-url
-                                   project-id
-                                   build
-                                   test-details-response]
-  (let [attrs (:attrs test-details-response)
-        test-tag (->> test-details-response
-                      :content
-                      (filter (tag? :test))
-                      first
-                      :attrs)
-        test-id (:id test-tag)
-        project-parsed-url (java.net.URL. project-web-url)
-        host (.getHost project-parsed-url)
-        port (let [port-number (.getPort project-parsed-url)]
-               (if (= -1 port-number)
-                 80
-                 port-number))
-        web-url (format "http://%s:%d/project.html?projectId=%s&testNameId=%s&tab=testDetails" host port project-id test-id)
-        name (:name attrs)
-        pattern-matches  (re-matches #"(.*)\.([^.]+\.[^.]+)" name)]
-    (let [result {:webUrl web-url
-                  :build build}]
-      (-> result
-          (assoc :name (if (not (nil? pattern-matches))
-                         (nth pattern-matches 2)
-                         name))
-          (assoc :namespace (if (not (nil? pattern-matches))
-                              (nth pattern-matches 1)
-                              nil))))))
-
 (defn- test-failed? [t]
   (and (not (get t :ignored false))
        (not (= "SUCCESS" (:status t)))))
@@ -285,6 +250,12 @@
                                                 :attrs
                                                 :webUrl))))
 
+        parse-tests-occurences-response
+        (fn [response]
+          (->> response
+               :content
+               (map :attrs)))
+
         get-tests-from-latest-builds
         (fn [build-type-ids]
           (map (fn [build-type-id]
@@ -297,7 +268,7 @@
                                          :tests (->> build
                                                      :id
                                                      (tc/tests-occurences server credentials)
-                                                     test-occurences-view)})
+                                                     parse-tests-occurences-response)})
                                       (->> build-type-id
                                            (tc/last-builds server credentials)
                                            last-builds-view
@@ -329,59 +300,7 @@
              (map patch-test-info)
              (sort-by #(str "%s:%s"
                             (-> % :build :name)
-                            (-> % :name))))
-
-        ;; current-problems
-        ;; (sort-by
-        ;;  (fn [item] (str "%s:%s"
-        ;;                  (-> item
-        ;;                      :build
-        ;;                      :build-type
-        ;;                      :name)
-        ;;                  (-> item
-        ;;                      :name)))
-        ;;  (map (fn [test-handle]
-        ;;         (->> test-handle
-        ;;              :test-id
-        ;;              (tc/test-occurences server credentials)
-        ;;              (test-occurence-detail-view project-web-url
-        ;;                                          project-id
-        ;;                                          (:build test-handle))))
-        ;;       (apply concat
-        ;;              (map (fn [build-type-id]
-        ;;                     (try
-        ;;                       (let [last-build
-        ;;                             (->> build-type-id
-        ;;                                  (tc/last-builds server credentials)
-        ;;                                  last-builds-view
-        ;;                                  first)
-
-        ;;                             last-build-details
-        ;;                             (->> last-build
-        ;;                                  :id
-        ;;                                  (tc/build server credentials))
-
-        ;;                             build-type-problems
-        ;;                             (->> last-build
-        ;;                                  :id
-        ;;                                  (tc/tests-occurences server credentials)
-        ;;                                  test-occurences-view
-        ;;                                  (filter test-failed?)
-        ;;                                  (map (fn [content]
-        ;;                                         (let [attrs (:attrs content)]
-        ;;                                           {:test-id (:id attrs)
-        ;;                                            :build {:attrs (:attrs last-build-details)
-        ;;                                                    :build-type (->> last-build-details
-        ;;                                                                     :content
-        ;;                                                                     (filter (tag? :buildType))
-        ;;                                                                     first
-        ;;                                                                     :attrs)}}))))]
-        ;;                         build-type-problems)
-        ;;                       (catch Exception e
-        ;;                         (log/error e (format "cant get test occurences for type id=[%s]" build-type-id))
-        ;;                         {:error (exception/pretty-print-exception e)})))
-        ;;                   build-type-ids))))
-        ]
+                            (-> % :name))))]
     {:current-problems problems}))
 
 (defn trigger-build [host port user pass build-type-id]
