@@ -287,14 +287,11 @@
                   :md 2}
              [:a {:href (->> problem
                              :build
-                             :attrs
                              :webUrl)
-                  :target "_blank"
-                  :class-name "huj"}
+                  :target "_blank"}
               (->> problem
                    :build
-                   :build-type
-                   :name)]]]])
+                   :buildTypeId)]]]])
         problems)])
 
 (defn home-page []
