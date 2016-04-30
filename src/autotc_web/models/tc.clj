@@ -326,7 +326,10 @@
         (->> build-type-ids
              get-tests-from-latest-builds
              combine-latest-builds
-             (map patch-test-info))
+             (map patch-test-info)
+             (sort-by #(str "%s:%s"
+                            (-> % :build :name)
+                            (-> % :name))))
 
         ;; current-problems
         ;; (sort-by
