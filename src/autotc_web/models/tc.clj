@@ -207,7 +207,7 @@
   (and (not (get t :ignored false))
        (not (= "SUCCESS" (:status t)))))
 
-(defn ext [f builds]
+(defn attach-build-info-for-each-test [f builds]
   (letfn [(extend-test-info [build]
             (map #(assoc % :build (:build build))
                  (:tests build)))]
@@ -218,8 +218,8 @@
                        builds))))
 
 (defn combine-latest-builds [builds]
-  (let [butlast-build (ext second builds)
-        last-build (ext first builds)]
+  (let [butlast-build (attach-build-info-for-each-test second builds)
+        last-build (attach-build-info-for-each-test first builds)]
     (if (empty? butlast-build)
       (filter test-failed? last-build)
       (concat (filter test-failed? last-build)
