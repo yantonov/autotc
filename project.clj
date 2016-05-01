@@ -1,7 +1,7 @@
 (defproject autotc-web "0.1.0-SNAPSHOT"
   :description "apply action to multiple teamcity agents"
   :url "https://github.com/yantonov/autotc"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [compojure "1.5.0"]
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.2.0"]
@@ -11,7 +11,7 @@
                  [ring/ring-json "0.4.0"]
                  [ch.qos.logback/logback-classic "1.1.7"] ;logging
                  ;; cljs
-                 [org.clojure/clojurescript "1.7.228"]
+                 [org.clojure/clojurescript "1.8.51"]
                  [reagent "0.5.1"]
                  [cljsjs/react-bootstrap "0.29.2-0" :exclusions [org.webjars.bower/jquery]]
                  [cljs-ajax "0.5.4"]
