@@ -6,14 +6,14 @@
                  [ring-server "0.4.0"]
                  [ring/ring-defaults "0.2.0"]
                  [hiccup "1.0.5"]
-                 [org.clojure/java.jdbc "0.4.2"]
+                 [org.clojure/java.jdbc "0.5.8"]
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [ring/ring-json "0.4.0"]
-                 [ch.qos.logback/logback-classic "1.1.6"] ;logging
+                 [ch.qos.logback/logback-classic "1.1.7"] ;logging
                  ;; cljs
                  [org.clojure/clojurescript "1.7.228"]
                  [reagent "0.5.1"]
-                 [cljsjs/react-bootstrap "0.28.1-1" :exclusions [org.webjars.bower/jquery]]
+                 [cljsjs/react-bootstrap "0.29.2-0" :exclusions [org.webjars.bower/jquery]]
                  [cljs-ajax "0.5.4"]
                  ;; libs
                  [rex "0.1.0-SNAPSHOT"]
