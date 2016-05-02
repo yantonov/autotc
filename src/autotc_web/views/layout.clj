@@ -29,6 +29,6 @@
            :id "main-content"} body]
     [:div {:class "github-fork-ribbon-wrapper right-bottom"}
      [:div {:class "github-fork-ribbon github-fork-custom-styles"}
-      [:a {:href "https://github.com/yantonov/autotc-web"
+      [:a {:href "https://github.com/yantonov/autotc"
            :target "_blank"}
        "Fork me on GitHub"]]]]))
