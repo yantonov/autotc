@@ -31,50 +31,37 @@
 
         build-types
         (doall (map (fn [build-type-id]
-                      (try (let [last-build (->> build-type-id
-                                                 (tc/last-builds server credentials)
-                                                 parser/parse-last-builds
-                                                 first)
-                                 build-type (->> build-type-id
-                                                 (tc/build-type server credentials)
-                                                 :attrs)
-                                 last-build-details (->> last-build
-                                                         :id
-                                                         (tc/build server credentials)
-                                                         parser/parse-build-response)]
-                             {:last-build last-build
-                              :build-type build-type
-                              :last-build-details last-build-details})
-                           (catch Exception e
-                             (log/error e (format "cant get info for build type id=[%s]" build-type-id))
-                             {:error (exception/pretty-print-exception e)})))
+                      (let [last-build (->> build-type-id
+                                            (tc/last-builds server credentials)
+                                            parser/parse-last-builds
+                                            first)
+                            build-type (->> build-type-id
+                                            (tc/build-type server credentials)
+                                            :attrs)
+                            last-build-details (->> last-build
+                                                    :id
+                                                    (tc/build server credentials)
+                                                    parser/parse-build-response)]
+                        {:last-build last-build
+                         :build-type build-type
+                         :last-build-details last-build-details}))
                     build-type-ids))
 
         vcs-roots-ids
         (map :id
              (parser/parse-vcs-roots
-              (try (tc/vcs-roots server credentials project-id)
-                   (catch Exception e
-                     (log/error e (format "cant get vcs roots for project id=[%s]" project-id))
-                     {}))))
+              (tc/vcs-roots server credentials project-id)))
 
         branches
         (map (comp :branchName parser/parse-vcs-root)
-             (doall (map #(try (tc/vcs-root server credentials %)
-                               (catch Exception e
-                                 (log/error e (format "cant get vcs root id=[%s]" %))
-                                 {}))
-                         vcs-roots-ids)))
+             (doall (map #(tc/vcs-root server credentials %) vcs-roots-ids)))
 
         project-queue
         (reduce (fn [m item]
                   (assoc m (:buildTypeId item) item))
                 {}
-                (try (parser/parse-project-queue
-                      (tc/project-queue server credentials project-id))
-                     (catch Exception e
-                       (log/error e (format "cant get build queue for project id=[%s]" project-id))
-                       [])))
+                (parser/parse-project-queue
+                 (tc/project-queue server credentials project-id)))
 
         build-types-with-queue
         (doall
