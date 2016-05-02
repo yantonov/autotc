@@ -70,6 +70,7 @@
     word-break: break-all;
 }
 
-.copy_test_name_icon {
+.copy_icon {
     cursor: pointer;
+    padding-right: 10px;
 }

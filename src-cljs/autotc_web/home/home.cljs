@@ -269,30 +269,37 @@
           [:div
            {:key (:name problem)}
            [Row nil
-            [Col {:xs 2
-                  :md 1}
-             [:img {:src "/img/copy.png"
-                    :class-name "copy_test_name_icon"
-                    :alt "copy"
-                    :on-click (fn [event]
-                                (copy (.-target event) (:name problem))
-                                (.stopPropagation event)
-                                false)}]]
-            [Col {:xs 18
-                  :md 9}
-             [:a {:href (:webUrl problem)
-                  :target "_blank"
-                  :class-name "current_problem_item"}
-              (:name problem)]]
-            [Col {:xs 4
-                  :md 2}
+            [Col {:xs 6
+                  :md 3}
+             [:a {:on-click (fn [event]
+                              (copy (.-target event) (:name problem))
+                              (.stopPropagation event)
+                              false)
+                  :title "copy test name"}
+              [:img {:src "/img/copy.png"
+                     :class-name "copy_icon"
+                     :alt "test name"}]]
+             [:a {:on-click (fn [event]
+                              (copy (.-target event) (:details problem))
+                              (.stopPropagation event)
+                              false)
+                  :title "copy stack trace"}
+              [:img {:src "/img/stack.png"
+                     :class-name "copy_icon"
+                     :alt "stack trace"}]]
              [:a {:href (->> problem
                              :build
                              :webUrl)
                   :target "_blank"}
               (->> problem
                    :build
-                   :name)]]]])
+                   :name)]]
+            [Col {:xs 18
+                  :md 9}
+             [:a {:href (:webUrl problem)
+                  :target "_blank"
+                  :class-name "current_problem_item"}
+              (:name problem)]]]])
         problems)])
 
 (defn home-page []
