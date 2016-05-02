@@ -19,7 +19,9 @@
         (tcn/make-credentials user pass)
 
         project-id
-        (:id (parser/project-by-name (tc/projects server credentials) project-name))
+        (->> project-name
+             (parser/project-by-name (tc/projects server credentials))
+             :id)
 
         project
         (tc/project server credentials project-id)
