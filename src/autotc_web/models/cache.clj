@@ -18,7 +18,7 @@
   (wait-value [_]
     (await agent)))
 
-(defn reset-cache []
+(defn reset-cache! []
   (dosync
    (ref-set cache {})))
 
