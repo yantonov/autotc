@@ -116,8 +116,15 @@
                                         :attrs
                                         :webUrl))))
 
-
 (defn parse-tests-occurences [response]
   (->> response
        :content
        (map :attrs)))
+
+(defn parse-agent-id-from-build [last-build]
+  (->> last-build
+       :content
+       (filter (tag? :agent))
+       first
+       :attrs
+       :id))

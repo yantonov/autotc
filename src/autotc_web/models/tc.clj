@@ -5,12 +5,6 @@
             [autotc-web.models.exception :as exception]
             [autotc-web.models.tc-response-parser :as parser]))
 
-(defn- tag? [tag-name]
-  #(= tag-name (:tag %)))
-
-(defn- empty-list-if-nil [x]
-  (if (nil? x) '() x))
-
 (defn project-info [host port project-name user pass]
   (let [server
         (tcn/make-server host :port port)
@@ -222,10 +216,5 @@
         (tc/build server credentials last-build-id)
 
         agent-id
-        (->> last-build
-             :content
-             (filter (tag? :agent))
-             first
-             :attrs
-             :id)]
+        (parser/parse-agent-id-from-build last-build)]
     (tc/reboot-agent server credentials agent-id)))
