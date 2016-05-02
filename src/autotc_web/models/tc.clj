@@ -2,98 +2,14 @@
   (:require [clj-teamcity-api.api :as tc]
             [clj-teamcity-api.net :as tcn]
             [autotc-web.log :as log]
-            [autotc-web.models.exception :as exception]))
+            [autotc-web.models.exception :as exception]
+            [autotc-web.models.tc-response-parser :as parser]))
 
 (defn- tag? [tag-name]
   #(= tag-name (:tag %)))
 
 (defn- empty-list-if-nil [x]
   (if (nil? x) '() x))
-
-(defn- project-by-name [projects name]
-  (->> projects
-       :content
-       (filter (fn [project]
-                 (= name (get-in project [:attrs :name]))))
-       first
-       :attrs))
-
-(defn- project-build-type-ids [project]
-  (let [build-types-tag (->> project
-                             :content
-                             (filter (tag? :buildTypes))
-                             first)
-        build-type-ids (->> build-types-tag
-                            :content
-                            (map #(get-in % [:attrs :id])))]
-    build-type-ids))
-
-(defn- last-builds-view [last-builds]
-  (->> last-builds
-       :content
-       (map :attrs)))
-
-(defn- build-view [build]
-  (let [info
-        (:content build)
-
-        web-url
-        (get-in build [:attrs :webUrl])
-
-        test-occurences
-        (->> info
-             (filter (tag? :testOccurrences))
-             first
-             :attrs)
-
-        changes
-        (->> info
-             (filter (tag? :lastChanges))
-             first
-             :content
-             (map :attrs))
-
-        status-text
-        (->> info
-             (filter (tag? :statusText))
-             first
-             :content
-             first)
-
-        agent
-        (->> info
-             (filter (tag? :agent))
-             first
-             :attrs)]
-    {:test-occurences (empty-list-if-nil test-occurences)
-     :changes (empty-list-if-nil changes)
-     :status-text status-text
-     :agent agent
-     :webUrl web-url}))
-
-(defn vcs-roots-view [roots]
-  (->> roots
-       :content
-       (map :attrs)))
-
-(defn vcs-root-view [root]
-  (->> root
-       :content
-       (filter (tag? :properties))
-       first
-       :content
-       (filter (tag? :property))
-       (map (fn [tag]
-              (let [attrs (:attrs tag)]
-                (vector (keyword (:name attrs))
-                        (:value attrs)))))
-       (apply concat)
-       (apply hash-map)))
-
-(defn project-queue-view [queue]
-  (->> queue
-       :content
-       (map :attrs)))
 
 (defn project-info [host port project-name user pass]
   (let [server
@@ -103,19 +19,19 @@
         (tcn/make-credentials user pass)
 
         project-id
-        (:id (project-by-name (tc/projects server credentials) project-name))
+        (:id (parser/project-by-name (tc/projects server credentials) project-name))
 
         project
         (tc/project server credentials project-id)
 
         build-type-ids
-        (project-build-type-ids project)
+        (parser/build-type-ids project)
 
         build-types
         (doall (map (fn [build-type-id]
                       (try (let [last-build (->> build-type-id
                                                  (tc/last-builds server credentials)
-                                                 last-builds-view
+                                                 parser/parse-last-builds
                                                  first)
                                  build-type (->> build-type-id
                                                  (tc/build-type server credentials)
@@ -123,7 +39,7 @@
                                  last-build-details (->> last-build
                                                          :id
                                                          (tc/build server credentials)
-                                                         build-view)]
+                                                         parser/parse-build-response)]
                              {:last-build last-build
                               :build-type build-type
                               :last-build-details last-build-details})
@@ -134,14 +50,14 @@
 
         vcs-roots-ids
         (map :id
-             (vcs-roots-view
+             (parser/parse-vcs-roots
               (try (tc/vcs-roots server credentials project-id)
                    (catch Exception e
                      (log/error e (format "cant get vcs roots for project id=[%s]" project-id))
                      {}))))
 
         branches
-        (map (comp :branchName vcs-root-view)
+        (map (comp :branchName parser/parse-vcs-root)
              (doall (map #(try (tc/vcs-root server credentials %)
                                (catch Exception e
                                  (log/error e (format "cant get vcs root id=[%s]" %))
@@ -152,7 +68,7 @@
         (reduce (fn [m item]
                   (assoc m (:buildTypeId item) item))
                 {}
-                (try (project-queue-view
+                (try (parser/parse-project-queue
                       (tc/project-queue server credentials project-id))
                      (catch Exception e
                        (log/error e (format "cant get build queue for project id=[%s]" project-id))
@@ -196,16 +112,6 @@
                                             last-build)))
                       butlast-build)))))
 
-(defn parse-project-domain [project]
-  (let [project-web-url (:webUrl project)
-        project-parsed-url (java.net.URL. project-web-url)
-        host (.getHost project-parsed-url)
-        port (let [port-number (.getPort project-parsed-url)]
-               (if (= -1 port-number)
-                 80
-                 port-number))]
-    (format "%s:%d" host port)))
-
 (defn distinct-by
   "Returns a lazy sequence of the elements of coll, removing any elements that
   return duplicate values when passed to a function f."
@@ -229,47 +135,22 @@
         (tcn/make-credentials user pass)
 
         project
-        (project-by-name (tc/projects server credentials) project-name)
+        (parser/project-by-name (tc/projects server credentials) project-name)
 
         project-id (:id project)
-        project-domain (parse-project-domain project)
+        project-domain (parser/parse-project-domain project)
 
         project
         (tc/project server credentials project-id)
 
         build-type-ids
-        (project-build-type-ids project)
-
-        parse-test-details-response
-        (fn [test-details-response]
-          (->> test-details-response
-               :content
-               (filter (tag? :test))
-               first
-               :attrs))
+        (parser/build-type-ids project)
 
         get-test-details
         (fn [test-id]
           (->> test-id
                (tc/test-occurences server credentials)
-               parse-test-details-response))
-
-        parse-build-response
-        (fn [build-response]
-          (let [build-type-info (->> build-response
-                                     :content
-                                     (filter (tag? :buildType))
-                                     first
-                                     :attrs)]
-            (assoc build-type-info :webUrl (->> build-response
-                                                :attrs
-                                                :webUrl))))
-
-        parse-tests-occurences-response
-        (fn [response]
-          (->> response
-               :content
-               (map :attrs)))
+               parser/parse-test-occurences))
 
         get-tests-from-latest-builds
         (fn [build-type-ids]
@@ -279,14 +160,14 @@
                                         {:build (->> build
                                                      :id
                                                      (tc/build server credentials)
-                                                     parse-build-response)
+                                                     parser/parse-build)
                                          :tests (->> build
                                                      :id
                                                      (tc/tests-occurences server credentials)
-                                                     parse-tests-occurences-response)})
+                                                     parser/parse-tests-occurences)})
                                       (->> build-type-id
                                            (tc/last-builds server credentials)
-                                           last-builds-view
+                                           parser/parse-last-builds
                                            (take 2))))})
                build-type-ids))
 
@@ -328,7 +209,7 @@
   (let [server (tcn/make-server host :port port)
         credentials (tcn/make-credentials user pass)
         running-build-id (->> (tc/running-build server credentials build-type-id)
-                              last-builds-view
+                              parser/parse-last-builds
                               first
                               :id)]
     (if (not (nil? running-build-id))
@@ -344,7 +225,7 @@
         ;; TODO: think to replace this heuristics to agent requirement parameters
         last-build-id
         (->> (tc/last-builds server credentials build-type-id)
-             last-builds-view
+             parser/parse-last-builds
              first
              :id)
 
