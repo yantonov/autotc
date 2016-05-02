@@ -23,7 +23,7 @@
   (sql/with-db-transaction [t-conn db]
     (sql/query t-conn
                ["SELECT * FROM servers ORDER BY alias ASC"]
-               :result-set-fn doall)))
+               {:result-set-fn doall})))
 
 (defn to-tc-server [row]
   {:id (:id row)
@@ -41,7 +41,7 @@
   (sql/with-db-transaction [t-conn db]
     (sql/query t-conn
                ["SELECT * FROM servers where id = ?" id]
-               :result-set-fn (fn [res] (to-tc-server (first res))))))
+               {:result-set-fn (fn [res] (to-tc-server (first res)))})))
 
 (defn add-server [alias host port project username password]
   (sql/with-db-transaction [t-conn db]

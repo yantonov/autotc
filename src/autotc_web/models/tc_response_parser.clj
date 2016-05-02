@@ -100,11 +100,17 @@
        (map :attrs)))
 
 (defn parse-test-occurences [test-details-response]
-  (->> test-details-response
-       :content
-       (filter (tag? :test))
-       first
-       :attrs))
+  (let [test-attrs (->> test-details-response
+                        :content
+                        (filter (tag? :test))
+                        first
+                        :attrs)]
+    (assoc test-attrs :details (->> test-details-response
+                                    :content
+                                    (filter (tag? :details))
+                                    first
+                                    :content
+                                    first))))
 
 (defn parse-build [build-response]
   (let [build-type-info (->> build-response
