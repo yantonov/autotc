@@ -336,7 +336,7 @@
             [Col {:xs 12
                   :md 6}
              (if (empty? current-problems)
-               nil
+               (gstring/unescapeEntities "&nbsp;")
                (gstring/format "Current problems: %d" (count current-problems)))]]
            [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
