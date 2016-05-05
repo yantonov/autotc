@@ -64,7 +64,8 @@
                       queue (get project-queue build-type-id)]
                   (assoc build-type :queue queue)))
               build-types))]
-    {:branches branches
+    {:project project
+     :branches branches
      :build-types build-types-with-queue}))
 
 (defn- test-failed? [t]

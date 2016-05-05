@@ -25,6 +25,7 @@
                                         {:servers (:servers action)
                                          :agents []
                                          :branches []
+                                         :project {}
                                          :selected-agents #{}
                                          :manually-selected-agents #{}
                                          :current-problems []})))
@@ -48,6 +49,9 @@
                                           :branches
                                           (:branches action)
 
+                                          :project
+                                          (:project action)
+
                                           :show-agent-list-loader
                                           false
 
@@ -64,7 +68,8 @@
                                        (:cursor action)
                                        {:show-agent-list-loader true
                                         :agents []
-                                        :branches []})))
+                                        :branches []
+                                        :project {}})))
 
   (r/reducer-for-type :init-load-agent-list
                       (fn [state action]
@@ -76,6 +81,7 @@
                                         :manually-selected-agents #{}
                                         :agents []
                                         :branches []
+                                        :project {}
                                         :filter-value nil
                                         :current-problems []})))
 

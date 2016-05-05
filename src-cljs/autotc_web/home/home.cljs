@@ -323,6 +323,7 @@
                       selected-server-index
                       message
                       selected-agents
+                      project
                       branches
                       agents
                       show-agent-list-loader
@@ -339,7 +340,11 @@
            [:div nil
             [Col {:xs 12
                   :md 6}
-             (string/join "," branches)]
+             (let [attrs (:attrs project :attrs)]
+               [:a {:href (:webUrl attrs)
+                    :target "_blank"} (:name attrs)])
+             [:span {:class-name "branches"}
+              (string/join "," branches)]]
             [Col {:xs 12
                   :md 6}
              (if (empty? current-problems)

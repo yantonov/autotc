@@ -58,8 +58,12 @@
                                 (fn []
                                   (request-project-info-from-teamcity server-id))))
         build-types (:build-types info)
-        branches (:branches info)]
-    (rur/response {:branches
+        branches (:branches info)
+        project (:project info)]
+    (rur/response {:project
+                   project
+
+                   :branches
                    branches
 
                    :agents

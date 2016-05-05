@@ -55,7 +55,8 @@
                               (dispatch {:type :on-agents-list-loaded
                                          :cursor cursor
                                          :agents (:agents response)
-                                         :branches (:branches response)}))))
+                                         :branches (:branches response)
+                                         :project (:project response)}))))
                :error-handler (fn [response]
                                 (println response)
                                 (dispatch {:type :agent-list-is-loading
