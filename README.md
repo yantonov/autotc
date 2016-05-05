@@ -1,6 +1,10 @@
-## autotc-web
+## autotc
 
-tiny [clojure](http://clojure.org)/[clojurescript](https://github.com/clojure/clojurescript)/[react](https://facebook.github.io/react/) app which allow you to start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents
+tiny [clojure](http://clojure.org)/[clojurescript](https://github.com/clojure/clojurescript)/[react](https://facebook.github.io/react/) app which helps to:  
+1. start/stop/reboot multiple [teamcity](https://www.jetbrains.com/teamcity/) agents  
+2. copy test name by 1 click  
+3. copy stack trace by 1 click  
+4. find current problems (failed tests), with respect to last (not finished) build  
 
 ## Prerequisites
 
@@ -27,7 +31,7 @@ To start a web server for the application, run:
 ```
 
 ## How it looks
-![screenshot](https://raw.githubusercontent.com/yantonov/autotc-web/master/docs/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/yantonov/autotc/master/docs/screenshot.png)
 
 ## License
 
