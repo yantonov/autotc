@@ -270,7 +270,8 @@
            {:key (:name problem)}
            [Row nil
             [Col {:xs 6
-                  :md 3}
+                  :md 3
+                  :class-name "single_problem"}
              [:a {:on-click (fn [event]
                               (copy (.-target event) (:name problem))
                               (.stopPropagation event)
