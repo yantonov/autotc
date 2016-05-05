@@ -4,7 +4,7 @@
 (defn common [& body]
   (html5
    [:head
-    [:title "Welcome to autotc-web"]
+    [:title "autotc"]
     (include-css "/css/bootstrap.min.css")
     (include-css "/css/gh-fork-ribbon.css")
     (include-css "/css/gh-fork-ribbon.ie.css")
