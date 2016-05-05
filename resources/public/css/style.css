@@ -78,3 +78,8 @@
 .branches {
     padding-left: 16px;
 }
+
+.single_problem {
+    white-space:nowrap;
+    overflow: hidden;
+}
