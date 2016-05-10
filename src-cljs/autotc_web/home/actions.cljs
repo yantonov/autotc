@@ -41,26 +41,25 @@
                                                (get-state))
                                 server)
       nil
-      (do
-        (let [url (str "/agents/list/" (:id server))]
-          (ajax/GET
-              url
-              {:response-format (ajax/json-response-format {:keywords? true})
-               :handler (fn [response]
-                          (if (other-server-selected? (cur/get-state cursor
-                                                                     (get-state))
-                                                      server)
-                            nil
-                            (if (not (nil? (:agents response)))
-                              (dispatch {:type :on-agents-list-loaded
-                                         :cursor cursor
-                                         :agents (:agents response)
-                                         :branches (:branches response)
-                                         :project (:project response)}))))
-               :error-handler (fn [response]
-                                (println response)
-                                (dispatch {:type :agent-list-is-loading
-                                           :cursor cursor}))}))))))
+      (let [url (str "/agents/list/" (:id server))]
+        (ajax/GET
+            url
+            {:response-format (ajax/json-response-format {:keywords? true})
+             :handler (fn [response]
+                        (if (other-server-selected? (cur/get-state cursor
+                                                                   (get-state))
+                                                    server)
+                          nil
+                          (if (not (nil? (:agents response)))
+                            (dispatch {:type :on-agents-list-loaded
+                                       :cursor cursor
+                                       :agents (:agents response)
+                                       :branches (:branches response)
+                                       :project (:project response)}))))
+             :error-handler (fn [response]
+                              (println response)
+                              (dispatch {:type :agent-list-is-loading
+                                         :cursor cursor}))})))))
 
 (defn get-current-problems-action-creator [server cursor]
   (fn [dispatch get-state]
@@ -105,6 +104,7 @@
               (dispatch (load-agents-action-creator current-server cursor))
               (dispatch (get-current-problems-action-creator current-server cursor))
               (poller/start p)
+              ;; TODO: do not add not serializable data into model (add timer descriptor, not timer itself)
               (dispatch {:type :attach-poll-agent-timer
                          :cursor cursor
                          :poll-agent-timer p}))))))))
