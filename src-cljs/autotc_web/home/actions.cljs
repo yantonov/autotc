@@ -35,7 +35,7 @@
            (not (= (:id selected-server)
                    (:id load-agents-for-server)))))))
 
-(defn load-agents-action-creator [server cursor]
+(defn load-agents-action-creator  [server cursor]
   (fn [dispatch get-state]
     (if (other-server-selected? (cur/get-state cursor
                                                (get-state))
@@ -219,3 +219,4 @@
 
 (defn filter-show-not-selected [cursor]
   (r/dispatch (filter-changed-action cursor :not-selected)))
+

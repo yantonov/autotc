@@ -10,7 +10,8 @@
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
             [autotc-web.home.reducers :as reducers]
-            [autotc-web.home.actions :as actions]))
+            [autotc-web.home.actions :as actions]
+            [autotc-web.util.copy :as copy]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -243,26 +244,7 @@
                           :selected (is-agent-selected? selected-agents a)
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
-(defn copy [element text]
-  (let [element-id "elbaId"
-        text-node (or (.getElementById js/document element-id)
-                      (.createElement js/document "span"))]
-    (set! (.-id text-node) element-id)
-    (set! (.-innerText text-node) text)
-    (set! (.-style text-node) "display: none:")
-    (.appendChild (.-body js/document) text-node)
-    (let [sel (.getSelection js/window)
-          range (.createRange js/document)]
-      (.selectNodeContents range text-node)
-      (.removeAllRanges sel)
-      (.addRange sel range)
-      (.execCommand js/document "copy")
-      (.selectNodeContents range element)
-      (.removeAllRanges sel)
-      (.addRange sel range)
-      (.removeChild (.-body js/document) text-node))))
-
-(defn current-problems-list [problems]
+(defn current-problems-list [server problems cursor]
   [:div
    nil
    (map (fn [problem]
@@ -273,21 +255,12 @@
                   :md 3
                   :class-name "single_problem"}
              [:a {:on-click (fn [event]
-                              (copy (.-target event) (:name problem))
-                              (.stopPropagation event)
-                              false)
+                              (copy/copy (:name problem))
+                              (.stopPropagation event))
                   :title "copy test name"}
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
-             [:a {:on-click (fn [event]
-                              (copy (.-target event) (:details problem))
-                              (.stopPropagation event)
-                              false)
-                  :title "copy stack trace"}
-              [:img {:src "/img/stack.png"
-                     :class-name "copy_icon"
-                     :alt "stack trace"}]]
              [:a {:href (->> problem
                              :build
                              :webUrl)
@@ -331,7 +304,8 @@
                       filter-value
                       current-problems]
                :or {:show-agent-list-loader false}}
-              (r/state this)]
+              (r/state this)
+              selected-server (get servers selected-server-index)]
           [:div
            [info-message message]
            [server-list
@@ -377,7 +351,7 @@
                            :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
-              [current-problems-list current-problems]]]]]))})))
+              [current-problems-list selected-server current-problems cursor]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]
