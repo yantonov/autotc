@@ -2,8 +2,7 @@
   (:require [autotc-web.util.poller :as poller]
             [ajax.core :as ajax]
             [rex.ext.cursor :as cur]
-            [rex.core :as r]
-            [autotc-web.util.copy :as copy]))
+            [rex.core :as r]))
 
 (defn hide-message-action-creator [cursor]
   (fn [dispatch get-store]
@@ -220,18 +219,4 @@
 
 (defn filter-show-not-selected [cursor]
   (r/dispatch (filter-changed-action cursor :not-selected)))
-
-(defn copy-stack-trace  [server test cursor]
-  (r/dispatch
-   (fn [dispatch get-state]
-     (ajax/GET
-         "/stack-trace"
-         {:params {:server-id (:id server)
-                   :test-name (:name test)}
-          :response-format (ajax/json-response-format {:keywords? true})
-          :handler (fn [response]
-                     (println response)
-                     ;; cant copy inside ajax call
-                     ;; (copy/copy (:stack-trace response))
-                     :error-handler (fn [response] (println response)))}))))
 

@@ -172,10 +172,6 @@
   (GET "/current-problems/:server-id"
       [server-id]
     (current-problems server-id))
-  (GET "/stack-trace"
-      {{server-id :server-id
-        test-name :test-name} :params}
-    (stack-trace server-id test-name))
   (POST "/agents/startBuild"
       request
     (fn [request]

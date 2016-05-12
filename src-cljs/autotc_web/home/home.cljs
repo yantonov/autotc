@@ -261,13 +261,6 @@
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
-             [:a {:on-click (fn [event]
-                              (actions/copy-stack-trace server problem cursor)
-                              (.stopPropagation event))
-                  :title "copy stack trace"}
-              [:img {:src "/img/stack.png"
-                     :class-name "copy_icon"
-                     :alt "stack trace"}]]
              [:a {:href (->> problem
                              :build
                              :webUrl)
