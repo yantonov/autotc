@@ -81,10 +81,29 @@
                                   (request-current-problems server-id))
                                 :cache-seconds 30))]
     (rur/response {:current-problems
-                   (get info :current-problems [])
+                   (->>
+                    (get info :current-problems [])
+                    (map #(dissoc % :details)))
 
                    :error
                    error})))
+
+(defn- stack-trace [server-id test-name]
+  (let [{:keys [info error]}
+        (.get-value (chc/cached (keyword (str "current-problems-" server-id))
+                                (fn []
+                                  (request-current-problems server-id))
+                                :cache-seconds 30))]
+    (rur/response {:stack-trace
+                   (->>
+                    (get info :current-problems [])
+                    (filter #(= test-name (:name %)))
+                    first
+                    :details)
+
+                   :error
+                   error})))
+
 
 (defn- exec-action-for-agents [server-id build-type-ids action]
   ;; holy shit
@@ -141,10 +160,22 @@
                           tc/reboot-agent))
 
 (defroutes home-routes
-  (GET "/" [] (home))
-  (GET "/servers/list" [] (get-servers))
-  (GET "/agents/list/:id" [id] (agents-for-server id))
-  (GET "/current-problems/:id" [id] (current-problems id))
+  (GET "/"
+      []
+    (home))
+  (GET "/servers/list"
+      []
+    (get-servers))
+  (GET "/agents/list/:id"
+      [id]
+    (agents-for-server id))
+  (GET "/current-problems/:server-id"
+      [server-id]
+    (current-problems server-id))
+  (GET "/stack-trace"
+      {{server-id :server-id
+        test-name :test-name} :params}
+    (stack-trace server-id test-name))
   (POST "/agents/startBuild"
       request
     (fn [request]

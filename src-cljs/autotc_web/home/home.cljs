@@ -244,7 +244,7 @@
                           :selected (is-agent-selected? selected-agents a)
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
-(defn current-problems-list [problems]
+(defn current-problems-list [server problems cursor]
   [:div
    nil
    (map (fn [problem]
@@ -256,16 +256,14 @@
                   :class-name "single_problem"}
              [:a {:on-click (fn [event]
                               (copy/copy (:name problem))
-                              (.stopPropagation event)
-                              false)
+                              (.stopPropagation event))
                   :title "copy test name"}
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
              [:a {:on-click (fn [event]
-                              (copy/copy (:details problem))
-                              (.stopPropagation event)
-                              false)
+                              (actions/copy-stack-trace server problem cursor)
+                              (.stopPropagation event))
                   :title "copy stack trace"}
               [:img {:src "/img/stack.png"
                      :class-name "copy_icon"
@@ -313,7 +311,8 @@
                       filter-value
                       current-problems]
                :or {:show-agent-list-loader false}}
-              (r/state this)]
+              (r/state this)
+              selected-server (get servers selected-server-index)]
           [:div
            [info-message message]
            [server-list
@@ -359,7 +358,7 @@
                            :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
-              [current-problems-list current-problems]]]]]))})))
+              [current-problems-list selected-server current-problems cursor]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]
