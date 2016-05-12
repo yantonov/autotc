@@ -10,7 +10,8 @@
             [rex.middleware :as rmw]
             [rex.ext.action-creator :as acm]
             [autotc-web.home.reducers :as reducers]
-            [autotc-web.home.actions :as actions]))
+            [autotc-web.home.actions :as actions]
+            [autotc-web.util.copy :as copy]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -243,25 +244,6 @@
                           :selected (is-agent-selected? selected-agents a)
                           :on-change (fn [checked] (on-select-agent a checked))}])]]))
 
-(defn copy [element text]
-  (let [element-id "elbaId"
-        text-node (or (.getElementById js/document element-id)
-                      (.createElement js/document "span"))]
-    (set! (.-id text-node) element-id)
-    (set! (.-innerText text-node) text)
-    (set! (.-style text-node) "display: none:")
-    (.appendChild (.-body js/document) text-node)
-    (let [sel (.getSelection js/window)
-          range (.createRange js/document)]
-      (.selectNodeContents range text-node)
-      (.removeAllRanges sel)
-      (.addRange sel range)
-      (.execCommand js/document "copy")
-      (.selectNodeContents range element)
-      (.removeAllRanges sel)
-      (.addRange sel range)
-      (.removeChild (.-body js/document) text-node))))
-
 (defn current-problems-list [problems]
   [:div
    nil
@@ -273,7 +255,7 @@
                   :md 3
                   :class-name "single_problem"}
              [:a {:on-click (fn [event]
-                              (copy (.-target event) (:name problem))
+                              (copy/copy (:name problem))
                               (.stopPropagation event)
                               false)
                   :title "copy test name"}
@@ -281,7 +263,7 @@
                      :class-name "copy_icon"
                      :alt "test name"}]]
              [:a {:on-click (fn [event]
-                              (copy (.-target event) (:details problem))
+                              (copy/copy (:details problem))
                               (.stopPropagation event)
                               false)
                   :title "copy stack trace"}
