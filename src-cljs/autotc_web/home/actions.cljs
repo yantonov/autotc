@@ -41,34 +41,7 @@
                                                (get-state))
                                 server)
       nil
-      (do
-        (let [url (str "/agents/list/" (:id server))]
-          (ajax/GET
-              url
-              {:response-format (ajax/json-response-format {:keywords? true})
-               :handler (fn [response]
-                          (if (other-server-selected? (cur/get-state cursor
-                                                                     (get-state))
-                                                      server)
-                            nil
-                            (if (not (nil? (:agents response)))
-                              (dispatch {:type :on-agents-list-loaded
-                                         :cursor cursor
-                                         :agents (:agents response)
-                                         :branches (:branches response)
-                                         :project (:project response)}))))
-               :error-handler (fn [response]
-                                (println response)
-                                (dispatch {:type :agent-list-is-loading
-                                           :cursor cursor}))}))))))
-
-(defn get-current-problems-action-creator [server cursor]
-  (fn [dispatch get-state]
-    (if (other-server-selected? (cur/get-state cursor
-                                               (get-state))
-                                server)
-      nil
-      (let [url (str "/current-problems/" (:id server))]
+      (let [url (str "/agents/list/" (:id server))]
         (ajax/GET
             url
             {:response-format (ajax/json-response-format {:keywords? true})
@@ -77,9 +50,39 @@
                                                                    (get-state))
                                                     server)
                           nil
+                          (if (not (nil? (:agents response)))
+                            (dispatch {:type :on-agents-list-loaded
+                                       :cursor cursor
+                                       :agents (:agents response)
+                                       :branches (:branches response)
+                                       :project (:project response)}))))
+             :error-handler (fn [response]
+                              (println response)
+                              (dispatch {:type :agent-list-is-loading
+                                         :cursor cursor}))})))))
+
+(defn get-current-problems-action-creator [server cursor]
+  (fn [dispatch get-state]
+    (let [s (cur/get-state cursor (get-state))
+          page (get-in s [:current-problems :current-page] 1)]
+      (if (other-server-selected? s server)
+        nil
+        (ajax/GET
+            "/current-problems"
+            {:params {"serverId" (:id server)
+                      "page" page}
+             :response-format (ajax/json-response-format {:keywords? true})
+             :handler (fn [response]
+                        (if (other-server-selected? (cur/get-state cursor
+                                                                   (get-state))
+                                                    server)
+                          nil
                           (dispatch {:type :on-current-problems-list-loaded
                                      :cursor cursor
-                                     :current-problems (get response :current-problems [])})))
+                                     :current-problems (get response :current-problems [])
+                                     :problems-count (get response :problems-count 0)
+                                     :current-page (get response :page 1)
+                                     :page-count (get response :page-count 0)})))
              :error-handler (fn [response]
                               (println response))})))))
 
@@ -220,3 +223,10 @@
 (defn filter-show-not-selected [cursor]
   (r/dispatch (filter-changed-action cursor :not-selected)))
 
+(defn select-current-problems-page [server page cursor]
+  (r/dispatch
+   (fn [dispatch get-state]
+     (dispatch {:type :on-select-current-problems-page
+                :cursor cursor
+                :page page})
+     (dispatch (get-current-problems-action-creator server cursor)))))

@@ -70,9 +70,22 @@
     word-break: break-all;
 }
 
+.current_problems_pages {
+    /*   word-break: break-all; */
+    overflow: normal;
+}
+
+.current_problems_page {
+    padding-right: 16px;
+}
+
 .copy_icon {
     cursor: pointer;
     padding-right: 10px;
+}
+
+.project-link {
+    padding-left: 16px;
 }
 
 .branches {
@@ -80,6 +93,6 @@
 }
 
 .single_problem {
-    white-space:nowrap;
+    white-space: nowrap;
     overflow: hidden;
 }

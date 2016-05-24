@@ -261,6 +261,13 @@
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
+             [:a {:on-click (fn [event]
+                              (copy/copy (:details problem))
+                              (.stopPropagation event))
+                  :title "copy stack trace"}
+              [:img {:src "/img/stack.png"
+                     :class-name "copy_icon"
+                     :alt "stack trace"}]]
              [:a {:href (->> problem
                              :build
                              :webUrl)
@@ -274,7 +281,42 @@
                   :target "_blank"
                   :class-name "current_problem_item"}
               (:name problem)]]]])
-        problems)])
+        (:problems problems))])
+
+(defn- project-info [project branches]
+  [:div nil
+   (let [attrs (:attrs project :attrs)]
+     [:a {:href (:webUrl attrs)
+          :target "_blank"
+          :class-name "project-link"} (:name attrs)])
+   [:span {:class-name "branches"}
+    (string/join "," branches)]])
+
+(defn- current-problems-stats [current-problems]
+  (let [problems-count (get current-problems :problems-count 0)]
+    [:div nil
+    (if (zero? problems-count)
+      (gstring/unescapeEntities "&nbsp;")
+      (gstring/format "Current problems: %d" problems-count))]))
+
+(defn- current-problems-pages [current-problems select-page]
+  (let [page-count (:page-count current-problems)
+        current-page (:current-page current-problems)]
+    (if (<= page-count 1)
+      nil
+      [:div {:class-name "current_problems_pages"}
+       (map (fn [[tag attrs content] index]
+              [tag (assoc attrs :key (str "current-problems-page-" index)) content])
+            (interpose [:span {} " "]
+                       (map (fn [i]
+                              (let [default-attrs {:class-name "current_problems_page"}]
+                                (if (= i current-page)
+                                  [:span default-attrs (str i)]
+                                  [:a (assoc default-attrs
+                                             :on-click
+                                             (fn [event] (select-page i))) (str i)])))
+                            (range 1 page-count)))
+            (iterate inc 1))])))
 
 (defn home-page []
   (let [cursor (rcur/nest (rcur/make-cursor)
@@ -312,19 +354,6 @@
             servers
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
-           [:div nil
-            [Col {:xs 12
-                  :md 6}
-             (let [attrs (:attrs project :attrs)]
-               [:a {:href (:webUrl attrs)
-                    :target "_blank"} (:name attrs)])
-             [:span {:class-name "branches"}
-              (string/join "," branches)]]
-            [Col {:xs 12
-                  :md 6}
-             (if (empty? current-problems)
-               (gstring/unescapeEntities "&nbsp;")
-               (gstring/format "Current problems: %d" (count current-problems)))]]
            [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12
@@ -343,6 +372,7 @@
                                      :filter-selected (fn [] (actions/filter-show-selected cursor))
                                      :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))
                                      }]
+              [project-info project branches]
               [agent-list {:agents agents
                            :selected-agents selected-agents
                            :filter-value filter-value
@@ -351,6 +381,11 @@
                            :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
+              [current-problems-stats current-problems]
+              [current-problems-pages current-problems
+               (fn [page] (actions/select-current-problems-page selected-server
+                                                                page
+                                                                cursor))]
               [current-problems-list selected-server current-problems cursor]]]]]))})))
 
 (defn ^:export init []

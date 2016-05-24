@@ -5,6 +5,6 @@
   (let [old-local-state (rcur/get-state cursor state)
         new-local-state (merge old-local-state
                                local-update-data)]
-    (rcur/update-state cursor
-                       state
-                       new-local-state)))
+    (rcur/set-state cursor
+                    state
+                    new-local-state)))

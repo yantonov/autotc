@@ -74,16 +74,39 @@
                    :error
                    error})))
 
-(defn- current-problems [server-id]
+(defn- page-count [items page-size]
+  (let [n (count items)
+        q (quot n page-size)
+        r (rem n page-size)]
+    (if (zero? r)
+      (inc q)
+      q)))
+
+(defn- current-problems [server-id requested-page]
   (let [{:keys [info error]}
         (.get-value (chc/cached (keyword (str "current-problems-" server-id))
                                 (fn []
                                   (request-current-problems server-id))
-                                :cache-seconds 30))]
+                                :cache-seconds 30))
+        problems (get info :current-problems [])
+        items-per-page 20
+        page-count (page-count problems items-per-page)
+
+        page (if (and (not (nil? requested-page))
+                      (>= requested-page 1)
+                      (<= requested-page page-count))
+               requested-page
+               1)]
     (rur/response {:current-problems
-                   (->>
-                    (get info :current-problems [])
-                    (map #(dissoc % :details)))
+                   (->> problems
+                        (drop (* items-per-page (dec page)))
+                        (take items-per-page)
+                        ;; (map #(dissoc % :details))
+                        )
+
+                   :page-count page-count
+                   :page page
+                   :problems-count (count problems)
 
                    :error
                    error})))
@@ -169,9 +192,13 @@
   (GET "/agents/list/:id"
       [id]
     (agents-for-server id))
-  (GET "/current-problems/:server-id"
-      [server-id]
-    (current-problems server-id))
+  (GET "/current-problems"
+      request
+    (fn [request]
+      (let [{server-id "serverId"
+             page "page"}
+            (:query-params request)]
+        (current-problems server-id (Integer/parseInt page)))))
   (POST "/agents/startBuild"
       request
     (fn [request]

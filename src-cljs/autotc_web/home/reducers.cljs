@@ -16,19 +16,22 @@
 (defn- define-reducers []
   (r/reducer-for-type :init-page
                       (fn [state action]
-                        (c/update-state (:cursor action) state {})))
+                        (c/set-state (:cursor action) state {})))
 
   (r/reducer-for-type :on-server-list-loaded
                       (fn [state action]
-                        (c/update-state (:cursor action)
-                                        state
-                                        {:servers (:servers action)
-                                         :agents []
-                                         :branches []
-                                         :project {}
-                                         :selected-agents #{}
-                                         :manually-selected-agents #{}
-                                         :current-problems []})))
+                        (c/set-state (:cursor action)
+                                     state
+                                     {:servers (:servers action)
+                                      :agents []
+                                      :branches []
+                                      :project {}
+                                      :selected-agents #{}
+                                      :manually-selected-agents #{}
+                                      :current-problems {:problems []
+                                                         :problems-count []
+                                                         :current-page 1
+                                                         :page-count 0}})))
 
   (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
@@ -83,7 +86,10 @@
                                         :branches []
                                         :project {}
                                         :filter-value nil
-                                        :current-problems []})))
+                                        :current-problems {:problems []
+                                                           :problems-count 0
+                                                           :current-page 1
+                                                           :page-count 0}})))
 
   (r/reducer-for-type :attach-poll-agent-timer
                       (fn [state action]
@@ -179,5 +185,14 @@
                         (h/merge-state state
                                        (:cursor action)
                                        {:current-problems
-                                        (:current-problems action)})))
-  )
+                                        {:problems (:current-problems action)
+                                         :problems-count (:problems-count action)
+                                         :current-page (:current-page action)
+                                         :page-count (:page-count action)}})))
+  (r/reducer-for-type  :on-select-current-problems-page
+                       (fn [state action]
+                         (c/update-state (:cursor action)
+                                         state
+                                         (fn [s]
+                                           (assoc-in s [:current-problems :current-page] (:page action)))))))
+
