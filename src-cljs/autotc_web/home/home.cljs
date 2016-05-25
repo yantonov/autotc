@@ -280,7 +280,13 @@
              [:a {:href (:webUrl problem)
                   :target "_blank"
                   :class-name "current_problem_item"}
-              (:name problem)]]]])
+              (:name problem)]]]
+           (if (:show-stacktraces problems)
+             [Row nil
+              [:div {:class-name "stacktrace"}
+               (clojure.string/escape (:details problem)
+                                      {\< "&lt;", \> "&gt;", \& "&amp;"})]]
+             nil)])
         (:problems problems))])
 
 (defn- project-info [project branches]
@@ -292,12 +298,19 @@
    [:span {:class-name "branches"}
     (string/join "," branches)]])
 
-(defn- current-problems-stats [current-problems]
+(defn- current-problems-stats [current-problems change-show-stack-trace]
   (let [problems-count (get current-problems :problems-count 0)]
     [:div nil
-    (if (zero? problems-count)
-      (gstring/unescapeEntities "&nbsp;")
-      (gstring/format "Current problems: %d" problems-count))]))
+     (if (zero? problems-count)
+       (gstring/unescapeEntities "&nbsp;")
+       [:div nil
+        (gstring/format "Current problems: %d" problems-count)
+        (gstring/unescapeEntities "&nbsp;")
+        [:a {:on-click (fn [event]
+                        (change-show-stack-trace))}
+         (if (:show-stacktraces current-problems)
+           "hide stack"
+           "show stack")]])]))
 
 (defn- current-problems-pages [current-problems select-page]
   (let [page-count (:page-count current-problems)
@@ -381,7 +394,7 @@
                            :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
-              [current-problems-stats current-problems]
+              [current-problems-stats current-problems (fn [] (actions/toggle-stacktraces cursor))]
               [current-problems-pages current-problems
                (fn [page] (actions/select-current-problems-page selected-server
                                                                 page
