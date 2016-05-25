@@ -254,14 +254,16 @@
             [Col {:xs 6
                   :md 3
                   :class-name "single_problem"}
-             [:a {:on-click (fn [event]
+             [:a {:href "#"
+                  :on-click (fn [event]
                               (copy/copy (:name problem))
                               (.stopPropagation event))
                   :title "copy test name"}
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
-             [:a {:on-click (fn [event]
+             [:a {:href "#"
+                  :on-click (fn [event]
                               (copy/copy (:details problem))
                               (.stopPropagation event))
                   :title "copy stack trace"}
@@ -306,8 +308,9 @@
        [:div nil
         (gstring/format "Current problems: %d" problems-count)
         (gstring/unescapeEntities "&nbsp;")
-        [:a {:on-click (fn [event]
-                        (change-show-stack-trace))}
+        [:a {:href "#"
+             :on-click (fn [event]
+                         (change-show-stack-trace))}
          (if (:show-stacktraces current-problems)
            "hide stack"
            "show stack")]])]))
@@ -325,9 +328,10 @@
                               (let [default-attrs {:class-name "current_problems_page"}]
                                 (if (= i current-page)
                                   [:span default-attrs (str i)]
-                                  [:a (assoc default-attrs
-                                             :on-click
-                                             (fn [event] (select-page i))) (str i)])))
+                                  [:a (-> default-attrs
+                                          (assoc :on-click (fn [event] (select-page i)))
+                                          (assoc :href "#"))
+                                   (str i)])))
                             (range 1 page-count)))
             (iterate inc 1))])))
 

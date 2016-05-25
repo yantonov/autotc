@@ -110,6 +110,7 @@
               (dispatch (load-agents-action-creator current-server cursor))
               (dispatch (get-current-problems-action-creator current-server cursor))
               (poller/start p)
+              ;; TODO: do not add not serializable data into model (add timer descriptor, not timer itself)
               (dispatch {:type :attach-poll-agent-timer
                          :cursor cursor
                          :poll-agent-timer p}))))))))
