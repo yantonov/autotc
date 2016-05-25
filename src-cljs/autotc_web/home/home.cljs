@@ -11,7 +11,8 @@
             [rex.ext.action-creator :as acm]
             [autotc-web.home.reducers :as reducers]
             [autotc-web.home.actions :as actions]
-            [autotc-web.util.copy :as copy]))
+            [autotc-web.util.copy :as copy]
+            [autotc-web.util.html_helpers :as html]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
@@ -286,8 +287,8 @@
            (if (:show-stacktraces problems)
              [Row nil
               [:div {:class-name "stacktrace"}
-               (clojure.string/escape (:details problem)
-                                      {\< "&lt;", \> "&gt;", \& "&amp;"})]]
+               (gstring/unescapeEntities
+                (html/html-escape (:details problem)))]]
              nil)])
         (:problems problems))])
 
