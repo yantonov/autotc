@@ -70,7 +70,8 @@
         (ajax/GET
             "/current-problems"
             {:params {"serverId" (:id server)
-                      "page" page}
+                      "page" page
+                      "showStackTraces" (get-in s [:current-problems :show-stacktraces]false)}
              :response-format (ajax/json-response-format {:keywords? true})
              :handler (fn [response]
                         (if (other-server-selected? (cur/get-state cursor
@@ -234,8 +235,9 @@
                 :page page})
      (dispatch (get-current-problems-action-creator server cursor)))))
 
-(defn toggle-stacktraces [cursor]
+(defn toggle-stacktraces [server cursor]
   (r/dispatch
    (fn [dispatch get-state]
      (dispatch {:type :on-toggle-stacktraces
-                :cursor cursor}))))
+                :cursor cursor})
+     (dispatch (get-current-problems-action-creator server cursor)))))

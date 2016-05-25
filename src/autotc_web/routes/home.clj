@@ -82,7 +82,7 @@
       (inc q)
       q)))
 
-(defn- current-problems [server-id requested-page]
+(defn- current-problems [server-id requested-page show-stacktraces]
   (let [{:keys [info error]}
         (.get-value (chc/cached (keyword (str "current-problems-" server-id))
                                 (fn []
@@ -98,11 +98,12 @@
                requested-page
                1)]
     (rur/response {:current-problems
-                   (->> problems
-                        (drop (* items-per-page (dec page)))
-                        (take items-per-page)
-                        ;; (map #(dissoc % :details))
-                        )
+                   (let [problems-page (->> problems
+                                            (drop (* items-per-page (dec page)))
+                                            (take items-per-page))]
+                     (if show-stacktraces
+                       problems-page
+                       (map #(dissoc % :details) problems-page)))
 
                    :page-count page-count
                    :page page
@@ -196,9 +197,13 @@
       request
     (fn [request]
       (let [{server-id "serverId"
-             page "page"}
+             page "page"
+             show-stack-traces "showStackTraces"
+             :or {show-stack-traces false}}
             (:query-params request)]
-        (current-problems server-id (Integer/parseInt page)))))
+        (current-problems server-id
+                          (Integer/parseInt page)
+                          (Boolean/parseBoolean show-stack-traces)))))
   (POST "/agents/startBuild"
       request
     (fn [request]
