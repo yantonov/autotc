@@ -31,7 +31,8 @@
                                       :current-problems {:problems []
                                                          :problems-count []
                                                          :current-page 1
-                                                         :page-count 0}})))
+                                                         :page-count 0
+                                                         :show-stacktraces false}})))
 
   (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
@@ -89,7 +90,8 @@
                                         :current-problems {:problems []
                                                            :problems-count 0
                                                            :current-page 1
-                                                           :page-count 0}})))
+                                                           :page-count 0
+                                                           :show-stacktraces false}})))
 
   (r/reducer-for-type :attach-poll-agent-timer
                       (fn [state action]
@@ -188,11 +190,24 @@
                                         {:problems (:current-problems action)
                                          :problems-count (:problems-count action)
                                          :current-page (:current-page action)
-                                         :page-count (:page-count action)}})))
+                                         :page-count (:page-count action)
+                                         :show-stacktraces (:show-stacktraces action)}})))
   (r/reducer-for-type  :on-select-current-problems-page
                        (fn [state action]
                          (c/update-state (:cursor action)
                                          state
                                          (fn [s]
-                                           (assoc-in s [:current-problems :current-page] (:page action)))))))
+                                           (assoc-in s [:current-problems :current-page] (:page action))))))
+
+  (r/reducer-for-type
+   :on-toggle-stacktraces
+   (fn [state action]
+     (c/update-state (:cursor action)
+                     state
+                     (fn [s]
+                       (assoc-in s
+                                 [:current-problems :show-stacktraces]
+                                 (not (get-in s
+                                              [:current-problems :show-stacktraces]
+                                              false))))))))
 

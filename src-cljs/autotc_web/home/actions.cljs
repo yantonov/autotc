@@ -82,7 +82,9 @@
                                      :current-problems (get response :current-problems [])
                                      :problems-count (get response :problems-count 0)
                                      :current-page (get response :page 1)
-                                     :page-count (get response :page-count 0)})))
+                                     :page-count (get response :page-count 0)
+                                     ;; remove this shit, and add reducer logic to preserve values
+                                     :show-stacktraces (get-in s [:current-problems :show-stacktraces] false)})))
              :error-handler (fn [response]
                               (println response))})))))
 
@@ -230,3 +232,9 @@
                 :cursor cursor
                 :page page})
      (dispatch (get-current-problems-action-creator server cursor)))))
+
+(defn toggle-stacktraces [cursor]
+  (r/dispatch
+   (fn [dispatch get-state]
+     (dispatch {:type :on-toggle-stacktraces
+                :cursor cursor}))))
