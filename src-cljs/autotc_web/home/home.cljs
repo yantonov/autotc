@@ -280,7 +280,11 @@
              [:a {:href (:webUrl problem)
                   :target "_blank"
                   :class-name "current_problem_item"}
-              (:name problem)]]]])
+              (:name problem)]]]
+           [Row nil
+            [:div {:class-name "stacktrace"}
+             (clojure.string/escape (:details problem)
+                                    {\< "&lt;", \> "&gt;", \& "&amp;"})]]])
         (:problems problems))])
 
 (defn- project-info [project branches]
@@ -295,9 +299,9 @@
 (defn- current-problems-stats [current-problems]
   (let [problems-count (get current-problems :problems-count 0)]
     [:div nil
-    (if (zero? problems-count)
-      (gstring/unescapeEntities "&nbsp;")
-      (gstring/format "Current problems: %d" problems-count))]))
+     (if (zero? problems-count)
+       (gstring/unescapeEntities "&nbsp;")
+       (gstring/format "Current problems: %d" problems-count))]))
 
 (defn- current-problems-pages [current-problems select-page]
   (let [page-count (:page-count current-problems)
