@@ -398,8 +398,12 @@
                            :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
-              [current-problems-stats current-problems (fn [] (actions/toggle-stacktraces cursor))]
-              [current-problems-pages current-problems
+              [current-problems-stats
+               current-problems
+               (fn [] (actions/toggle-stacktraces selected-server
+                                                  cursor))]
+              [current-problems-pages
+               current-problems
                (fn [page] (actions/select-current-problems-page selected-server
                                                                 page
                                                                 cursor))]
