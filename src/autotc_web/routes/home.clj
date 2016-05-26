@@ -78,7 +78,7 @@
   (let [n (count items)
         q (quot n page-size)
         r (rem n page-size)]
-    (if (zero? r)
+    (if (not (zero? r))
       (inc q)
       q)))
 
@@ -90,11 +90,11 @@
                                 :cache-seconds 30))
         problems (get info :current-problems [])
         items-per-page 20
-        page-count (page-count problems items-per-page)
+        total-pages (page-count problems items-per-page)
 
         page (if (and (not (nil? requested-page))
                       (>= requested-page 1)
-                      (<= requested-page page-count))
+                      (<= requested-page total-pages))
                requested-page
                1)]
     (rur/response {:current-problems
@@ -105,7 +105,7 @@
                        problems-page
                        (map #(dissoc % :details) problems-page)))
 
-                   :page-count page-count
+                   :page-count total-pages
                    :page page
                    :problems-count (count problems)
 
