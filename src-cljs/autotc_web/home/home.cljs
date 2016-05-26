@@ -334,7 +334,7 @@
                                           (assoc :on-click (fn [event] (select-page i)))
                                           (assoc :href "#"))
                                    (str i)])))
-                            (range 1 page-count)))
+                            (range 1 (inc page-count))))
             (iterate inc 1))])))
 
 (defn home-page []
