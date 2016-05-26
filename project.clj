@@ -12,8 +12,10 @@
                  [ch.qos.logback/logback-classic "1.1.7"] ;logging
                  ;; cljs
                  [org.clojure/clojurescript "1.8.51"]
-                 [reagent "0.5.1"]
-                 [cljsjs/react-bootstrap "0.29.2-0" :exclusions [org.webjars.bower/jquery]]
+                 [reagent "0.5.1" :exclusions [cljsjs/react]]
+                 [cljsjs/react-bootstrap "0.28.1-0" :exclusions
+                  [[org.webjars.bower/jquery]
+                   [cljsjs/react-bootstrap]]]
                  [cljs-ajax "0.5.4"]
                  ;; libs
                  [rex "0.1.0-SNAPSHOT"]
