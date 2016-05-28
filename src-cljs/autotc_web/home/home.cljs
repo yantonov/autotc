@@ -11,21 +11,20 @@
             [rex.ext.action-creator :as acm]
             [autotc-web.home.reducers :as reducers]
             [autotc-web.home.actions :as actions]
-            ;; [autotc-web.util.copy :as copy]
-            ;; [autotc-web.util.html_helpers :as html]
-            ))
+            [autotc-web.home.controls.info-message]
+            [autotc-web.home.controls.multi-action-toolbar]
+            [autotc-web.home.controls.server-list]
+            [autotc-web.home.controls.project-info]
+            [autotc-web.home.controls.current-problems]
+            [autotc-web.home.controls.current-problems-pages]
+            [autotc-web.home.controls.current-problems-stats]
+            [autotc-web.home.controls.agent-list]))
 
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
-;; (def ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
-;; (def ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
-;; (def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
-;; (def Button (r/adapt-react-class js/ReactBootstrap.Button))
-;; (def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
 
 (defn home-page []
-  (let [cursor (rcur/nest (rcur/make-cursor)
-                          :page)]
+  (let [cursor (rcur/nest (rcur/make-cursor) :page)]
     (r/create-class
      {:component-did-mount
       (fn [this]
@@ -79,11 +78,11 @@
                 :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))}]
               [autotc-web.home.controls.project-info/project-info project branches]
               [autotc-web.home.controls.agent-list/agent-list {:agents agents
-                           :selected-agents selected-agents
-                           :filter-value filter-value
-                           :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
-                           :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
-                           :show-loader show-agent-list-loader}]]
+                                                               :selected-agents selected-agents
+                                                               :filter-value filter-value
+                                                               :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
+                                                               :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
+                                                               :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
               [autotc-web.home.controls.current-problems-stats/current-problems-stats

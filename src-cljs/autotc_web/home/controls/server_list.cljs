@@ -1,5 +1,6 @@
 (ns autotc-web.home.controls.server-list
-  (:require [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [cljsjs.react-bootstrap]))
 
 (def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
 (def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
