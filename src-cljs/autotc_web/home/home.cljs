@@ -11,335 +11,20 @@
             [rex.ext.action-creator :as acm]
             [autotc-web.home.reducers :as reducers]
             [autotc-web.home.actions :as actions]
-            [autotc-web.util.copy :as copy]
-            [autotc-web.util.html_helpers :as html]))
+            [autotc-web.home.controls.info-message]
+            [autotc-web.home.controls.multi-action-toolbar]
+            [autotc-web.home.controls.server-list]
+            [autotc-web.home.controls.project-info]
+            [autotc-web.home.controls.current-problems]
+            [autotc-web.home.controls.current-problems-pages]
+            [autotc-web.home.controls.current-problems-stats]
+            [autotc-web.home.controls.agent-list]))
 
-(def Nav (r/adapt-react-class js/ReactBootstrap.Nav))
-(def NavItem (r/adapt-react-class js/ReactBootstrap.NavItem))
-(def Grid (r/adapt-react-class js/ReactBootstrap.Grid))
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
-(def ListGroup (r/adapt-react-class js/ReactBootstrap.ListGroup))
-(def ListGroupItem (r/adapt-react-class js/ReactBootstrap.ListGroupItem))
-(def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
-(def Button (r/adapt-react-class js/ReactBootstrap.Button))
-(def Glyphicon (r/adapt-react-class js/ReactBootstrap.Glyphicon))
-
-(defn info-message []
-  (r/create-class
-   {:reagent-render
-    (fn [message]
-      (if (nil? message)
-        nil
-        [:div {:class-name "static-modal"}
-         [:div {:tab-index "-1"
-                :role "dialog"
-                :style {:display "block"}
-                :class-name "modal in"}
-          [:div {:class-name "modal-dialog"}
-           [:div {:class-name "modal-content"}
-            [:div {:class-name "modal-header"
-                   :style {:border-bottom-width "0px"}}
-             [:button {:type "button"
-                       :class-name "close"
-                       :aria-hidden "true"}
-              "x"]
-             [:h4 {:class-name "modal-title"} message]]]]]]))}))
-
-(defn server-list [servers
-                   selected-server-index
-                   on-server-select]
-  [:div
-   nil
-   [Nav {:bs-style "tabs"
-         :active-key selected-server-index
-         :on-select on-server-select}
-    (for [[server index] (map vector servers (iterate inc 0))]
-      [NavItem {:key index
-                :event-key index
-                :href "#"}
-       (:alias server)])]])
-
-(defn filter-link [visible enabled text on-click]
-  (if visible
-    (let [css {:class-name "filter-selection-link"}]
-      (if enabled
-        [:span css text]
-        [:a (-> css
-                (assoc :href "#" text)
-                (assoc :on-click on-click))
-         text]))))
-
-(defn multi-action-toolbar [{:keys [enabled
-                                    visible
-                                    all-agents-count
-                                    selected-agents-count
-                                    on-start
-                                    on-stop
-                                    on-restart
-                                    on-reboot
-                                    on-run-custom-build
-                                    filter-value
-                                    filter-all
-                                    filter-selected
-                                    filter-not-selected]} data]
-  (let [disabled (not enabled)]
-    (if (and visible enabled)
-      [:div {:class-name "multi-action-toolbar-container"}
-       [:div {:class-name "navbar-default multi-action-panel"}
-        [:div {:class-name "container"
-               :style {}}
-         [ButtonToolbar
-          [Button {:disabled disabled
-                   :on-click on-start}
-           [Glyphicon {:glyph "play"}]
-           " Start"]
-          [Button {:disabled disabled
-                   :on-click on-stop}
-           [Glyphicon {:glyph "stop"}]
-           " Stop"]
-          [Button {:disabled disabled
-                   :on-click on-restart}
-           [Glyphicon {:glyph "repeat"}]
-           " Restart"]
-          [Button {:disabled disabled
-                   :on-click on-reboot}
-           [Glyphicon {:glyph "eject"}]
-           " Reboot"]]
-         [:div {:class-name "filter-panel"}
-
-          [filter-link
-           (< selected-agents-count all-agents-count)
-           (or (= filter-value :all)
-               (nil? filter-value))
-           "All"
-           filter-all]
-
-          [filter-link
-           true
-           (or (= filter-value :selected)
-               (= all-agents-count selected-agents-count))
-           (str "Selected (" selected-agents-count ")")
-           filter-selected]
-
-          [filter-link
-           (< selected-agents-count all-agents-count)
-           (= filter-value :not-selected)
-           (str "Not selected (" (- all-agents-count selected-agents-count) ")")
-           filter-not-selected]]]]])))
-
-(defn loader [{:keys [visible]} data]
-  (if visible
-    [:div nil
-     [:img {:src "/img/facebook.svg"
-            :alt "loader"
-            :class "facebook-loader"}]]))
-
-(defn select-all-element [{:keys [visible
-                                  on-change
-                                  checked]} data]
-  (if visible
-    [ListGroupItem
-     {:class-name "agent-container"}
-     [:div {:on-click (fn [event] (on-change (not checked)))
-            :class-name "agent__row"}
-      [:input {:type "checkbox"
-               :checked checked
-               :class-name "agent__checkbox"}]
-      (gstring/unescapeEntities "&nbsp;")
-      "All agents"]]))
-
-(defn- get-agent-status [agent]
-  (let [status (:statusText agent)]
-    (if (nil? status)
-      "Unknown status. Check agent configuration."
-      status)))
-
-(defn- get-image [status running]
-  (cond
-    (= status "FAILURE")
-    (if running
-      "running_red.gif"
-      "stopped_red.gif")
-
-    (= status "SUCCESS")
-    (if running
-      "running_green.gif"
-      "stopped_green.gif")
-
-    true
-    "unknown.png"))
-
-(defn agent-status [{:keys [running
-                            status]} data]
-  [:img {:src (str "/img/statuses/" (get-image status running))
-         :alt (str status (if running "in progress" "completed"))}])
-
-(defn agent-list-item [{:keys [key
-                               agent
-                               selected
-                               on-change]} data]
-  [ListGroupItem
-   {:key key
-    :class-name "agent-container"}
-   [:div {:on-click (fn [] (on-change (not selected)))
-          :class-name "agent__row"}
-    [:input {:type "checkbox"
-             :checked selected
-             :on-change (fn [event] (on-change event.target.checked))
-             :class-name "agent__checkbox"}]
-    (gstring/unescapeEntities "&nbsp;")
-    [agent-status {:running (:running agent)
-                   :status (:status agent)}]
-    (gstring/unescapeEntities "&nbsp;")
-    [:span {:class-name "agent__text agent__name"}
-     [:a {:href (:webUrl agent)
-          :target "_blank"
-          :on-click (fn [event]
-                      (.stopPropagation event)
-                      true)}
-      (:name agent)]]
-    (gstring/unescapeEntities "&nbsp;")
-    [:span {:class-name "agent__text agent__status"}
-     [:a {:href (:last-build-webUrl agent)
-          :target "_blank"
-          :on-click (fn [event]
-                      (.stopPropagation event)
-                      true)}
-      (str "["(get-agent-status agent) "]")]]
-    (if-let [queue-url (:queue-webUrl agent)]
-      [:a {:href queue-url
-           :target "_blank"
-           :on-click (fn [event]
-                       (.stopPropagation event)
-                       true)} "queued"])]])
-
-(defn agent-list [{:keys [agents
-                          selected-agents
-                          on-select-agent
-                          on-select-all
-                          show-loader
-                          filter-value]} data]
-  (letfn [(is-agent-selected? [selected-agents agent]
-            (contains? selected-agents (:id agent)))]
-    [:div
-     [loader {:visible show-loader}]
-     [ListGroup
-      [select-all-element {:visible (> (count agents) 0)
-                           :on-change on-select-all
-                           :checked (= (count agents) (count selected-agents))}]
-      (for [[a i] (map vector
-                       (filter (fn [a]
-                                 (cond
-                                   (nil? filter-value) true
-
-                                   (= filter-value :all) true
-
-                                   (= filter-value :selected) (is-agent-selected? selected-agents a)
-
-                                   :else (not (is-agent-selected? selected-agents a))))
-                               agents)
-                       (iterate inc 0))]
-        [agent-list-item {:key i
-                          :agent a
-                          :selected (is-agent-selected? selected-agents a)
-                          :on-change (fn [checked] (on-select-agent a checked))}])]]))
-
-(defn current-problems-list [server problems cursor]
-  [:div
-   nil
-   (map (fn [problem]
-          [:div
-           {:key (:name problem)}
-           [Row nil
-            [Col {:xs 6
-                  :md 3
-                  :class-name "single_problem"}
-             [:a {:href "#"
-                  :on-click (fn [event]
-                              (copy/copy (:name problem))
-                              (.stopPropagation event))
-                  :title "copy test name"}
-              [:img {:src "/img/copy.png"
-                     :class-name "copy_icon"
-                     :alt "test name"}]]
-             [:a {:href "#"
-                  :on-click (fn [event]
-                              (copy/copy (:details problem))
-                              (.stopPropagation event))
-                  :title "copy stack trace"}
-              [:img {:src "/img/stack.png"
-                     :class-name "copy_icon"
-                     :alt "stack trace"}]]
-             [:a {:href (->> problem
-                             :build
-                             :webUrl)
-                  :target "_blank"}
-              (->> problem
-                   :build
-                   :name)]]
-            [Col {:xs 18
-                  :md 9}
-             [:a {:href (:webUrl problem)
-                  :target "_blank"
-                  :class-name "current_problem_item"}
-              (:name problem)]]]
-           (if (:show-stacktraces problems)
-             [Row nil
-              [:div {:class-name "stacktrace"}
-               (gstring/unescapeEntities
-                (html/html-escape (:details problem)))]]
-             nil)])
-        (:problems problems))])
-
-(defn- project-info [project branches]
-  [:div nil
-   (let [attrs (:attrs project :attrs)]
-     [:a {:href (:webUrl attrs)
-          :target "_blank"
-          :class-name "project-link"} (:name attrs)])
-   [:span {:class-name "branches"}
-    (string/join "," branches)]])
-
-(defn- current-problems-stats [current-problems change-show-stack-trace]
-  (let [problems-count (get current-problems :problems-count 0)]
-    [:div nil
-     (if (zero? problems-count)
-       (gstring/unescapeEntities "&nbsp;")
-       [:div nil
-        (gstring/format "Current problems: %d" problems-count)
-        (gstring/unescapeEntities "&nbsp;")
-        [:a {:href "#"
-             :on-click (fn [event]
-                         (change-show-stack-trace))}
-         (if (:show-stacktraces current-problems)
-           "hide stack"
-           "show stack")]])]))
-
-(defn- current-problems-pages [current-problems select-page]
-  (let [page-count (:page-count current-problems)
-        current-page (:current-page current-problems)
-        x (do (print page-count) 1)]
-    (if (<= page-count 1)
-      nil
-      [:div {:class-name "current_problems_pages"}
-       (map (fn [[tag attrs content] index]
-              [tag (assoc attrs :key (str "current-problems-page-" index)) content])
-            (interpose [:span {} " "]
-                       (map (fn [i]
-                              (let [default-attrs {:class-name "current_problems_page"}]
-                                (if (= i current-page)
-                                  [:span default-attrs (str i)]
-                                  [:a (-> default-attrs
-                                          (assoc :on-click (fn [event] (select-page i)))
-                                          (assoc :href "#"))
-                                   (str i)])))
-                            (range 1 (inc page-count))))
-            (iterate inc 1))])))
 
 (defn home-page []
-  (let [cursor (rcur/nest (rcur/make-cursor)
-                          :page)]
+  (let [cursor (rcur/nest (rcur/make-cursor) :page)]
     (r/create-class
      {:component-did-mount
       (fn [this]
@@ -368,8 +53,8 @@
               (r/state this)
               selected-server (get servers selected-server-index)]
           [:div
-           [info-message message]
-           [server-list
+           [autotc-web.home.controls.info-message/info-message message]
+           [autotc-web.home.controls.server-list/server-list
             servers
             selected-server-index
             (fn [server-index] (actions/on-server-selected server-index cursor))]
@@ -377,39 +62,39 @@
             [Row {:class-name "agent-list"}
              [Col {:xs 12
                    :md 6}
-              [multi-action-toolbar {:enabled (not (empty? selected-agents))
-                                     :visible (not (empty? agents))
-                                     :all-agents-count (count agents)
-                                     :selected-agents-count (count selected-agents)
-                                     :on-start (fn [] (actions/start-build cursor))
-                                     :on-stop (fn [] (actions/stop-build cursor))
-                                     :on-restart (fn [] (actions/restart-build cursor))
-                                     :on-reboot (fn [] (actions/reboot-agent cursor))
-                                     :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
-                                     :filter-value filter-value
-                                     :filter-all (fn [] (actions/filter-show-all cursor))
-                                     :filter-selected (fn [] (actions/filter-show-selected cursor))
-                                     :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))
-                                     }]
-              [project-info project branches]
-              [agent-list {:agents agents
-                           :selected-agents selected-agents
-                           :filter-value filter-value
-                           :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
-                           :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
-                           :show-loader show-agent-list-loader}]]
+              [autotc-web.home.controls.multi-action-toolbar/multi-action-toolbar
+               {:enabled (not (empty? selected-agents))
+                :visible (not (empty? agents))
+                :all-agents-count (count agents)
+                :selected-agents-count (count selected-agents)
+                :on-start (fn [] (actions/start-build cursor))
+                :on-stop (fn [] (actions/stop-build cursor))
+                :on-restart (fn [] (actions/restart-build cursor))
+                :on-reboot (fn [] (actions/reboot-agent cursor))
+                :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
+                :filter-value filter-value
+                :filter-all (fn [] (actions/filter-show-all cursor))
+                :filter-selected (fn [] (actions/filter-show-selected cursor))
+                :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))}]
+              [autotc-web.home.controls.project-info/project-info project branches]
+              [autotc-web.home.controls.agent-list/agent-list {:agents agents
+                                                               :selected-agents selected-agents
+                                                               :filter-value filter-value
+                                                               :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
+                                                               :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
+                                                               :show-loader show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
-              [current-problems-stats
+              [autotc-web.home.controls.current-problems-stats/current-problems-stats
                current-problems
                (fn [] (actions/toggle-stacktraces selected-server
                                                   cursor))]
-              [current-problems-pages
+              [autotc-web.home.controls.current-problems-pages/current-problems-pages
                current-problems
                (fn [page] (actions/select-current-problems-page selected-server
                                                                 page
                                                                 cursor))]
-              [current-problems-list selected-server current-problems cursor]]]]]))})))
+              [autotc-web.home.controls.current-problems/current-problems-list selected-server current-problems cursor]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]
