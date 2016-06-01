@@ -21,8 +21,7 @@
                 :class-name "single_problem"}
            [:a {:href "#"
                 :on-click (fn [event]
-                            (copy/copy test-name)
-                            (.stopPropagation event))
+                            (copy/copy test-name))
                 :title "copy test name"}
             [:img {:src "/img/copy.png"
                    :class-name "copy_icon"
@@ -40,7 +39,7 @@
                 :md 9}
            [:a {:href "#"
                 :on-click (fn [event]
-                            (print test-name))
+                            (copy/copy test-name))
                 :class-name "current_problem_item"}
             test-name]]]
          (if (:show-stacktraces problems)
