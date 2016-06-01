@@ -5,7 +5,7 @@
   (let [problems-count (get current-problems :problems-count 0)]
     [:div nil
      (if (zero? problems-count)
-       (gstring/unescapeEntities "&nbsp;")
+       "No failed tests. Congratulations!"
        [:div nil
         (gstring/format "Current problems: %d" problems-count)
         (gstring/unescapeEntities "&nbsp;")
