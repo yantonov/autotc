@@ -118,9 +118,13 @@
                              (filter (tag? :buildType))
                              first
                              :attrs)]
-    (assoc build-type-info :webUrl (->> build-response
-                                        :attrs
-                                        :webUrl))))
+    (-> build-type-info
+        (assoc :webUrl (->> build-response
+                            :attrs
+                            :webUrl))
+        (assoc :running (->> build-response
+                            :attrs
+                            :running)))))
 
 (defn parse-tests-occurences [response]
   (->> response
