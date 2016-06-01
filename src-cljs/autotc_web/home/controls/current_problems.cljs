@@ -25,14 +25,6 @@
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
-             [:a {:href "#"
-                  :on-click (fn [event]
-                              (copy/copy (:details problem))
-                              (.stopPropagation event))
-                  :title "copy stack trace"}
-              [:img {:src "/img/stack.png"
-                     :class-name "copy_icon"
-                     :alt "stack trace"}]]
              [:a {:href (->> problem
                              :build
                              :webUrl)
@@ -48,8 +40,14 @@
               (:name problem)]]]
            (if (:show-stacktraces problems)
              [Row nil
-              [:div {:class-name "stacktrace"}
-               (gstring/unescapeEntities
-                (html/html-escape (:details problem)))]]
+              [:a {:href "#"
+                   :on-click (fn [event]
+                               (copy/copy (:details problem))
+                               (.stopPropagation event))
+                   :title "copy stack trace"
+                   :class-name "stacktrace_link"}
+               [:span {:class-name "stacktrace"}
+                (gstring/unescapeEntities
+                 (html/html-escape (:details problem)))]]]
              nil)])
         (:problems problems))])
