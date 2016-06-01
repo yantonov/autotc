@@ -32,7 +32,8 @@
                                                          :problems-count []
                                                          :current-page 1
                                                          :page-count 0
-                                                         :show-stacktraces false}})))
+                                                         :show-stacktraces false}
+                                      :tests-with-expanded-stack-traces #{}})))
 
   (r/reducer-for-type :on-agents-list-loaded
                       (fn [state action]
@@ -91,7 +92,8 @@
                                                            :problems-count 0
                                                            :current-page 1
                                                            :page-count 0
-                                                           :show-stacktraces false}})))
+                                                           :show-stacktraces false}
+                                        :tests-with-expanded-stack-traces #{}})))
 
   (r/reducer-for-type :attach-poll-agent-timer
                       (fn [state action]
@@ -209,5 +211,18 @@
                                  [:current-problems :show-stacktraces]
                                  (not (get-in s
                                               [:current-problems :show-stacktraces]
-                                              false))))))))
+                                              false)))))))
+
+  (r/reducer-for-type
+   :expand-stack-trace
+   (fn [state action]
+     (let [test-name (:test-name action)]
+       (c/update-state (:cursor action)
+                       state
+                       (fn [s]
+                         (update-in s
+                                    [:tests-with-expanded-stack-traces]
+                                    (fn [old]
+                                      (let [f (if (contains? old test-name) disj conj)]
+                                        (f old test-name))))))))))
 

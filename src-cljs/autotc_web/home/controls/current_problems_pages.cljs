@@ -2,8 +2,7 @@
 
 (defn current-problems-pages [current-problems select-page]
   (let [page-count (:page-count current-problems)
-        current-page (:current-page current-problems)
-        x (do (print page-count) 1)]
+        current-page (:current-page current-problems)]
     (if (<= page-count 1)
       nil
       [:div {:class-name "current_problems_pages"}
