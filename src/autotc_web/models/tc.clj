@@ -84,11 +84,19 @@
 
 (defn combine-latest-builds [builds]
   (let [butlast-build (attach-build-info-for-each-test second builds)
-        last-build (attach-build-info-for-each-test first builds)]
+        last-build (attach-build-info-for-each-test first builds)
+        last-build-completed? (every? identity
+                                      (map (fn [b] (-> b
+                                                       first
+                                                       :build
+                                                       :running
+                                                       not))
+                                           builds))]
     (if (empty? butlast-build)
       (filter test-failed? last-build)
       (concat (filter test-failed? last-build)
-              (filter #(and (test-failed? %)
+              (filter #(and (not last-build-completed?)
+                            (test-failed? %)
                             (empty? (filter (fn [x]
                                               (and (= (:name %)
                                                       (:name x))
