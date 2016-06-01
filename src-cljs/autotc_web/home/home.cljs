@@ -48,7 +48,8 @@
                       agents
                       show-agent-list-loader
                       filter-value
-                      current-problems]
+                      current-problems
+                      tests-with-expanded-stack-traces]
                :or {:show-agent-list-loader false}}
               (r/state this)
               selected-server (get servers selected-server-index)]
@@ -94,7 +95,13 @@
                (fn [page] (actions/select-current-problems-page selected-server
                                                                 page
                                                                 cursor))]
-              [autotc-web.home.controls.current-problems/current-problems-list selected-server current-problems cursor]]]]]))})))
+              [autotc-web.home.controls.current-problems/current-problems-list
+               selected-server
+               current-problems
+               tests-with-expanded-stack-traces
+               cursor
+               (fn [test-name]
+                 (actions/expand-stack-trace test-name cursor))]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]

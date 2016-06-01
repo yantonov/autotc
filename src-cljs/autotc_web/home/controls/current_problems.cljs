@@ -7,12 +7,12 @@
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
 
-(defn current-problems-list [server problems cursor]
+(defn current-problems-list [server problems tests-with-stack-traces cursor expand-stack-trace-fn]
   [:div
    nil
    (map
     (fn [problem]
-      (let [stacktrace (or (:details problem) "")
+      (let [stack-trace (or (:details problem) "")
             test-name (:name problem)]
         [:div {:key test-name}
          [Row nil
@@ -39,19 +39,21 @@
                 :md 9}
            [:a {:href "#"
                 :on-click (fn [event]
-                            (copy/copy test-name))
+                            (copy/copy test-name)
+                            (expand-stack-trace-fn test-name))
                 :class-name "current_problem_item"}
             test-name]]]
-         (if (:show-stacktraces problems)
+         (if (or (:show-stacktraces problems)
+                 (contains? tests-with-stack-traces test-name))
            [Row nil
             [:a {:href "#"
                  :on-click (fn [event]
-                             (copy/copy stacktrace)
+                             (copy/copy stack-trace)
                              (.stopPropagation event))
                  :title "copy stack trace"
                  :class-name "stacktrace_link"}
              [:span {:class-name "stacktrace"}
               (gstring/unescapeEntities
-               (html/html-escape stacktrace))]]]
+               (html/html-escape stack-trace))]]]
            nil)]))
     (:problems problems))])
