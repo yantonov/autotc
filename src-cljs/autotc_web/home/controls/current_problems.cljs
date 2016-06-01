@@ -17,7 +17,8 @@
    (map
     (fn [problem]
       (let [stack-trace (or (:details problem) "")
-            test-name (:name problem)]
+            test-name (:name problem)
+            xor (fn [a b] (not (= a b)))]
         [:div {:key test-name}
          [Row nil
           [Col {:xs 6
@@ -46,7 +47,7 @@
                             (expand-stack-trace-fn test-name))
                 :class-name "current_problem_item pointer"}
             test-name]]]
-         (if (or (:show-stacktraces problems)
+         (if (xor (:show-stacktraces problems)
                  (contains? tests-with-stack-traces test-name))
            [Row nil
             [:a {:on-click (fn [event]
