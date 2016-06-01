@@ -7,7 +7,11 @@
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
 
-(defn current-problems-list [server problems tests-with-stack-traces cursor expand-stack-trace-fn]
+(defn current-problems-list [server
+                             problems
+                             tests-with-stack-traces
+                             cursor
+                             expand-stack-trace-fn]
   [:div
    nil
    (map
@@ -19,9 +23,9 @@
           [Col {:xs 6
                 :md 3
                 :class-name "single_problem"}
-           [:a {:href "#"
-                :on-click (fn [event]
+           [:a {:on-click (fn [event]
                             (copy/copy test-name))
+                :class-name "pointer"
                 :title "copy test name"}
             [:img {:src "/img/copy.png"
                    :class-name "copy_icon"
@@ -37,22 +41,20 @@
             (->> problem :build :name)]]
           [Col {:xs 18
                 :md 9}
-           [:a {:href "#"
-                :on-click (fn [event]
+           [:a {:on-click (fn [event]
                             (copy/copy test-name)
                             (expand-stack-trace-fn test-name))
-                :class-name "current_problem_item"}
+                :class-name "current_problem_item pointer"}
             test-name]]]
          (if (or (:show-stacktraces problems)
                  (contains? tests-with-stack-traces test-name))
            [Row nil
-            [:a {:href "#"
-                 :on-click (fn [event]
+            [:a {:on-click (fn [event]
                              (copy/copy stack-trace)
                              (.stopPropagation event))
                  :title "copy stack trace"
-                 :class-name "stacktrace_link"}
-             [:span {:class-name "stacktrace"}
+                 :class-name "stacktrace_link pointer"}
+             [:span {:class-name "stacktrace pointer"}
               (gstring/unescapeEntities
                (html/html-escape stack-trace))]]]
            nil)]))
