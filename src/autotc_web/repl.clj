@@ -1,4 +1,4 @@
-`(ns autotc-web.repl
+(ns autotc-web.repl
   (:require  [autotc-web.handler :as autotc]
              [ring.server.standalone :as rings]
              [ring.middleware.content-type :refer [wrap-content-type]]
