@@ -25,17 +25,25 @@
               [:img {:src "/img/copy.png"
                      :class-name "copy_icon"
                      :alt "test name"}]]
-             [:a {:href (->> problem
-                             :build
-                             :webUrl)
+             [:a {:href (:webUrl problem)
+                  :target "_blank"
+                  :title "test history"}
+              [:img {:src "/img/clock.png"
+                     :class-name "copy_icon"
+                     :alt "test history"}]]
+             [:a {:href (-> problem
+                            :build
+                            :webUrl)
                   :target "_blank"}
               (->> problem
                    :build
                    :name)]]
             [Col {:xs 18
                   :md 9}
-             [:a {:href (:webUrl problem)
-                  :target "_blank"
+             [:a {:href "#"
+                  :on-click (fn [event]
+                              (print (:name problem))
+                              )
                   :class-name "current_problem_item"}
               (:name problem)]]]
            (if (:show-stacktraces problems)
