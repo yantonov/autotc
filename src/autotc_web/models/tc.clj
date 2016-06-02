@@ -47,8 +47,8 @@
               (tc/vcs-roots server credentials project-id)))
 
         branches
-        (map (comp :branchName parser/parse-vcs-root)
-             (doall (map #(tc/vcs-root server credentials %) vcs-roots-ids)))
+        (distinct (map (comp :branchName parser/parse-vcs-root)
+                       (doall (map #(tc/vcs-root server credentials %) vcs-roots-ids))))
 
         project-queue
         (reduce (fn [m item]
