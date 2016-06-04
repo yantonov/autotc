@@ -107,6 +107,7 @@
              [Col {:xs 12
                    :md 6}
               [autotc-web.home.controls.current-problems-stats/current-problems-stats
+               (:id selected-server)
                current-problems
                (fn [] (actions/toggle-stacktraces selected-server
                                                   cursor))]

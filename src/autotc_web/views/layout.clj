@@ -32,3 +32,30 @@
       [:a {:href "https://github.com/yantonov/autotc"
            :target "_blank"}
        "Fork me on GitHub"]]]]))
+
+(defn current-problems-file [problems]
+  (html5
+   [:head
+    [:title "autotc"]
+    (include-js "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js")]
+   [:body
+
+    [:div nil
+     [:ol nil
+      (map (fn [problem]
+             [:li nil
+              [:div nil
+               [:a {:href ""
+                    :class "test"}
+                (:name problem)]
+               [:div {:style "white-space: pre; display: none"
+                      :class "stack"}
+                (:details problem)]]])
+           problems)]]
+    [:script {:type "text/javascript"}
+     (str "$(document).ready(function () {"
+          "$('.test').click(function(e) {"
+          "$(e.target).parent().find('.stack').toggle();"
+          "return false;"
+          "});"
+          "})")]]))

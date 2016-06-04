@@ -82,21 +82,32 @@
         r (rem n page-size)]
     (if-not (zero? r) (inc q) q)))
 
+(defn- all-current-problems [server-id]
+  (.get-value
+   (chc/cached (keyword (str "current-problems-" server-id))
+               (fn []
+                 (request-current-problems server-id))
+               :cache-seconds 30)))
+
 (defn- current-problems [server-id requested-page show-stacktraces]
   (let [{:keys [info error]}
-        (.get-value (chc/cached (keyword (str "current-problems-" server-id))
-                                (fn []
-                                  (request-current-problems server-id))
-                                :cache-seconds 30))
-        problems (get info :current-problems [])
-        items-per-page 20
-        total-pages (page-count problems items-per-page)
+        (all-current-problems server-id)
 
-        page (if (and (not (nil? requested-page))
-                      (>= requested-page 1)
-                      (<= requested-page total-pages))
-               requested-page
-               1)]
+        problems
+        (get info :current-problems [])
+
+        items-per-page
+        20
+
+        total-pages
+        (page-count problems items-per-page)
+
+        page
+        (if (and (not (nil? requested-page))
+                 (>= requested-page 1)
+                 (<= requested-page total-pages))
+          requested-page
+          1)]
     (rur/response {:current-problems
                    (let [problems-page (->> problems
                                             (drop (* items-per-page (dec page)))
@@ -190,6 +201,16 @@
                           build-type-ids
                           tc/reboot-agent))
 
+(defn- download-current-problems [server-id]
+  (let [problems (get-in (all-current-problems server-id)
+                         [:info :current-problems]
+                         [])]
+    {:status 200
+     :headers {"Content-Type" "text/html"
+               "Content-Disposition"
+               "attachment; filename*=UTF-8''current-problems.html"}
+     :body (layout/current-problems-file problems)}))
+
 (defroutes home-routes
   (GET "/"
       []
@@ -211,6 +232,9 @@
         (current-problems server-id
                           (Integer/parseInt page)
                           (Boolean/parseBoolean show-stack-traces)))))
+  (GET "/download-current-problems"
+      [id]
+    (download-current-problems id))
   (POST "/agents/startBuild"
       request
     (fn [request]
