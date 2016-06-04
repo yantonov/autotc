@@ -105,18 +105,16 @@
                       butlast-build)))))
 
 (defn distinct-by
-  "Returns a lazy sequence of the elements of coll, removing any elements that
-  return duplicate values when passed to a function f."
   [f coll]
-  (let [step (fn step [xs seen]
-               (lazy-seq
-                ((fn [[x :as xs] seen]
-                   (when-let [s (seq xs)]
-                     (let [fx (f x)]
-                       (if (contains? seen fx)
-                         (recur (rest s) seen)
-                         (cons x (step (rest s) (conj seen fx)))))))
-                 xs seen)))]
+  (letfn [(step [xs seen]
+            (lazy-seq
+             ((fn [[x :as xs] seen]
+                (when-let [s (seq xs)]
+                  (let [fx (f x)]
+                    (if (contains? seen fx)
+                      (recur (rest s) seen)
+                      (cons x (step (rest s) (conj seen fx)))))))
+              xs seen)))]
     (step coll #{})))
 
 (defn current-problems [host port project-name user pass]
@@ -188,8 +186,8 @@
              (map patch-test-info)
              (distinct-by :name)
              (sort-by #(str "%s:%s"
-                            (-> % :build :name)
-                            (-> % :name))))]
+                            (get-in % [:build :name])
+                            (:name %))))]
     {:current-problems problems}))
 
 (defn trigger-build [host port user pass build-type-id]
@@ -215,15 +213,11 @@
         (tcn/make-credentials user pass)
 
         ;; TODO: think to replace this heuristics to agent requirement parameters
-        last-build-id
+        agent-id
         (->> (tc/last-builds server credentials build-type-id)
              parser/parse-last-builds
              first
-             :id)
-
-        last-build
-        (tc/build server credentials last-build-id)
-
-        agent-id
-        (parser/parse-agent-id-from-build last-build)]
+             :id
+             (tc/build server credentials)
+             (parser/parse-agent-id-from-build))]
     (tc/reboot-agent server credentials agent-id)))
