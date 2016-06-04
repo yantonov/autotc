@@ -72,4 +72,3 @@
            (= filter-value :not-selected)
            (str "Not selected (" (- all-agents-count selected-agents-count) ")")
            filter-not-selected]]]]])))
-

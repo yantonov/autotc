@@ -25,17 +25,22 @@
 
         build-types
         (doall (map (fn [build-type-id]
-                      (let [last-build (->> build-type-id
-                                            (tc/last-builds server credentials)
-                                            parser/parse-last-builds
-                                            first)
-                            build-type (->> build-type-id
-                                            (tc/build-type server credentials)
-                                            :attrs)
-                            last-build-details (->> last-build
-                                                    :id
-                                                    (tc/build server credentials)
-                                                    parser/parse-build-response)]
+                      (let [last-build
+                            (->> build-type-id
+                                 (tc/last-builds server credentials)
+                                 parser/parse-last-builds
+                                 first)
+
+                            build-type
+                            (->> build-type-id
+                                 (tc/build-type server credentials)
+                                 :attrs)
+
+                            last-build-details
+                            (->> last-build
+                                 :id
+                                 (tc/build server credentials)
+                                 parser/parse-build-response)]
                         {:last-build last-build
                          :build-type build-type
                          :last-build-details last-build-details}))
@@ -48,7 +53,8 @@
 
         branches
         (distinct (map (comp :branchName parser/parse-vcs-root)
-                       (doall (map #(tc/vcs-root server credentials %) vcs-roots-ids))))
+                       (doall (map #(tc/vcs-root server credentials %)
+                                   vcs-roots-ids))))
 
         project-queue
         (reduce (fn [m item]
@@ -70,17 +76,17 @@
 
 (defn- test-failed? [t]
   (and (not (get t :ignored false))
-       (not (= "SUCCESS" (:status t)))))
+       (not= "SUCCESS" (:status t))))
 
 (defn attach-build-info-for-each-test [f builds]
   (letfn [(extend-test-info [build]
             (map #(assoc % :build (:build build))
                  (:tests build)))]
-    (apply concat (map #(-> %
-                            :builds
-                            f
-                            extend-test-info)
-                       builds))))
+    (mapcat #(-> %
+                 :builds
+                 f
+                 extend-test-info)
+            builds)))
 
 (defn combine-latest-builds [builds]
   (let [butlast-build (attach-build-info-for-each-test second builds)
@@ -105,18 +111,16 @@
                       butlast-build)))))
 
 (defn distinct-by
-  "Returns a lazy sequence of the elements of coll, removing any elements that
-  return duplicate values when passed to a function f."
   [f coll]
-  (let [step (fn step [xs seen]
-               (lazy-seq
-                ((fn [[x :as xs] seen]
-                   (when-let [s (seq xs)]
-                     (let [fx (f x)]
-                       (if (contains? seen fx)
-                         (recur (rest s) seen)
-                         (cons x (step (rest s) (conj seen fx)))))))
-                 xs seen)))]
+  (letfn [(step [xs seen]
+            (lazy-seq
+             ((fn [[x :as xs] seen]
+                (when-let [s (seq xs)]
+                  (let [fx (f x)]
+                    (if (contains? seen fx)
+                      (recur (rest s) seen)
+                      (cons x (step (rest s) (conj seen fx)))))))
+              xs seen)))]
     (step coll #{})))
 
 (defn current-problems [host port project-name user pass]
@@ -127,7 +131,8 @@
         (tcn/make-credentials user pass)
 
         project
-        (parser/project-by-name (tc/projects server credentials) project-name)
+        (parser/project-by-name (tc/projects server credentials)
+                                project-name)
 
         project-id (:id project)
         project-domain (parser/parse-project-domain project)
@@ -147,20 +152,24 @@
         get-tests-from-latest-builds
         (fn [build-type-ids]
           (map (fn [build-type-id]
-                 {:build-type-id build-type-id
-                  :builds (doall (map (fn [build]
-                                        {:build (->> build
-                                                     :id
-                                                     (tc/build server credentials)
-                                                     parser/parse-build)
-                                         :tests (->> build
-                                                     :id
-                                                     (tc/tests-occurences server credentials)
-                                                     parser/parse-tests-occurences)})
-                                      (->> build-type-id
-                                           (tc/last-builds server credentials)
-                                           parser/parse-last-builds
-                                           (take 2))))})
+                 {:build-type-id
+                  build-type-id
+
+                  :builds
+                  (doall
+                   (map (fn [build]
+                          {:build (->> build
+                                       :id
+                                       (tc/build server credentials)
+                                       parser/parse-build)
+                           :tests (->> build
+                                       :id
+                                       (tc/tests-occurences server credentials)
+                                       parser/parse-tests-occurences)})
+                        (->> build-type-id
+                             (tc/last-builds server credentials)
+                             parser/parse-last-builds
+                             (take 2))))})
                build-type-ids))
 
         test-name-pattern
@@ -172,13 +181,18 @@
                 pattern-matches (re-matches test-name-pattern name)
                 test-details (get-test-details (:id test-handle))]
             (-> test-details
-                (assoc :webUrl (format "http://%s/project.html?projectId=%s&testNameId=%s&tab=testDetails" project-domain project-id (:id test-details)))
-                (assoc :name (if (not (nil? pattern-matches))
+                (assoc :webUrl (format (str "http://%s/project.html"
+                                            "?projectId=%s"
+                                            "&testNameId=%s"
+                                            "&tab=testDetails")
+                                       project-domain
+                                       project-id
+                                       (:id test-details)))
+                (assoc :name (if-not (nil? pattern-matches)
                                (nth pattern-matches 2)
                                name))
-                (assoc :namespace (if (not (nil? pattern-matches))
-                                    (nth pattern-matches 1)
-                                    nil))
+                (assoc :namespace (when-not (nil? pattern-matches)
+                                    (nth pattern-matches 1)))
                 (assoc :build (:build test-handle)))))
 
         problems
@@ -188,8 +202,8 @@
              (map patch-test-info)
              (distinct-by :name)
              (sort-by #(str "%s:%s"
-                            (-> % :build :name)
-                            (-> % :name))))]
+                            (get-in % [:build :name])
+                            (:name %))))]
     {:current-problems problems}))
 
 (defn trigger-build [host port user pass build-type-id]
@@ -198,12 +212,17 @@
     (tc/trigger-build server credentials build-type-id)))
 
 (defn cancel-build [host port user pass build-type-id]
-  (let [server (tcn/make-server host :port port)
-        credentials (tcn/make-credentials user pass)
-        running-build-id (->> (tc/running-build server credentials build-type-id)
-                              parser/parse-last-builds
-                              first
-                              :id)]
+  (let [server
+        (tcn/make-server host :port port)
+
+        credentials
+        (tcn/make-credentials user pass)
+
+        running-build-id
+        (->> (tc/running-build server credentials build-type-id)
+             parser/parse-last-builds
+             first
+             :id)]
     (if (not (nil? running-build-id))
       (tc/cancel-build server credentials running-build-id))))
 
@@ -214,16 +233,13 @@
         credentials
         (tcn/make-credentials user pass)
 
-        ;; TODO: think to replace this heuristics to agent requirement parameters
-        last-build-id
+        ;; TODO: think to replace this heuristics
+        ;; to agent requirement parameters
+        agent-id
         (->> (tc/last-builds server credentials build-type-id)
              parser/parse-last-builds
              first
-             :id)
-
-        last-build
-        (tc/build server credentials last-build-id)
-
-        agent-id
-        (parser/parse-agent-id-from-build last-build)]
+             :id
+             (tc/build server credentials)
+             (parser/parse-agent-id-from-build))]
     (tc/reboot-agent server credentials agent-id)))

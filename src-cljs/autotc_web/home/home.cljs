@@ -72,21 +72,42 @@
                 :on-stop (fn [] (actions/stop-build cursor))
                 :on-restart (fn [] (actions/restart-build cursor))
                 :on-reboot (fn [] (actions/reboot-agent cursor))
-                :on-change-show-selected-only (fn [] (actions/change-show-selected-only cursor))
+
+                :on-change-show-selected-only
+                (fn [] (actions/change-show-selected-only cursor))
+
                 :filter-value filter-value
                 :filter-all (fn [] (actions/filter-show-all cursor))
                 :filter-selected (fn [] (actions/filter-show-selected cursor))
-                :filter-not-selected (fn [] (actions/filter-show-not-selected cursor))}]
-              [autotc-web.home.controls.project-info/project-info project branches]
-              [autotc-web.home.controls.agent-list/agent-list {:agents agents
-                                                               :selected-agents selected-agents
-                                                               :filter-value filter-value
-                                                               :on-select-agent (fn [agent selected?] (actions/on-agent-selected agent selected? cursor))
-                                                               :on-select-all (fn [selected?] (actions/on-all-agents-selected selected? cursor))
-                                                               :show-loader show-agent-list-loader}]]
+
+                :filter-not-selected
+                (fn [] (actions/filter-show-not-selected cursor))}]
+              [autotc-web.home.controls.project-info/project-info
+               project
+               branches]
+              [autotc-web.home.controls.agent-list/agent-list
+               {:agents
+                agents
+
+                :selected-agents
+                selected-agents
+
+                :filter-value
+                filter-value
+
+                :on-select-agent
+                (fn [agent selected?] (actions/on-agent-selected agent
+                                                                 selected?
+                                                                 cursor))
+                :on-select-all
+                (fn [selected?] (actions/on-all-agents-selected selected?
+                                                                cursor))
+                :show-loader
+                show-agent-list-loader}]]
              [Col {:xs 12
                    :md 6}
               [autotc-web.home.controls.current-problems-stats/current-problems-stats
+               (:id selected-server)
                current-problems
                (fn [] (actions/toggle-stacktraces selected-server
                                                   cursor))]

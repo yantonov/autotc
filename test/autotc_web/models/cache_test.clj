@@ -17,7 +17,7 @@
                                                    sut/get-initial-last-updated
                                                    sut/update-needed?
                                                    cache-time-in-seconds))]
-      (sut/reset-cache)
+      (sut/reset-cache!)
       (dotimes [i 3]
         (call-service-fn))
       (let [result (call-service-fn)]

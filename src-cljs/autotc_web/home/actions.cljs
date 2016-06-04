@@ -17,8 +17,11 @@
       (dispatch {:type :show-message
                  :cursor cursor
                  :message message
-                 :message-timer (js/setTimeout (fn [] (dispatch (hide-message-action-creator cursor)))
-                                               5000)}))))
+
+                 :message-timer
+                 (js/setTimeout
+                  (fn [] (dispatch (hide-message-action-creator cursor)))
+                  5000)}))))
 
 (defn reset-timer-action-creator [cursor]
   (fn [dispatch get-store]
@@ -71,7 +74,8 @@
             "/current-problems"
             {:params {"serverId" (:id server)
                       "page" page
-                      "showStackTraces" true;(get-in s [:current-problems :show-stacktraces]false)
+                      "showStackTraces" true
+                      ;;(get-in s [:current-problems :show-stacktraces]false)
                       }
              :response-format (ajax/json-response-format {:keywords? true})
              :handler (fn [response]
@@ -80,13 +84,28 @@
                                                     server)
                           nil
                           (dispatch {:type :on-current-problems-list-loaded
-                                     :cursor cursor
-                                     :current-problems (get response :current-problems [])
-                                     :problems-count (get response :problems-count 0)
-                                     :current-page (get response :page 1)
-                                     :page-count (get response :page-count 0)
-                                     ;; remove this shit, and add reducer logic to preserve values
-                                     :show-stacktraces (get-in s [:current-problems :show-stacktraces] false)})))
+                                     :cursor
+                                     cursor
+
+                                     :current-problems
+                                     (get response :current-problems [])
+
+                                     :problems-count
+                                     (get response :problems-count 0)
+
+                                     :current-page
+                                     (get response :page 1)
+
+                                     :page-count
+                                     (get response :page-count 0)
+                                     ;; remove this shit, and add reducer logic
+                                     ;; to preserve values
+
+                                     :show-stacktraces
+                                     (get-in s
+                                             [:current-problems
+                                              :show-stacktraces]
+                                             false)})))
              :error-handler (fn [response]
                               (println response))})))))
 
@@ -102,17 +121,23 @@
                      :server-index server-index})
           (dispatch (reset-timer-action-creator cursor))
           (let [current-server (get (:servers state) server-index)
-                p (poller/create-poller (fn []
-                                          (dispatch (load-agents-action-creator current-server cursor))
-                                          (dispatch (get-current-problems-action-creator current-server cursor)))
+                p (poller/create-poller
+                   (fn []
+                     (dispatch
+                      (load-agents-action-creator current-server cursor))
+                     (dispatch
+                      (get-current-problems-action-creator current-server
+                                                           cursor)))
 
-                                        3000
-                                        60000)]
+                   3000
+                   60000)]
             (do
               (dispatch (load-agents-action-creator current-server cursor))
-              (dispatch (get-current-problems-action-creator current-server cursor))
+              (dispatch (get-current-problems-action-creator current-server
+                                                             cursor))
               (poller/start p)
-              ;; TODO: do not add not serializable data into model (add timer descriptor, not timer itself)
+              ;; TODO: do not add not serializable data into model
+              ;; (add timer descriptor, not timer itself)
               (dispatch {:type :attach-poll-agent-timer
                          :cursor cursor
                          :poll-agent-timer p}))))))))
@@ -135,7 +160,10 @@
                (if has-any-server?
                  (dispatch (select-server-action-creator 0 cursor))))))})))
 
-(defn exec-action-for-agents-action-creator [cursor url trigger-message completed-message]
+(defn exec-action-for-agents-action-creator [cursor
+                                             url
+                                             trigger-message
+                                             completed-message]
   (fn [dispatch get-store]
     (let [s (cur/get-state cursor (get-store))
           current-server-id (:id (get (:servers s) (:selected-server-index s)))
@@ -147,7 +175,8 @@
                       "agentIds" agent-ids}
              :format (ajax/json-request-format)
              :handler (fn [response]
-                        (dispatch (show-message-action-creator completed-message cursor)))
+                        (dispatch (show-message-action-creator completed-message
+                                                               cursor)))
              :error-handler (fn [response] (println response))})))))
 
 

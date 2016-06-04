@@ -35,5 +35,4 @@
                               value (:value action) ]
                           (c/update-state cursor
                                           state
-                                          value))))
-  )
+                                          value)))))

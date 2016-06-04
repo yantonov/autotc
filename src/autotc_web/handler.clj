@@ -27,7 +27,10 @@
 (defn log-exception [handler]
   (fn [request]
     (try (handler request)
-         (catch Exception e (log/error e (str "Error occured for request :" (pprint/pprint request)))))))
+         (catch Exception e
+           (log/error e
+                      (str "Error occured for request :"
+                           (pprint/pprint request)))))))
 
 (def app
   (-> (routes home-routes
@@ -36,7 +39,8 @@
       (rmj/wrap-json-params)
       (rmj/wrap-json-response)
       (wrap-base-url)
-      (ringdefaults/wrap-defaults (-> ringdefaults/site-defaults
-                                      (assoc-in [:security :anti-forgery] false )
-                                      (assoc-in [:params :urlencoded] true)))
+      (ringdefaults/wrap-defaults
+       (-> ringdefaults/site-defaults
+           (assoc-in [:security :anti-forgery] false )
+           (assoc-in [:params :urlencoded] true)))
       (log-exception)))

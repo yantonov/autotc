@@ -157,19 +157,34 @@
             [:div nil
              [add-server-form (fn [] (a/begin-add-server cursor))]
              [:br]
-             [server-list {:servers servers
-                           :on-delete (fn [server] (a/confirm-delete-server cursor server))}]
+             [server-list
+              {:servers
+               servers
+
+               :on-delete
+               (fn [server] (a/confirm-delete-server cursor server))}]
              (if show-confirm-delete-dialog?
-               [delete-confirmation-dialog {:server server-to-delete
-                                            :on-ok (fn [] (a/delete-server cursor server-to-delete))
-                                            :on-cancel (fn [] (a/cancel-delete-server cursor))}])]
-            [edit-server-form {:form-cursor edit-server-form-cursor
-                               :on-save (fn [] (a/save-server cursor edit-server-form-cursor))
-                               :on-cancel (fn [] (a/cancel-edit-server cursor))}])))})))
+               [delete-confirmation-dialog
+                {:server
+                 server-to-delete
+
+                 :on-ok
+                 (fn [] (a/delete-server cursor server-to-delete))
+
+                 :on-cancel
+                 (fn [] (a/cancel-delete-server cursor))}])]
+            [edit-server-form
+             {:form-cursor
+              edit-server-form-cursor
+
+              :on-save
+              (fn [] (a/save-server cursor edit-server-form-cursor))
+
+              :on-cancel
+              (fn [] (a/cancel-edit-server cursor))}])))})))
 
 (defn ^:export init []
   (rmw/defmiddleware acm/action-creator-middleware)
   (reducers/define-reducers)
   (r/render-component [settings-page]
                       (js/document.getElementById "main-content")))
-

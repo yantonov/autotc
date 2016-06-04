@@ -15,25 +15,11 @@
                  [:script {:type "text/javascript"
                            :src "/cljs/home/home.js"}]))
 
-(defn- tc-server-to-json [server]
-  (select-keys server [:alias :id]))
-
-(defn- build-type-info-to-json [build-type-info]
-  (let [build-type (:build-type build-type-info)
-        last-build (:last-build build-type-info)
-        queue (:queue build-type-info)]
-    (hash-map :id (:id build-type)
-              :name (:name build-type)
-              :webUrl (:webUrl build-type)
-              :running (:running last-build)
-              :status (:status last-build)
-              :statusText (get-in build-type-info [:last-build-details :status-text])
-              :queue-webUrl (:webUrl queue)
-              :last-build-webUrl (:webUrl last-build))))
-
 (defn- get-servers []
-  (rur/response {:servers (map tc-server-to-json
-                               (db/read-servers))}))
+  (letfn [(tc-server-to-json [server]
+            (select-keys server [:alias :id]))]
+    (rur/response {:servers (map tc-server-to-json
+                                 (db/read-servers))})))
 
 (defn- request-project-info-from-teamcity [server-id]
   (let [server (db/get-server-by-id (Long/parseLong (str server-id)))]
@@ -51,12 +37,28 @@
                          (:username server)
                          (:password server))))
 
-;; TODO: not agent but build types
-(defn- agents-for-server [server-id]
+(defn- build-type-info-to-json [build-type-info]
+  (let [build-type (:build-type build-type-info)
+        last-build (:last-build build-type-info)
+        queue (:queue build-type-info)]
+    (hash-map :id (:id build-type)
+              :name (:name build-type)
+              :webUrl (:webUrl build-type)
+              :running (:running last-build)
+              :status (:status last-build)
+              :statusText (get-in build-type-info
+                                  [:last-build-details
+                                   :status-text])
+              :queue-webUrl (:webUrl queue)
+              :last-build-webUrl (:webUrl last-build))))
+
+(defn- build-types-for-server [server-id]
   (let [{:keys [info error]}
-        (.get-value (chc/cached (keyword (str "project-info-" server-id))
-                                (fn []
-                                  (request-project-info-from-teamcity server-id))))
+        (.get-value
+         (chc/cached
+          (keyword (str "project-info-" server-id))
+          (fn []
+            (request-project-info-from-teamcity server-id))))
         build-types (:build-types info)
         branches (:branches info)
         project (:project info)]
@@ -78,25 +80,34 @@
   (let [n (count items)
         q (quot n page-size)
         r (rem n page-size)]
-    (if (not (zero? r))
-      (inc q)
-      q)))
+    (if-not (zero? r) (inc q) q)))
+
+(defn- all-current-problems [server-id]
+  (.get-value
+   (chc/cached (keyword (str "current-problems-" server-id))
+               (fn []
+                 (request-current-problems server-id))
+               :cache-seconds 30)))
 
 (defn- current-problems [server-id requested-page show-stacktraces]
   (let [{:keys [info error]}
-        (.get-value (chc/cached (keyword (str "current-problems-" server-id))
-                                (fn []
-                                  (request-current-problems server-id))
-                                :cache-seconds 30))
-        problems (get info :current-problems [])
-        items-per-page 20
-        total-pages (page-count problems items-per-page)
+        (all-current-problems server-id)
 
-        page (if (and (not (nil? requested-page))
-                      (>= requested-page 1)
-                      (<= requested-page total-pages))
-               requested-page
-               1)]
+        problems
+        (get info :current-problems [])
+
+        items-per-page
+        20
+
+        total-pages
+        (page-count problems items-per-page)
+
+        page
+        (if (and (not (nil? requested-page))
+                 (>= requested-page 1)
+                 (<= requested-page total-pages))
+          requested-page
+          1)]
     (rur/response {:current-problems
                    (let [problems-page (->> problems
                                             (drop (* items-per-page (dec page)))
@@ -130,31 +141,30 @@
 
 
 (defn- exec-action-for-agents [server-id build-type-ids action]
-  ;; holy shit
-  ;; TODO: decompose this method
   (try
     (let [{:keys [host port username password]}
           (db/get-server-by-id (Long/parseLong (str server-id)))]
       (rur/response
-       (reduce (fn [result build-type-id]
-                 (try
-                   (do
-                     (action host port username password build-type-id)
-                     (update-in result [:count] inc))
-                   (catch Exception e
-                     (do
-                       (log/error e
-                                  (str "cant exec action for server:"
-                                       server-id
-                                       " build type id: "
-                                       build-type-id))
-                       (assoc-in result [:error] (exception/pretty-print-exception e))))))
-               {:count 0
-                :error ""}
-               build-type-ids)))
+       (reduce
+        (fn [result build-type-id]
+          (try
+            (action host port username password build-type-id)
+            (update-in result [:count] inc)
+            (catch Exception e
+              (log/error e
+                         (str "cant exec action for server:"
+                              server-id
+                              " build type id: "
+                              build-type-id))
+              (assoc-in result [:error] (exception/pretty-print-exception e)))))
+        {:count 0 :error ""}
+        build-type-ids)))
     (catch Exception e
       (let [error (exception/pretty-print-exception e)]
-        (log/error e (str "cant exec action for server:" server-id " agents: " build-type-ids))
+        (log/error e (str "cant exec action for server:"
+                          server-id
+                          " agents: "
+                          build-type-ids))
         (rur/response {:error error})))))
 
 (defn- start-build [server-id build-type-ids]
@@ -171,10 +181,18 @@
   (exec-action-for-agents server-id
                           build-type-ids
                           (fn [host port user pass build-type-id]
-                            (try (tc/cancel-build host port user pass build-type-id)
+                            (try (tc/cancel-build host
+                                                  port
+                                                  user
+                                                  pass
+                                                  build-type-id)
                                  (catch Exception e
                                    (log/error e)))
-                            (try (tc/trigger-build host port user pass build-type-id)
+                            (try (tc/trigger-build host
+                                                   port
+                                                   user
+                                                   pass
+                                                   build-type-id)
                                  (catch Exception e
                                    (log/error e))))))
 
@@ -182,6 +200,16 @@
   (exec-action-for-agents server-id
                           build-type-ids
                           tc/reboot-agent))
+
+(defn- download-current-problems [server-id]
+  (let [problems (get-in (all-current-problems server-id)
+                         [:info :current-problems]
+                         [])]
+    {:status 200
+     :headers {"Content-Type" "text/html"
+               "Content-Disposition"
+               "attachment; filename*=UTF-8''current-problems.html"}
+     :body (layout/current-problems-file problems)}))
 
 (defroutes home-routes
   (GET "/"
@@ -192,7 +220,7 @@
     (get-servers))
   (GET "/agents/list/:id"
       [id]
-    (agents-for-server id))
+    (build-types-for-server id))
   (GET "/current-problems"
       request
     (fn [request]
@@ -204,6 +232,9 @@
         (current-problems server-id
                           (Integer/parseInt page)
                           (Boolean/parseBoolean show-stack-traces)))))
+  (GET "/download-current-problems"
+      [id]
+    (download-current-problems id))
   (POST "/agents/startBuild"
       request
     (fn [request]

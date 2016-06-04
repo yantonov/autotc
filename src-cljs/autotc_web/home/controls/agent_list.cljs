@@ -101,18 +101,28 @@
       (for [[a i] (map vector
                        (filter (fn [a]
                                  (cond
-                                   (nil? filter-value) true
+                                   (nil? filter-value)
+                                   true
 
-                                   (= filter-value :all) true
+                                   (= filter-value :all)
+                                   true
 
-                                   (= filter-value :selected) (is-agent-selected? selected-agents a)
+                                   (= filter-value :selected)
+                                   (is-agent-selected? selected-agents a)
 
-                                   :else (not (is-agent-selected? selected-agents a))))
+                                   :else
+                                   (not (is-agent-selected? selected-agents
+                                                            a))))
                                agents)
                        (iterate inc 0))]
-        [agent-list-item {:key i
-                          :agent a
-                          :selected (is-agent-selected? selected-agents a)
-                          :on-change (fn [checked] (on-select-agent a checked))}])]]))
+        [agent-list-item {:key
+                          i
 
+                          :agent
+                          a
 
+                          :selected
+                          (is-agent-selected? selected-agents a)
+
+                          :on-change
+                          (fn [checked] (on-select-agent a checked))}])]]))

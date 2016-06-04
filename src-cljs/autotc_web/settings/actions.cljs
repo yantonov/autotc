@@ -6,13 +6,13 @@
 (defn load-server-list-action-creator [cursor]
   (fn [dispatch get-state]
     (ajax/GET "/settings/servers/list"
-              {:response-format (ajax/json-response-format {:keywords? true})
-               :handler (fn [response]
-                          (dispatch {:type :server-list-loaded
-                                     :cursor cursor
-                                     :servers (:servers response)}))
-               :error-handler (fn [response]
-                                (println response))})))
+        {:response-format (ajax/json-response-format {:keywords? true})
+         :handler (fn [response]
+                    (dispatch {:type :server-list-loaded
+                               :cursor cursor
+                               :servers (:servers response)}))
+         :error-handler (fn [response]
+                          (println response))})))
 
 (defn show-list-command-action [cursor visible]
   {:type :toggle-list
@@ -28,22 +28,27 @@
   (fn [dispatch get-state]
     (let [server (cur/get-state form-cursor (get-state))]
       (ajax/POST "/settings/servers/add"
-                 {:params server
-                  :format (ajax/url-request-format)
-                  :handler (fn [response]
-                             (dispatch (load-server-list-action-creator page-cursor))
-                             (dispatch (show-list-command-action page-cursor true)))}))))
+          {:params
+           server
+
+           :format
+           (ajax/url-request-format)
+
+           :handler
+           (fn [response]
+             (dispatch (load-server-list-action-creator page-cursor))
+             (dispatch (show-list-command-action page-cursor true)))}))))
 
 (defn delete-server-action-creator [cursor server]
   (fn [dispatch get-state]
     (ajax/POST "/settings/servers/delete"
-               {:params {:id (:id server)}
-                :format (ajax/url-request-format)
-                :handler (fn [response]
-                           (dispatch (load-server-list-action-creator cursor))
-                           (dispatch (confirm-delete-server-action cursor nil)))
-                :error-handler (fn [response]
-                                 (println response))})))
+        {:params {:id (:id server)}
+         :format (ajax/url-request-format)
+         :handler (fn [response]
+                    (dispatch (load-server-list-action-creator cursor))
+                    (dispatch (confirm-delete-server-action cursor nil)))
+         :error-handler (fn [response]
+                          (println response))})))
 
 (defn text-input-changed-action-creator [cursor event]
   (r/dispatch {:type :text-input-changed
@@ -86,4 +91,3 @@
 
 (defn text-input-changed [cursor event]
   (text-input-changed-action-creator cursor event))
-

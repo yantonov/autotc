@@ -1,17 +1,23 @@
 (ns autotc-web.home.controls.current-problems-stats
   (:require [goog.string :as gstring]))
 
-(defn- current-problems-stats [current-problems change-show-stack-trace]
+(defn- current-problems-stats [server-id current-problems change-show-stack-trace]
   (let [problems-count (get current-problems :problems-count 0)]
     [:div nil
      (if (zero? problems-count)
-       "No failed tests. Congratulations!"
+       [:span nil "No failed tests. Congratulations!"]
        [:div nil
         (gstring/format "Current problems: %d" problems-count)
         (gstring/unescapeEntities "&nbsp;")
-        [:a {:href "#"
+        [:a {:href ""
              :on-click (fn [event]
-                         (change-show-stack-trace))}
+                         (change-show-stack-trace)
+                         (.preventDefault event))}
          (if (:show-stacktraces current-problems)
            "hide stack"
-           "show stack")]])]))
+           "show stack")]
+        (gstring/unescapeEntities "&nbsp;")
+        [:a {:href (str "/download-current-problems?"
+                        "id="
+                        server-id)}
+         "download failed tests"]])]))
