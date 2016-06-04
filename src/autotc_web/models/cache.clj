@@ -32,8 +32,14 @@
    (let [info (get @cache cache-key)
          now (get-now)]
      (if (nil? info)
-       (alter cache assoc cache-key {:agent (agent {})
-                                     :last-updated (get-initial-last-updated now cache-seconds)}))
+       (alter cache
+              assoc
+              cache-key
+              {:agent
+               (agent {})
+
+               :last-updated
+               (get-initial-last-updated now cache-seconds)}))
      (let [{last-updated :last-updated
             a :agent}
            (get-in @cache [cache-key])]

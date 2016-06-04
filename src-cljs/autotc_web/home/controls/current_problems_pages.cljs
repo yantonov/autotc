@@ -7,14 +7,19 @@
       nil
       [:div {:class-name "current_problems_pages"}
        (map (fn [[tag attrs content] index]
-              [tag (assoc attrs :key (str "current-problems-page-" index)) content])
+              [tag
+               (assoc attrs :key
+                      (str "current-problems-page-" index))
+               content])
             (interpose [:span {} " "]
                        (map (fn [i]
-                              (let [default-attrs {:class-name "current_problems_page"}]
+                              (let [default-attrs
+                                    {:class-name "current_problems_page"}]
                                 (if (= i current-page)
                                   [:span default-attrs (str i)]
                                   [:a (-> default-attrs
-                                          (assoc :on-click (fn [event] (select-page i)))
+                                          (assoc :on-click
+                                                 (fn [event] (select-page i)))
                                           (assoc :href "#"))
                                    (str i)])))
                             (range 1 (inc page-count))))

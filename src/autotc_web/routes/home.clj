@@ -46,15 +46,19 @@
               :webUrl (:webUrl build-type)
               :running (:running last-build)
               :status (:status last-build)
-              :statusText (get-in build-type-info [:last-build-details :status-text])
+              :statusText (get-in build-type-info
+                                  [:last-build-details
+                                   :status-text])
               :queue-webUrl (:webUrl queue)
               :last-build-webUrl (:webUrl last-build))))
 
 (defn- build-types-for-server [server-id]
   (let [{:keys [info error]}
-        (.get-value (chc/cached (keyword (str "project-info-" server-id))
-                                (fn []
-                                  (request-project-info-from-teamcity server-id))))
+        (.get-value
+         (chc/cached
+          (keyword (str "project-info-" server-id))
+          (fn []
+            (request-project-info-from-teamcity server-id))))
         build-types (:build-types info)
         branches (:branches info)
         project (:project info)]
@@ -146,7 +150,10 @@
         build-type-ids)))
     (catch Exception e
       (let [error (exception/pretty-print-exception e)]
-        (log/error e (str "cant exec action for server:" server-id " agents: " build-type-ids))
+        (log/error e (str "cant exec action for server:"
+                          server-id
+                          " agents: "
+                          build-type-ids))
         (rur/response {:error error})))))
 
 (defn- start-build [server-id build-type-ids]
@@ -163,10 +170,18 @@
   (exec-action-for-agents server-id
                           build-type-ids
                           (fn [host port user pass build-type-id]
-                            (try (tc/cancel-build host port user pass build-type-id)
+                            (try (tc/cancel-build host
+                                                  port
+                                                  user
+                                                  pass
+                                                  build-type-id)
                                  (catch Exception e
                                    (log/error e)))
-                            (try (tc/trigger-build host port user pass build-type-id)
+                            (try (tc/trigger-build host
+                                                   port
+                                                   user
+                                                   pass
+                                                   build-type-id)
                                  (catch Exception e
                                    (log/error e))))))
 

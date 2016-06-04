@@ -66,20 +66,25 @@
         state (atom {})
         activity-listener #(swap! state assoc :last-activity-time (js/Date.))]
     (do
-      (swap! state (fn [s]
-                     (-> s
-                         (assoc :last-activity-time (js/Date.))
-                         (assoc :activity-listener activity-listener)
-                         (assoc :activity-timer-fn (fn []
-                                                     (timer-fn (fn [] @state)
-                                                               (fn [time]
-                                                                 (< time idle-timeout))
-                                                               func)))
-                         (assoc :idle-timer-fn (fn []
-                                                 (timer-fn (fn [] @state)
-                                                           (fn [time]
-                                                             (> time idle-timeout))
-                                                           func))))))
+      (swap! state
+             (fn [s]
+               (-> s
+                   (assoc :last-activity-time
+                          (js/Date.))
+                   (assoc :activity-listener
+                          activity-listener)
+                   (assoc :activity-timer-fn
+                          (fn []
+                            (timer-fn (fn [] @state)
+                                      (fn [time]
+                                        (< time idle-timeout))
+                                      func)))
+                   (assoc :idle-timer-fn
+                          (fn []
+                            (timer-fn (fn [] @state)
+                                      (fn [time]
+                                        (> time idle-timeout))
+                                      func))))))
       (Poller. activity-timeout
                idle-timeout
                state))))

@@ -21,4 +21,3 @@
                        :aria-hidden "true"}
               "x"]
              [:h4 {:class-name "modal-title"} message]]]]]]))}))
-

@@ -4,7 +4,9 @@
            [java.io StringWriter]
            [org.slf4j LoggerFactory MDC]))
 
-(def logger ^ch.qos.logback.classic.Logger (LoggerFactory/getLogger "clojure-example-logback-integration"))
+(def logger ^ch.qos.logback.classic.Logger
+  (LoggerFactory/getLogger
+   "clojure-example-logback-integration"))
 
 (defn set-log-level!
   "Pass keyword :error :info :debug"
@@ -15,14 +17,17 @@
     :error (.setLevel logger Level/ERROR)))
 
 (defmacro with-logging-context [context & body]
-  "Use this to add a map to any logging wrapped in the macro. Macro can be nested.
+  "Use this to add a map to any logging wrapped in the macro.
+  Macro can be nested.
   (with-logging-context {:key \"value\"} (log/info \"yay\"))
   "
   `(let [wrapped-context# ~context
          ctx# (MDC/getCopyOfContextMap)]
      (try
        (if (map? wrapped-context#)
-         (doall (map (fn [[k# v#]] (MDC/put (name k#) (str v#))) wrapped-context#)))
+         (doall (map (fn [[k# v#]]
+                       (MDC/put (name k#) (str v#)))
+                     wrapped-context#)))
        ~@body
        (finally
          (if ctx#
