@@ -76,9 +76,7 @@
   (let [n (count items)
         q (quot n page-size)
         r (rem n page-size)]
-    (if (not (zero? r))
-      (inc q)
-      q)))
+    (if-not (zero? r) (inc q) q)))
 
 (defn- current-problems [server-id requested-page show-stacktraces]
   (let [{:keys [info error]}

@@ -70,17 +70,17 @@
 
 (defn- test-failed? [t]
   (and (not (get t :ignored false))
-       (not (= "SUCCESS" (:status t)))))
+       (not= "SUCCESS" (:status t))))
 
 (defn attach-build-info-for-each-test [f builds]
   (letfn [(extend-test-info [build]
             (map #(assoc % :build (:build build))
                  (:tests build)))]
-    (apply concat (map #(-> %
-                            :builds
-                            f
-                            extend-test-info)
-                       builds))))
+    (mapcat #(-> %
+                 :builds
+                 f
+                 extend-test-info)
+            builds)))
 
 (defn combine-latest-builds [builds]
   (let [butlast-build (attach-build-info-for-each-test second builds)
@@ -171,12 +171,11 @@
                 test-details (get-test-details (:id test-handle))]
             (-> test-details
                 (assoc :webUrl (format "http://%s/project.html?projectId=%s&testNameId=%s&tab=testDetails" project-domain project-id (:id test-details)))
-                (assoc :name (if (not (nil? pattern-matches))
+                (assoc :name (if-not (nil? pattern-matches)
                                (nth pattern-matches 2)
                                name))
-                (assoc :namespace (if (not (nil? pattern-matches))
-                                    (nth pattern-matches 1)
-                                    nil))
+                (assoc :namespace (when-not (nil? pattern-matches)
+                                    (nth pattern-matches 1)))
                 (assoc :build (:build test-handle)))))
 
         problems
