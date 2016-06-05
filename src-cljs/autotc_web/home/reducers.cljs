@@ -29,8 +29,8 @@
                    :project {}
                    :selected-agents #{}
                    :manually-selected-agents #{}
-                   :current-problems {:problems []
-                                      :problems-count []
+                   :current-problems {:problems nil
+                                      :problems-count nil
                                       :current-page 1
                                       :page-count 0
                                       :show-stacktraces false}
@@ -95,8 +95,8 @@
                      :branches []
                      :project {}
                      :filter-value nil
-                     :current-problems {:problems []
-                                        :problems-count 0
+                     :current-problems {:problems nil
+                                        :problems-count nil
                                         :current-page 1
                                         :page-count 0
                                         :show-stacktraces false}
