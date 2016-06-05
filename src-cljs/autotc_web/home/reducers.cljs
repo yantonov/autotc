@@ -226,7 +226,7 @@
                                  (:page action))))))
 
   (r/reducer-for-type
-   :on-toggle-stacktraces
+   :on-toggle-stack-traces
    (fn [state action]
      (c/update-state
       (:cursor action)
@@ -234,9 +234,7 @@
       (fn [s]
         (assoc-in s
                   [:current-problems :show-stacktraces]
-                  (not (get-in s
-                               [:current-problems :show-stacktraces]
-                               false)))))))
+                  (:value action))))))
 
   (r/reducer-for-type
    :expand-stack-trace

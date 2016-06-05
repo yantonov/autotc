@@ -265,11 +265,12 @@
                 :page page})
      (dispatch (get-current-problems-action-creator server cursor)))))
 
-(defn toggle-stacktraces [server cursor]
+(defn toggle-stack-traces [server cursor show-stack-traces]
   (r/dispatch
    (fn [dispatch get-state]
-     (dispatch {:type :on-toggle-stacktraces
-                :cursor cursor})
+     (dispatch {:type :on-toggle-stack-traces
+                :cursor cursor
+                :value show-stack-traces})
      (dispatch (get-current-problems-action-creator server cursor)))))
 
 (defn expand-stack-trace [test-name cursor]
