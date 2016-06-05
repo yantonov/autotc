@@ -5,7 +5,7 @@
                                current-problems
                                expand-stack-traces
                                collapse-stack-traces]
-  (let [problems-count (get current-problems :problems-count nil)]
+  (let [problems-count (get current-problems :problems-count)]
     [:div nil
      (when-not (nil? problems-count)
        (if (zero? problems-count)
