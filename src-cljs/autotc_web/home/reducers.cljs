@@ -29,8 +29,8 @@
                    :project {}
                    :selected-agents #{}
                    :manually-selected-agents #{}
-                   :current-problems {:problems []
-                                      :problems-count []
+                   :current-problems {:problems nil
+                                      :problems-count nil
                                       :current-page 1
                                       :page-count 0
                                       :show-stacktraces false}
@@ -95,8 +95,8 @@
                      :branches []
                      :project {}
                      :filter-value nil
-                     :current-problems {:problems []
-                                        :problems-count 0
+                     :current-problems {:problems nil
+                                        :problems-count nil
                                         :current-page 1
                                         :page-count 0
                                         :show-stacktraces false}
@@ -226,7 +226,7 @@
                                  (:page action))))))
 
   (r/reducer-for-type
-   :on-toggle-stacktraces
+   :on-toggle-stack-traces
    (fn [state action]
      (c/update-state
       (:cursor action)
@@ -234,9 +234,7 @@
       (fn [s]
         (assoc-in s
                   [:current-problems :show-stacktraces]
-                  (not (get-in s
-                               [:current-problems :show-stacktraces]
-                               false)))))))
+                  (:value action))))))
 
   (r/reducer-for-type
    :expand-stack-trace

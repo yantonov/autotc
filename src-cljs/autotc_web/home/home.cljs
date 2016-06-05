@@ -109,8 +109,12 @@
               [autotc-web.home.controls.current-problems-stats/current-problems-stats
                (:id selected-server)
                current-problems
-               (fn [] (actions/toggle-stacktraces selected-server
-                                                  cursor))]
+               (fn [] (actions/toggle-stack-traces selected-server
+                                                   cursor
+                                                   true))
+               (fn [] (actions/toggle-stack-traces selected-server
+                                                   cursor
+                                                   false))]
               [autotc-web.home.controls.current-problems-pages/current-problems-pages
                current-problems
                (fn [page] (actions/select-current-problems-page selected-server
