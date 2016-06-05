@@ -88,10 +88,10 @@
                                      cursor
 
                                      :current-problems
-                                     (get response :current-problems [])
+                                     (get response :current-problems)
 
                                      :problems-count
-                                     (get response :problems-count 0)
+                                     (get response :problems-count)
 
                                      :current-page
                                      (get response :page 1)

@@ -94,7 +94,7 @@
         (all-current-problems server-id)
 
         problems
-        (get info :current-problems [])
+        (get info :current-problems)
 
         items-per-page
         20
@@ -108,20 +108,23 @@
                  (<= requested-page total-pages))
           requested-page
           1)]
-    (rur/response {:current-problems
-                   (let [problems-page (->> problems
-                                            (drop (* items-per-page (dec page)))
-                                            (take items-per-page))]
-                     (if show-stacktraces
-                       problems-page
-                       (map #(dissoc % :details) problems-page)))
+    (if-not (nil? problems)
+      (rur/response {:current-problems
+                     (let [problems-page (->> problems
+                                              (drop (* items-per-page (dec page)))
+                                              (take items-per-page))]
+                       (if show-stacktraces
+                         problems-page
+                         (map #(dissoc % :details) problems-page)))
 
-                   :page-count total-pages
-                   :page page
-                   :problems-count (count problems)
+                     :page-count total-pages
+                     :page page
+                     :problems-count (count problems)
 
-                   :error
-                   error})))
+                     :error
+                     error})
+      (rur/response {:error
+                     error}))))
 
 (defn- stack-trace [server-id test-name]
   (let [{:keys [info error]}
