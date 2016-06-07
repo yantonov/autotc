@@ -1,5 +1,6 @@
 (ns autotc-web.views.layout
-  (:require [hiccup.page :refer [html5 include-css include-js]]))
+  (:require [hiccup.page :refer [html5 include-css include-js]]
+            [clojure.string :as cljstr]))
 
 (defn common [& body]
   (html5
@@ -37,7 +38,18 @@
   (html5
    [:head
     [:title "autotc"]
-    (include-js "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js")]
+    (include-js "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js")
+    [:style nil
+     (cljstr/join "\n"
+                  ["<!--"
+                   "body {"
+                   "font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif"
+                   "}"
+                   ""
+                   "a, a:hover, a:visited {"
+                   "color: #337ab7;"
+                   "}"
+                   "-->"])]]
    [:body
 
     [:div nil
@@ -53,9 +65,10 @@
                 (:details problem)]]])
            problems)]]
     [:script {:type "text/javascript"}
-     (str "$(document).ready(function () {"
-          "$('.test').click(function(e) {"
-          "$(e.target).parent().find('.stack').toggle();"
-          "return false;"
-          "});"
-          "})")]]))
+     (cljstr/join "\n"
+                  ["$(document).ready(function () {"
+                   "$('.test').click(function(e) {"
+                   "$(e.target).parent().find('.stack').toggle();"
+                   "return false;"
+                   "});"
+                   "})"])]]))
