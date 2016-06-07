@@ -51,13 +51,12 @@
                    "}"
                    "-->"])]]
    [:body
-
     [:div nil
      [:ol nil
       (map (fn [problem]
              [:li nil
               [:div nil
-               [:a {:href ""
+               [:a {:href "#"
                     :class "test"}
                 (:name problem)]
                [:div {:style "white-space: pre; display: none"
@@ -71,4 +70,5 @@
                    "$(e.target).parent().find('.stack').toggle();"
                    "return false;"
                    "});"
-                   "})"])]]))
+                   "});"
+                   ])]]))
