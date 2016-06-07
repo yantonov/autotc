@@ -27,8 +27,8 @@
          :destroy autotc-web.handler/destroy}
   :profiles {:uberjar {:aot :all}
              :production
-             {:ring {:open-browser? false,
-                     :stacktraces? false,
+             {:ring {:open-browser? false
+                     :stacktraces? false
                      :auto-reload? false}}
              :dev {:dependencies [[ring-mock "0.1.5"]
                                   [ring/ring-devel "1.4.0"]]}}
