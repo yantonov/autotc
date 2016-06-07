@@ -93,9 +93,11 @@
         last-build (attach-build-info-for-each-test first builds)
         last-build-completed? (every? identity
                                       (map (fn [b] (-> b
+                                                       :builds
                                                        first
                                                        :build
-                                                       :running
+                                                       (get :running "false")
+                                                       (Boolean/parseBoolean)
                                                        not))
                                            builds))]
     (if (empty? butlast-build)
