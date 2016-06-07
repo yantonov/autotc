@@ -1,7 +1,7 @@
 (ns autotc-web.util.copy)
 
 (defn copy [text]
-  (let [element-id "elbaId"
+  (let [element-id "copyTextPlaceHolderId"
         text-node (or (.getElementById js/document element-id)
                       (.createElement js/document "span"))]
     (set! (.-id text-node) element-id)
