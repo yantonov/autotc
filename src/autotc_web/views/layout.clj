@@ -49,6 +49,11 @@
                    "a, a:hover, a:visited {"
                    "color: #337ab7;"
                    "}"
+                   ""
+                   "a.copystack, a.copystack:hover, a.copystack:visited {"
+                   "color: black;"
+                   "text-decoration: none;"
+                   "}"
                    "-->"])]]
    [:body
     [:div nil
@@ -57,18 +62,54 @@
              [:li nil
               [:div nil
                [:a {:href "#"
-                    :class "test"}
+                    :class "test"
+                    :title "expand stack trace"}
                 (:name problem)]
-               [:div {:style "white-space: pre; display: none"
-                      :class "stack"}
+               [:span {:style "padding-left:20px;"}
+                "["]
+               [:a {:href "#"
+                    :class "copy"}
+                "copy test name"]
+               "]"]
+              [:div {:style "white-space: pre; display: none"
+                     :class "stack"}
+               [:a {:href "#"
+                    :class "copystack"
+                    :title "copy stack trace"}
                 (:details problem)]]])
            problems)]]
     [:script {:type "text/javascript"}
-     (cljstr/join "\n"
-                  ["$(document).ready(function () {"
-                   "$('.test').click(function(e) {"
-                   "$(e.target).parent().find('.stack').toggle();"
-                   "return false;"
-                   "});"
-                   "});"
-                   ])]]))
+     "
+    function copy (element) {
+    var elementId = 'copyTextPlaceHolderId';
+
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+
+    var range = document.createRange();
+    range.selectNodeContents($(element).get(0));
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    var status = document.execCommand('copy');
+
+    selection.removeAllRanges();
+}
+
+$(document).ready(function () {
+    $('.test').click(function(e) {
+        $(e.target).parent().parent().find('.stack').toggle();
+        return false;
+    });
+    $('.copy').click(function(e) {
+        var testLink = $(e.target).siblings('.test').get(0);
+        copy(testLink);
+        return false;
+    });
+    $('.copystack').click(function(e) {
+        copy(e.target);
+        return false;
+    });
+});
+"]]))
