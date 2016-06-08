@@ -46,6 +46,10 @@
                    "font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif"
                    "}"
                    ""
+                   ".fixed {"
+                   "text-decoration: line-through;"
+                   "}"
+                   ""
                    "a, a:hover, a:visited {"
                    "color: #337ab7;"
                    "}"
@@ -61,11 +65,15 @@
       (map (fn [problem]
              [:li nil
               [:div nil
+               [:input {:type "checkbox"
+                        :class "markasfixed"}
+                nil]
                [:a {:href "#"
                     :class "test"
-                    :title "expand stack trace"}
+                    :title "expand stack trace"
+                    :style "padding-left: 8px"}
                 (:name problem)]
-               [:span {:style "padding-left:20px;"}
+               [:span {:style "padding-left:8px;"}
                 "["]
                [:a {:href "#"
                     :class "copy"}
@@ -101,6 +109,10 @@ $(document).ready(function () {
     $('.test').click(function(e) {
         $(e.target).parent().parent().find('.stack').toggle();
         return false;
+    });
+    $('.markasfixed').change(function(e) {
+       var fixed = $(this).is(':checked');
+       $(e.target).parent().find('.test').toggleClass('fixed', fixed);
     });
     $('.copy').click(function(e) {
         var testLink = $(e.target).siblings('.test').get(0);
