@@ -39,6 +39,8 @@
    [:head
     [:title "autotc"]
     (include-js "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js")
+    [:meta {:charset "UTF-8"}
+     nil]
     [:style nil
      (cljstr/join "\n"
                   ["<!--"
