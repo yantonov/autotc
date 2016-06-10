@@ -49,11 +49,14 @@
                       show-agent-list-loader
                       filter-value
                       current-problems
-                      tests-with-expanded-stack-traces]
+                      tests-with-expanded-stack-traces
+                      tests-with-copy-hint
+                      tests-with-copy-stack-hint
+                      test-names-inside-clipboard]
                :or {:show-agent-list-loader false}}
               (r/state this)
               selected-server (get servers selected-server-index)]
-          [:div
+          [:div nil
            [autotc-web.home.controls.info-message/info-message message]
            [autotc-web.home.controls.server-list/server-list
             servers
@@ -124,9 +127,24 @@
                selected-server
                current-problems
                tests-with-expanded-stack-traces
+               tests-with-copy-hint
+               tests-with-copy-stack-hint
+               test-names-inside-clipboard
                cursor
                (fn [test-name]
-                 (actions/expand-stack-trace test-name cursor))]]]]]))})))
+                 (actions/expand-stack-trace test-name cursor))
+               (fn [test-name]
+                 (actions/toggle-copy-hint test-name true cursor))
+               (fn [test-name]
+                 (actions/mark-test-name-as-copied test-name false cursor)
+                 (actions/toggle-copy-hint test-name false cursor))
+               (fn [test-name]
+                 (actions/mark-test-name-as-copied test-name true cursor))
+               (fn [test-name]
+                 (actions/toggle-copy-stack-hint test-name true cursor))
+               (fn [test-name]
+                 (actions/mark-test-name-as-copied test-name false cursor)
+                 (actions/toggle-copy-stack-hint test-name false cursor))]]]]]))})))
 
 (defn ^:export init []
   (let [page (home-page)]
