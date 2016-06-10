@@ -109,7 +109,9 @@
 
 $(document).ready(function () {
     $('.test').click(function(e) {
-        $(e.target).parent().parent().find('.stack').toggle();
+        var testLink = $(e.target);
+        testLink.parent().parent().find('.stack').toggle();
+        copy(testLink.get());
         return false;
     });
     $('.markasfixed').change(function(e) {
