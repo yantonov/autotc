@@ -100,7 +100,7 @@
     padding-right: 16px;
 }
 
-.copy_icon {
+.copy-icon {
     padding-right: 10px;
 }
 
@@ -112,7 +112,61 @@
     padding-left: 16px;
 }
 
-.single_problem {
+.test-actions {
     white-space: nowrap;
-    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.test-action {
+    position: relative;
+    flex-grow: 1
+}
+
+.build-link {
+    flex-grow: 4;
+}
+
+.test-name {
+    flex-grow: 12;
+}
+
+.copy-test-name-icon {
+    top: 2px;
+    background-image: url("/img/copy.png");
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
+.test-history-icon {
+    top: 2px;
+    background-image: url("/img/clock.png");
+    width: 16px;
+    height: 16px;
+}
+
+.hint-placeholder {
+    position: relative;
+}
+
+.hint {
+    position: absolute;
+    padding: 2px 5px;
+    background-color: black;
+    color: white;
+    font-size: 10px;
+    border-radius: 4px;
+}
+
+.icon-hint {
+    top: -125%;
+    left: 50%;
+    transform: translate(-50%, 0);
+}
+
+.stack-hint {
+    top: -16px;
+    left: 50%;
 }

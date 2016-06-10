@@ -277,3 +277,21 @@
   (r/dispatch {:type :expand-stack-trace
                :cursor cursor
                :test-name test-name}))
+
+(defn toggle-copy-hint [test-name show cursor]
+  (r/dispatch {:type :toggle-copy-hint
+               :cursor cursor
+               :test-name test-name
+               :show show}))
+
+(defn mark-test-name-as-copied [test-name copied cursor]
+  (r/dispatch {:type :mark-test-name-as-copied
+               :cursor cursor
+               :test-name test-name
+               :copied copied}))
+
+(defn toggle-copy-stack-hint [test-name show cursor]
+  (r/dispatch {:type :toggle-copy-stack-hint
+               :cursor cursor
+               :test-name test-name
+               :show show}))

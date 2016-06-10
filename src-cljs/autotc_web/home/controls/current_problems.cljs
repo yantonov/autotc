@@ -10,8 +10,16 @@
 (defn current-problems-list [server
                              problems
                              tests-with-stack-traces
+                             tests-with-copy-hint
+                             tests-with-copy-stack-hint
+                             test-names-inside-clipboard
                              cursor
-                             expand-stack-trace-fn]
+                             expand-stack-trace-fn
+                             on-mouseover-test-name
+                             on-mouseout-test-name
+                             mark-test-name-as-copied
+                             on-mouseover-stack
+                             on-mouseout-stack]
   [:div
    nil
    (map
@@ -23,23 +31,31 @@
          [Row nil
           [Col {:xs 6
                 :md 3
-                :class-name "single_problem"}
-           [:a {:on-click (fn [event]
-                            (copy/copy test-name))
-                :class-name "pointer"
-                :title "copy test name"}
-            [:img {:src "/img/copy.png"
-                   :class-name "copy_icon"
-                   :alt "test name"}]]
-           [:a {:href (:webUrl problem)
-                :target "_blank"
-                :title "test history"}
-            [:img {:src "/img/clock.png"
-                   :class-name "copy_icon"
-                   :alt "test history"}]]
-           [:a {:href (-> problem :build :webUrl)
-                :target "_blank"}
-            (->> problem :build :name)]]
+                :class-name "test-actions"}
+           [:div {:class-name "test-action"}
+            [:a {:on-click (fn [event]
+                             (mark-test-name-as-copied test-name)
+                             (copy/copy test-name))
+                 :on-mouse-over (fn [event]
+                                  (on-mouseover-test-name test-name))
+                 :on-mouse-out (fn [event]
+                                 (on-mouseout-test-name test-name))}
+             [:div {:class-name "hint-placeholder copy-test-name-icon"}
+              (if (contains? tests-with-copy-hint test-name)
+                [:span {:class-name "hint icon-hint"}
+                 (if (contains? test-names-inside-clipboard test-name)
+                   "Copied"
+                   "Copy test name to clipboard")])]]]
+           [:div {:class-name "test-action"}
+            [:a {:href (:webUrl problem)
+                 :target "_blank"
+                 :title "test history"}
+             [:div {:class-name "hint-placeholder test-history-icon"}]]]
+           [:div {:class-name "build-link"}
+            [:a {:href (-> problem :build :webUrl)
+                 :target "_blank"
+                 :title "build"}
+             (->> problem :build :name)]]]
           [Col {:xs 18
                 :md 9}
            [:a {:on-click (fn [event]
@@ -48,13 +64,24 @@
                 :class-name "current_problem_item pointer"}
             test-name]]]
          (if (xor (:show-stacktraces problems)
-                 (contains? tests-with-stack-traces test-name))
+                  (contains? tests-with-stack-traces test-name))
            [Row nil
             [:a {:on-click (fn [event]
+                             (mark-test-name-as-copied test-name)
                              (copy/copy stack-trace)
                              (.stopPropagation event))
+                 :on-mouse-over (fn [event]
+                                  (on-mouseover-stack test-name))
+                 :on-mouse-out (fn [event]
+                                 (on-mouseout-stack test-name))
                  :title "copy stack trace"
                  :class-name "stacktrace_link pointer"}
+             [:div {:class-name "hint-placeholder"}
+              (if (contains? tests-with-copy-stack-hint test-name)
+                [:span {:class-name "hint stack-hint"}
+                 (if (contains? test-names-inside-clipboard test-name)
+                   "Copied"
+                   "Copy stack to clipboard")])]
              [:span {:class-name "stacktrace pointer"}
               (gstring/unescapeEntities
                (html/html-escape stack-trace))]]]
