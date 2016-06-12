@@ -2,6 +2,14 @@
   (:require [hiccup.page :refer [html5 include-css include-js]]
             [clojure.string :as cljstr]))
 
+;; TODO: cljc (reuse from clj, cljs)
+(defn html-escape [s]
+  (cljstr/escape s
+                 {\< "&lt;"
+                  \> "&gt;"
+                  \& "&amp;"
+                  \" "&quot;"}))
+
 (defn common [& body]
   (html5
    [:head
@@ -76,17 +84,20 @@
                     :style "padding-left: 8px"}
                 (:name problem)]
                [:span {:style "padding-left:8px;"}
-                "["]
-               [:a {:href "#"
-                    :class "copy"}
-                "copy test name"]
-               "]"]
-              [:div {:style "white-space: pre; display: none"
-                     :class "stack"}
-               [:a {:href "#"
-                    :class "copystack"
-                    :title "copy stack trace"}
-                (:details problem)]]])
+                "["
+                [:a {:href "#"
+                     :class "copy-test-name"}
+                 "copy test name"]
+                "]"]
+               [:span {:style "padding-left:8px;"}
+                "["
+                [:a {:href "#"
+                     :class "copy-stack"}
+                 "copy stack trace"]
+                "]"]
+               [:div {:style "white-space: pre; display: none"
+                      :class "stack"}
+                (html-escape (:details problem))]]])
            problems)]]
     [:script {:type "text/javascript"}
      "
@@ -110,21 +121,25 @@
 $(document).ready(function () {
     $('.test').click(function(e) {
         var testLink = $(e.target);
-        testLink.parent().parent().find('.stack').toggle();
-        copy(testLink.get());
+        testLink.parent().find('.stack').toggle();
+        copy(testLink.get(0));
         return false;
     });
     $('.markasfixed').change(function(e) {
        var fixed = $(this).is(':checked');
        $(e.target).parent().find('.test').toggleClass('fixed', fixed);
     });
-    $('.copy').click(function(e) {
-        var testLink = $(e.target).siblings('.test').get(0);
+    $('.copy-test-name').click(function(e) {
+        var testLink = $(e.target).parent().siblings('.test').get(0);
         copy(testLink);
         return false;
     });
-    $('.copystack').click(function(e) {
-        copy(e.target);
+    $('.copy-stack').click(function(e) {
+        var copyLink = $(e.target);
+        var stackElement = copyLink.parent().siblings('.stack');
+        stackElement.show();
+        copy(stackElement.get(0));
+        stackElement.hide();
         return false;
     });
 });
