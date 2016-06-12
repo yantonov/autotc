@@ -140,6 +140,14 @@
     display: inline-block;
 }
 
+.copy-stack-icon {
+    top: 2px;
+    background-image: url("/img/stack.png");
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}
+
 .test-history-icon {
     top: 2px;
     background-image: url("/img/clock.png");
@@ -164,9 +172,4 @@
     top: -125%;
     left: 50%;
     transform: translate(-50%, 0);
-}
-
-.stack-hint {
-    top: -16px;
-    left: 50%;
 }

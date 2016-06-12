@@ -20,8 +20,7 @@
                              mark-test-name-as-copied
                              on-mouseover-stack
                              on-mouseout-stack]
-  [:div
-   nil
+  [:div nil
    (map
     (fn [problem]
       (let [stack-trace (or (:details problem) "")
@@ -47,6 +46,21 @@
                    "Copied"
                    "Copy test name to clipboard")])]]]
            [:div {:class-name "test-action"}
+            [:a {:on-click (fn [event]
+                             (mark-test-name-as-copied test-name)
+                             (copy/copy stack-trace)
+                             (print stack-trace))
+                 :on-mouse-over (fn [event]
+                                  (on-mouseover-stack test-name))
+                 :on-mouse-out (fn [event]
+                                 (on-mouseout-stack test-name))}
+             [:div {:class-name "hint-placeholder copy-stack-icon"}
+              (if (contains? tests-with-copy-stack-hint test-name)
+                [:span {:class-name "hint icon-hint"}
+                 (if (contains? test-names-inside-clipboard test-name)
+                   "Copied"
+                   "Copy stack to clipboard")])]]]
+           [:div {:class-name "test-action"}
             [:a {:href (:webUrl problem)
                  :target "_blank"
                  :title "test history"}
@@ -66,24 +80,8 @@
          (if (xor (:show-stacktraces problems)
                   (contains? tests-with-stack-traces test-name))
            [Row nil
-            [:a {:on-click (fn [event]
-                             (mark-test-name-as-copied test-name)
-                             (copy/copy stack-trace)
-                             (.stopPropagation event))
-                 :on-mouse-over (fn [event]
-                                  (on-mouseover-stack test-name))
-                 :on-mouse-out (fn [event]
-                                 (on-mouseout-stack test-name))
-                 :title "copy stack trace"
-                 :class-name "stacktrace_link pointer"}
-             [:div {:class-name "hint-placeholder"}
-              (if (contains? tests-with-copy-stack-hint test-name)
-                [:span {:class-name "hint stack-hint"}
-                 (if (contains? test-names-inside-clipboard test-name)
-                   "Copied"
-                   "Copy stack to clipboard")])]
-             [:span {:class-name "stacktrace pointer"}
-              (gstring/unescapeEntities
-               (html/html-escape stack-trace))]]]
+            [:span {:class-name "stacktrace pointer"}
+             (gstring/unescapeEntities
+              (html/html-escape stack-trace))]]
            nil)]))
     (:problems problems))])
