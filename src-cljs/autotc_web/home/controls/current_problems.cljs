@@ -71,11 +71,12 @@
                  :title "build"}
              (->> problem :build :name)]]]
           [Col {:xs 18
-                :md 9}
+                :md 9
+                :class-name "current_problem_item"}
            [:a {:on-click (fn [event]
                             (copy/copy test-name)
                             (expand-stack-trace-fn test-name))
-                :class-name "current_problem_item pointer"}
+                :class-name "pointer"}
             test-name]]]
          (if (xor (:show-stacktraces problems)
                   (contains? tests-with-stack-traces test-name))
