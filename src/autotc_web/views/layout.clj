@@ -27,14 +27,14 @@
             :href "/img/favicon.ico"}]]
    [:body
     [:nav {:class "navbar navbar-default"}
-     [:div {:class "container"}
+     [:div {:class "container-fluid"}
       [:div {:class "nav-header"}
        [:a {:class "navbar-brand" :href "/"} "autotc"]]
       [:div {:class "collapse navbar-collapse"}
        [:p {:class "navbar-text navbar-right"}
         [:a {:class "navbar-link"
              :href "/settings"} "Settings"]]]]]
-    [:div {:class "container"
+    [:div {:class "container-fluid"
            :id "main-content"} body]
     [:div {:class "github-fork-ribbon-wrapper right-bottom"}
      [:div {:class "github-fork-ribbon github-fork-custom-styles"}

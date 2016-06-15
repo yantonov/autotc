@@ -65,7 +65,8 @@
            [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12
-                   :md 6}
+                   :md 6
+                   :lg 5}
               [autotc-web.home.controls.multi-action-toolbar/multi-action-toolbar
                {:enabled (not (empty? selected-agents))
                 :visible (not (empty? agents))
@@ -108,7 +109,8 @@
                 :show-loader
                 show-agent-list-loader}]]
              [Col {:xs 12
-                   :md 6}
+                   :md 6
+                   :lg 7}
               [autotc-web.home.controls.current-problems-stats/current-problems-stats
                (:id selected-server)
                current-problems
