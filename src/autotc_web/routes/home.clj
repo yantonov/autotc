@@ -230,7 +230,7 @@
       (let [{server-id "serverId"
              page "page"
              show-stack-traces "showStackTraces"
-             :or {show-stack-traces false}}
+             :or {show-stack-traces "false"}}
             (:query-params request)]
         (current-problems server-id
                           (Integer/parseInt page)
