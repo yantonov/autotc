@@ -24,27 +24,32 @@
         (parser/build-type-ids project)
 
         build-types
-        (doall (map (fn [build-type-id]
-                      (let [last-build
-                            (->> build-type-id
-                                 (tc/last-builds server credentials)
-                                 parser/parse-last-builds
-                                 first)
+        (doall (filter #(not (nil? %))
+                       (map (fn [build-type-id]
+                              (try (let [last-build
+                                         (->> build-type-id
+                                              (tc/last-builds server credentials)
+                                              parser/parse-last-builds
+                                              first)
 
-                            build-type
-                            (->> build-type-id
-                                 (tc/build-type server credentials)
-                                 :attrs)
+                                         build-type
+                                         (->> build-type-id
+                                              (tc/build-type server credentials)
+                                              :attrs)
 
-                            last-build-details
-                            (->> last-build
-                                 :id
-                                 (tc/build server credentials)
-                                 parser/parse-build-response)]
-                        {:last-build last-build
-                         :build-type build-type
-                         :last-build-details last-build-details}))
-                    build-type-ids))
+                                         last-build-details
+                                         (->> last-build
+                                              :id
+                                              (tc/build server credentials)
+                                              parser/parse-build-response)]
+                                     {:last-build last-build
+                                      :build-type build-type
+                                      :last-build-details last-build-details})
+                                   (catch Exception e
+                                     ;; TODO: display error for failed agents
+                                     (log/error e)
+                                     nil)))
+                            build-type-ids)))
 
         vcs-roots-ids
         (map :id
