@@ -71,12 +71,15 @@
       (:name agent)]]
     (gstring/unescapeEntities "&nbsp;")
     [:span {:class-name "agent__text agent__status"}
-     [:a {:href (:last-build-webUrl agent)
-          :target "_blank"
-          :on-click (fn [event]
-                      (.stopPropagation event)
-                      true)}
-      (str "["(get-agent-status agent) "]")]]
+     (let [status-text (str "["(get-agent-status agent) "]")]
+       (if (:last-build-webUrl agent)
+         [:a {:href (:last-build-webUrl agent)
+              :target "_blank"
+              :on-click (fn [event]
+                          (.stopPropagation event)
+                          true)}
+          status-text]
+         [:span {} status-text]))]
     (if-let [queue-url (:queue-webUrl agent)]
       [:a {:href queue-url
            :target "_blank"
