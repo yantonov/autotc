@@ -24,38 +24,37 @@
         (parser/build-type-ids project)
 
         build-types
-        (doall (filter #(not (nil? %))
-                       (map (fn [build-type-id]
-                              (let [last-build
-                                    (try (->> build-type-id
-                                              (tc/last-builds server credentials)
-                                              parser/parse-last-builds
-                                              first)
-                                         (catch Exception e
-                                           (log/error e)
-                                           {}))
+        (doall
+         (map (fn [build-type-id]
+                (let [last-build
+                      (try (->> build-type-id
+                                (tc/last-builds server credentials)
+                                parser/parse-last-builds
+                                first)
+                           (catch Exception e
+                             (log/error e)
+                             {}))
 
-                                    build-type
-                                    (try (->> build-type-id
-                                              (tc/build-type server credentials)
-                                              :attrs)
-                                         (catch Exception e
-                                           (log/error e)
-                                           {:name build-type-id}))
+                      build-type
+                      (try (->> build-type-id
+                                (tc/build-type server credentials)
+                                :attrs)
+                           (catch Exception e
+                             (log/error e)
+                             {:name build-type-id}))
 
-                                    last-build-details
-                                    (try (->> last-build
-                                              :id
-                                              (tc/build server credentials)
-                                              parser/parse-build-response)
-                                         (catch Exception e
-                                           (log/error e)
-                                           {:status-text "Agent failure"}))]
-                                {:last-build last-build
-                                 :build-type build-type
-                                 :last-build-details last-build-details})
-                              )
-                            build-type-ids)))
+                      last-build-details
+                      (try (->> last-build
+                                :id
+                                (tc/build server credentials)
+                                parser/parse-build-response)
+                           (catch Exception e
+                             (log/error e)
+                             {:status-text "Agent failure"}))]
+                  {:last-build last-build
+                   :build-type build-type
+                   :last-build-details last-build-details}))
+              build-type-ids))
 
         vcs-roots-ids
         (map :id
