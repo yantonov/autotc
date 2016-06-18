@@ -114,18 +114,19 @@
 
 .test-actions {
     white-space: nowrap;
-    display: flex;
     justify-content: space-between;
     align-items: stretch;
 }
 
 .test-action {
     position: relative;
-    flex-grow: 1
+    width: 5%;
+    display: inline-block;
+    padding-right: 32px;
 }
 
 .build-link {
-    flex-grow: 4;
+    display: inline-block;
 }
 
 .test-name {
