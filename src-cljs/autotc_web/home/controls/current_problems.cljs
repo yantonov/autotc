@@ -81,7 +81,7 @@
          (if (xor (:show-stacktraces problems)
                   (contains? tests-with-stack-traces test-name))
            [Row nil
-            [:span {:class-name "stacktrace pointer"}
+            [:span {:class-name "stacktrace"}
              (gstring/unescapeEntities
               (html/html-escape stack-trace))]]
            nil)]))
