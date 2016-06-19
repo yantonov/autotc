@@ -63,12 +63,18 @@
         (->> info
              (filter (tag? :agent))
              first
-             :attrs)]
+             :attrs)
+
+        branchName
+        (nth (re-matches #"\d+\s+(.*)+" (-> build
+                                            :attrs
+                                            :number)) 1)]
     {:test-occurences (empty-list-if-nil test-occurences)
      :changes (empty-list-if-nil changes)
      :status-text status-text
      :agent agent
-     :webUrl web-url}))
+     :webUrl web-url
+     :branchName branchName}))
 
 (defn parse-last-builds [last-builds]
   (->> last-builds
@@ -123,8 +129,8 @@
                             :attrs
                             :webUrl))
         (assoc :running (->> build-response
-                            :attrs
-                            :running)))))
+                             :attrs
+                             :running)))))
 
 (defn parse-tests-occurences [response]
   (->> response
@@ -135,6 +141,22 @@
   (->> last-build
        :content
        (filter (tag? :agent))
+       first
+       :attrs
+       :id))
+
+(defn parse-build-change-response [response]
+  (->> response
+       :content
+       (filter (tag? :change))
+       first
+       :attrs
+       :id))
+
+(defn parse-single-change-response [response]
+  (->> response
+       :content
+       (filter (tag? :vcsRootInstance))
        first
        :attrs
        :id))

@@ -32,7 +32,8 @@
                                 parser/parse-last-builds
                                 first)
                            (catch Exception e
-                             (log/error e)
+                             (log/error e
+                                        (format "cant get last builds for type id=%s" build-type-id))
                              {}))
 
                       build-type
@@ -40,7 +41,8 @@
                                 (tc/build-type server credentials)
                                 :attrs)
                            (catch Exception e
-                             (log/error e)
+                             (log/error e
+                                        (format "cant get build type info id=%s" build-type-id))
                              {:name build-type-id}))
 
                       last-build-details
@@ -49,7 +51,10 @@
                                 (tc/build server credentials)
                                 parser/parse-build-response)
                            (catch Exception e
-                             (log/error e)
+                             (log/error e
+                                        (format "cant get build info build id=%s type=%s"
+                                                (:id last-build)
+                                                build-type-id))
                              {:status-text "Agent failure"}))]
                   {:last-build last-build
                    :build-type build-type
@@ -99,21 +104,40 @@
             builds)))
 
 (defn combine-latest-builds [builds]
-  (let [butlast-build (attach-build-info-for-each-test second builds)
-        last-build (attach-build-info-for-each-test first builds)
-        last-build-completed? (every? identity
-                                      (map (fn [b] (-> b
-                                                       :builds
-                                                       first
-                                                       :build
-                                                       (get :running "false")
-                                                       (Boolean/parseBoolean)
-                                                       not))
-                                           builds))]
+  (let [butlast-build
+        (attach-build-info-for-each-test second builds)
+
+        last-build
+        (attach-build-info-for-each-test first builds)
+
+        last-build-completed?
+        (every? identity
+                (map (fn [b] (-> b
+                                 :builds
+                                 first
+                                 :build
+                                 (get :running "false")
+                                 (Boolean/parseBoolean)
+                                 not))
+                     builds))
+
+        same-branch?
+        (every? identity
+                (map (fn [b]
+                       (->> b
+                            :builds
+                            (mapcat #(get-in % [:build :branchName]))
+                            (filter #(and (not (nil? %))
+                                          (> (.length %) 0)))
+                            (distinct)
+                            (count)
+                            (= 1)))
+                     builds))]
     (if (empty? butlast-build)
       (filter test-failed? last-build)
       (concat (filter test-failed? last-build)
               (filter #(and (not last-build-completed?)
+                            same-branch?
                             (test-failed? %)
                             (empty? (filter (fn [x]
                                               (and (= (:name %)
@@ -170,14 +194,19 @@
                   :builds
                   (doall
                    (map (fn [build]
-                          {:build (->> build
-                                       :id
-                                       (tc/build server credentials)
-                                       parser/parse-build)
-                           :tests (->> build
-                                       :id
-                                       (tc/tests-occurences server credentials)
-                                       parser/parse-tests-occurences)})
+                          {:build
+                           (try (->> build
+                                     :id
+                                     (tc/build server credentials)
+                                     parser/parse-build)
+                                (catch Exception e
+                                  (log/error e
+                                             (format "cant get build info build id=%s" (:id build)))))
+                           :tests
+                           (->> build
+                                :id
+                                (tc/tests-occurences server credentials)
+                                parser/parse-tests-occurences)})
                         (->> build-type-id
                              (tc/last-builds server credentials)
                              parser/parse-last-builds
