@@ -72,17 +72,18 @@
        :class-name "pointer"}
    test-name])
 
-(defn stack [test-name
-             stack-trace
-             problems
-             tests-with-stack-traces]
-  (if (xor (:show-stacktraces problems)
-           (contains? tests-with-stack-traces test-name))
-    [Row nil
-     [:span {:class-name "stacktrace"}
-      (gstring/unescapeEntities
-       (html/html-escape stack-trace))]]
-    nil))
+(defn stack-trace-control [test-name
+                           stack-trace
+                           problems
+                           tests-with-stack-traces]
+  (letfn [(xor [a b] (not (= a b)))]
+    (if (xor (:show-stacktraces problems)
+             (contains? tests-with-stack-traces test-name))
+      [Row nil
+       [:span {:class-name "stacktrace"}
+        (gstring/unescapeEntities
+         (html/html-escape stack-trace))]]
+      nil)))
 
 (defn current-problems-list [server
                              problems
@@ -101,8 +102,7 @@
    (map
     (fn [problem]
       (let [stack-trace (or (:details problem) "")
-            test-name (:name problem)
-            xor (fn [a b] (not (= a b)))]
+            test-name (:name problem)]
         [:div {:key test-name}
          [Row nil
           [Col {:xs 6
@@ -136,7 +136,7 @@
             test-name
             expand-stack-trace-fn]]]
 
-         [stack
+         [stack-trace-control
           test-name
           stack-trace
           problems
