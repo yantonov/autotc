@@ -160,3 +160,17 @@
        first
        :attrs
        :id))
+
+(defn branch-name-from-resulting-properties [response]
+  (->> response
+       :content
+       (filter (tag? :property))
+       (filter (fn [p] (-> p
+                           :attrs
+                           :name
+                           (.contains ".vcsroot.branchName"))))
+       first
+       :attrs
+       :value))
+
+
