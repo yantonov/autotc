@@ -126,9 +126,10 @@
                 (map (fn [b]
                        (->> b
                             :builds
-                            (mapcat #(get-in % [:build :branchName]))
+                            (map #(get-in % [:build :branchName]))
+                            (concat)
                             (filter #(and (not (nil? %))
-                                          (> (.length %) 0)))
+                                          (> (.length  %) 0)))
                             (distinct)
                             (count)
                             (= 1)))
@@ -195,10 +196,15 @@
                   (doall
                    (map (fn [build]
                           {:build
-                           (try (->> build
-                                     :id
-                                     (tc/build server credentials)
-                                     parser/parse-build)
+                           (try (let[build-id (:id build)
+                                     b (->> build-id
+                                            (tc/build server credentials)
+                                            parser/parse-build)]
+                                  (assoc b
+                                         :branchName
+                                         (->> build-id
+                                              (tc/build-resulting-properties server credentials)
+                                              parser/branch-name-from-resulting-properties)))
                                 (catch Exception e
                                   (log/error e
                                              (format "cant get build info build id=%s" (:id build)))))
