@@ -238,9 +238,11 @@
       (:cursor action)
       state
       (fn [s]
-        (assoc-in s
-                  [:current-problems :show-stacktraces]
-                  (:value action))))))
+        (let [show-stack-traces (:value action)
+              new-s (assoc-in s [:current-problems :show-stacktraces] show-stack-traces)]
+          (if-not show-stack-traces
+            (assoc new-s :tests-with-expanded-stack-traces #{})
+            new-s))))))
 
   (r/reducer-for-type
    :expand-stack-trace
