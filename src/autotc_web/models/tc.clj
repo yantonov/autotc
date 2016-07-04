@@ -122,18 +122,19 @@
                      builds))
 
         same-branch?
-        (every? identity
-                (map (fn [b]
-                       (->> b
-                            :builds
-                            (map #(get-in % [:build :branchName]))
-                            (concat)
-                            (filter #(and (not (nil? %))
-                                          (> (.length  %) 0)))
-                            (distinct)
-                            (count)
-                            (= 1)))
-                     builds))]
+        (<= (quot (count builds) 2)
+            (count (filter identity
+                           (map (fn [b]
+                                  (->> b
+                                       :builds
+                                       (map #(get-in % [:build :branchName]))
+                                       (concat)
+                                       (filter #(and (not (nil? %))
+                                                     (> (.length  %) 0)))
+                                       (distinct)
+                                       (count)
+                                       (= 1)))
+                                builds))))]
     (if (empty? butlast-build)
       (filter test-failed? last-build)
       (concat (filter test-failed? last-build)
