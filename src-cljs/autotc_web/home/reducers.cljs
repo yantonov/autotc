@@ -13,18 +13,22 @@
     :all
     old-filter-value))
 
-(defn toggle-attribute-for-test [state action attr-name]
-  (let [cursor (:cursor action)
-        test-name (:test-name action)
-        show (:show action)]
-    (c/update-state cursor
+(defn include-test-in-set [state action set-name need-include-fn?]
+  (let [test-name (:test-name action)]
+    (c/update-state (:cursor action)
                     state
                     (fn [s]
                       (update-in s
-                                 [attr-name]
+                                 [set-name]
                                  (fn [old]
-                                   (let [f (if show conj disj)]
+                                   (let [f (if (need-include-fn? old test-name) conj disj)]
                                      (f old test-name))))))))
+
+(defn include-test-in-set-by-show-attr [state action set-name]
+  (include-test-in-set state
+                       action
+                       set-name
+                       (fn [_ _] (:show action))))
 
 (defn- define-reducers []
   (r/reducer-for-type :init-page
@@ -248,37 +252,37 @@
   (r/reducer-for-type
    :on-toggle-stack-traces
    (fn [state action]
-     (c/update-state
-      (:cursor action)
-      state
-      (fn [s]
-        (let [show-stack-traces (:value action)
-              new-s (assoc-in s [:current-problems :show-stacktraces] show-stack-traces)]
-          (if-not show-stack-traces
-            (assoc new-s :tests-with-expanded-stack-traces #{})
-            new-s))))))
+     (c/update-state (:cursor action)
+                     state
+                     (fn [s]
+                       (let [show-stack-traces (:value action)
+                             new-s (assoc-in s [:current-problems :show-stacktraces] show-stack-traces)]
+                         (if-not show-stack-traces
+                           (assoc new-s :tests-with-expanded-stack-traces #{})
+                           new-s))))))
 
-  (r/reducer-for-type
-   :expand-stack-trace
-   (fn [state action]
-     (let [test-name (:test-name action)]
-       (c/update-state (:cursor action)
-                       state
-                       (fn [s]
-                         (update-in s
-                                    [:tests-with-expanded-stack-traces]
-                                    (fn [old]
-                                      (let [f (if (contains? old test-name) disj conj)]
-                                        (f old test-name)))))))))
+  (r/reducer-for-type :expand-stack-trace
+                      (fn [state action]
+                        (include-test-in-set state
+                                             action
+                                             :tests-with-expanded-stack-traces
+                                             (fn [old test-name]
+                                               (not (contains? old test-name))))))
 
   (r/reducer-for-type :toggle-copy-hint
                       (fn [state action]
-                        (toggle-attribute-for-test state action :tests-with-copy-hint)))
+                        (include-test-in-set-by-show-attr state
+                                                          action
+                                                          :tests-with-copy-hint)))
 
   (r/reducer-for-type :mark-test-name-as-copied
                       (fn [state action]
-                        (toggle-attribute-for-test state action :test-names-inside-clipboard)))
+                        (include-test-in-set-by-show-attr state
+                                                          action
+                                                          :test-names-inside-clipboard)))
 
   (r/reducer-for-type :toggle-copy-stack-hint
                       (fn [state action]
-                        (toggle-attribute-for-test state action :tests-with-copy-stack-hint))))
+                        (include-test-in-set-by-show-attr state
+                                                          action
+                                                          :tests-with-copy-stack-hint))))
