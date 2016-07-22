@@ -13,6 +13,19 @@
     :all
     old-filter-value))
 
+(defn toggle-attribute-for-test [state action attr-name]
+  (let [cursor (:cursor action)
+        test-name (:test-name action)
+        show (:show action)]
+    (c/update-state cursor
+                    state
+                    (fn [s]
+                      (update-in s
+                                 [attr-name]
+                                 (fn [old]
+                                   (let [f (if show conj disj)]
+                                     (f old test-name))))))))
+
 (defn- define-reducers []
   (r/reducer-for-type :init-page
                       (fn [state action]
@@ -222,6 +235,7 @@
                       :current-page (:current-page action)
                       :page-count (:page-count action)
                       :show-stacktraces (:show-stacktraces action)}})))
+
   (r/reducer-for-type
    :on-select-current-problems-page
    (fn [state action]
@@ -248,57 +262,23 @@
    :expand-stack-trace
    (fn [state action]
      (let [test-name (:test-name action)]
-       (c/update-state
-        (:cursor action)
-        state
-        (fn [s]
-          (update-in s
-                     [:tests-with-expanded-stack-traces]
-                     (fn [old]
-                       (let [f (if (contains? old test-name) disj conj)]
-                         (f old test-name)))))))))
+       (c/update-state (:cursor action)
+                       state
+                       (fn [s]
+                         (update-in s
+                                    [:tests-with-expanded-stack-traces]
+                                    (fn [old]
+                                      (let [f (if (contains? old test-name) disj conj)]
+                                        (f old test-name)))))))))
 
-  (r/reducer-for-type
-   :toggle-copy-hint
-   (fn [state action]
-     (let [test-name (:test-name action)
-           show (:show action)]
-       (c/update-state
-        (:cursor action)
-        state
-        (fn [s]
-          (update-in s
-                     [:tests-with-copy-hint]
-                     (fn [old]
-                       (let [f (if show conj disj)]
-                         (f old test-name)))))))))
+  (r/reducer-for-type :toggle-copy-hint
+                      (fn [state action]
+                        (toggle-attribute-for-test state action :tests-with-copy-hint)))
 
-  (r/reducer-for-type
-   :mark-test-name-as-copied
-   (fn [state action]
-     (let [test-name (:test-name action)
-           copied (:copied action)]
-       (c/update-state
-        (:cursor action)
-        state
-        (fn [s]
-          (update-in s
-                     [:test-names-inside-clipboard]
-                     (fn [old]
-                       (let [f (if copied conj disj)]
-                         (f old test-name)))))))))
+  (r/reducer-for-type :mark-test-name-as-copied
+                      (fn [state action]
+                        (toggle-attribute-for-test state action :test-names-inside-clipboard)))
 
-  (r/reducer-for-type
-   :toggle-copy-stack-hint
-   (fn [state action]
-     (let [test-name (:test-name action)
-           show (:show action)]
-       (c/update-state
-        (:cursor action)
-        state
-        (fn [s]
-          (update-in s
-                     [:tests-with-copy-stack-hint]
-                     (fn [old]
-                       (let [f (if show conj disj)]
-                         (f old test-name))))))))))
+  (r/reducer-for-type :toggle-copy-stack-hint
+                      (fn [state action]
+                        (toggle-attribute-for-test state action :tests-with-copy-stack-hint))))
