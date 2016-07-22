@@ -288,7 +288,7 @@
   (r/dispatch {:type :mark-test-name-as-copied
                :cursor cursor
                :test-name test-name
-               :copied copied}))
+               :show copied}))
 
 (defn toggle-copy-stack-hint [test-name show cursor]
   (r/dispatch {:type :toggle-copy-stack-hint
