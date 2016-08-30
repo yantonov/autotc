@@ -4,11 +4,11 @@
             [rex.ext.cursor :as cur]))
 
 (defn load-server-list-action-creator [cursor]
-  (fn [get-state]
+  (fn [dispatch get-state]
     (ajax/GET "/settings/servers/list"
         {:response-format (ajax/json-response-format {:keywords? true})
          :handler (fn [response]
-                    (r/dispatch {:type :server-list-loaded
+                    (dispatch {:type :server-list-loaded
                                :cursor cursor
                                :servers (:servers response)}))
          :error-handler (fn [response]
@@ -25,7 +25,7 @@
    :server server})
 
 (defn save-server-action-creator [form-cursor page-cursor]
-  (fn [get-state]
+  (fn [dispatch get-state]
     (let [server (cur/get-state form-cursor (get-state))]
       (ajax/POST "/settings/servers/add"
           {:params
@@ -36,17 +36,17 @@
 
            :handler
            (fn [response]
-             (r/dispatch (load-server-list-action-creator page-cursor))
-             (r/dispatch (show-list-command-action page-cursor true)))}))))
+             (dispatch (load-server-list-action-creator page-cursor))
+             (dispatch (show-list-command-action page-cursor true)))}))))
 
 (defn delete-server-action-creator [cursor server]
-  (fn [get-state]
+  (fn [dispatch get-state]
     (ajax/POST "/settings/servers/delete"
         {:params {:id (:id server)}
          :format (ajax/url-request-format)
          :handler (fn [response]
-                    (r/dispatch (load-server-list-action-creator cursor))
-                    (r/dispatch (confirm-delete-server-action cursor nil)))
+                    (dispatch (load-server-list-action-creator cursor))
+                    (dispatch (confirm-delete-server-action cursor nil)))
          :error-handler (fn [response]
                           (println response))})))
 
