@@ -5,26 +5,26 @@
             [rex.core :as r]))
 
 (defn hide-message-action-creator [cursor]
-  (fn [dispatch get-store]
-    (dispatch {:type :hide-message
+  (fn [get-store]
+    (r/dispatch {:type :hide-message
                :cursor cursor})))
 
 (defn show-message-action-creator [message cursor]
-  (fn [dispatch get-state]
+  (fn [get-state]
     (let [state (cur/get-state cursor (get-state))]
       (when-let [message-timer (:message-timer state)]
         (js/clearTimeout message-timer))
-      (dispatch {:type :show-message
+      (r/dispatch {:type :show-message
                  :cursor cursor
                  :message message
 
                  :message-timer
                  (js/setTimeout
-                  (fn [] (dispatch (hide-message-action-creator cursor)))
+                  (fn [] (r/dispatch (hide-message-action-creator cursor)))
                   5000)}))))
 
 (defn reset-timer-action-creator [cursor]
-  (fn [dispatch get-store]
+  (fn [get-store]
     (when-let [timer (:poll-agent-timer (cur/get-state cursor (get-store)))]
       (poller/stop timer))
     nil))
@@ -39,7 +39,7 @@
                    (:id load-agents-for-server)))))))
 
 (defn load-agents-action-creator  [server cursor]
-  (fn [dispatch get-state]
+  (fn [get-state]
     (if (other-server-selected? (cur/get-state cursor
                                                (get-state))
                                 server)
@@ -54,18 +54,18 @@
                                                     server)
                           nil
                           (if (not (nil? (:agents response)))
-                            (dispatch {:type :on-agents-list-loaded
+                            (r/dispatch {:type :on-agents-list-loaded
                                        :cursor cursor
                                        :agents (:agents response)
                                        :branches (:branches response)
                                        :project (:project response)}))))
              :error-handler (fn [response]
                               (println response)
-                              (dispatch {:type :agent-list-is-loading
+                              (r/dispatch {:type :agent-list-is-loading
                                          :cursor cursor}))})))))
 
 (defn get-current-problems-action-creator [server cursor]
-  (fn [dispatch get-state]
+  (fn [get-state]
     (let [s (cur/get-state cursor (get-state))
           page (get-in s [:current-problems :current-page] 1)]
       (if (other-server-selected? s server)
@@ -83,7 +83,7 @@
                                                                    (get-state))
                                                     server)
                           nil
-                          (dispatch {:type :on-current-problems-list-loaded
+                          (r/dispatch {:type :on-current-problems-list-loaded
                                      :cursor
                                      cursor
 
@@ -110,40 +110,40 @@
                               (println response))})))))
 
 (defn select-server-action-creator [server-index cursor]
-  (fn [dispatch get-state]
+  (fn [get-state]
     (let [state (cur/get-state cursor (get-state))]
       (if (= server-index
              (:selected-server-index state))
         nil
         (do
-          (dispatch {:type :init-load-agent-list
+          (r/dispatch {:type :init-load-agent-list
                      :cursor cursor
                      :server-index server-index})
-          (dispatch (reset-timer-action-creator cursor))
+          (r/dispatch (reset-timer-action-creator cursor))
           (let [current-server (get (:servers state) server-index)
                 p (poller/create-poller
                    (fn []
-                     (dispatch
+                     (r/dispatch
                       (load-agents-action-creator current-server cursor))
-                     (dispatch
+                     (r/dispatch
                       (get-current-problems-action-creator current-server
                                                            cursor)))
 
                    3000
                    60000)]
             (do
-              (dispatch (load-agents-action-creator current-server cursor))
-              (dispatch (get-current-problems-action-creator current-server
+              (r/dispatch (load-agents-action-creator current-server cursor))
+              (r/dispatch (get-current-problems-action-creator current-server
                                                              cursor))
               (poller/start p)
               ;; TODO: do not add not serializable data into model
               ;; (add timer descriptor, not timer itself)
-              (dispatch {:type :attach-poll-agent-timer
+              (r/dispatch {:type :attach-poll-agent-timer
                          :cursor cursor
                          :poll-agent-timer p}))))))))
 
 (defn get-server-list-action-creator [cursor]
-  (fn [dispatch get-state]
+  (fn [get-state]
     (ajax/GET
         "/servers/list"
         {:params {}
@@ -154,28 +154,28 @@
                  has-any-server? (and (not (nil? servers))
                                       (> (count servers)))]
              (do
-               (dispatch {:type :on-server-list-loaded
+               (r/dispatch {:type :on-server-list-loaded
                           :cursor cursor
                           :servers servers})
                (if has-any-server?
-                 (dispatch (select-server-action-creator 0 cursor))))))})))
+                 (r/dispatch (select-server-action-creator 0 cursor))))))})))
 
 (defn exec-action-for-agents-action-creator [cursor
                                              url
                                              trigger-message
                                              completed-message]
-  (fn [dispatch get-store]
+  (fn [get-store]
     (let [s (cur/get-state cursor (get-store))
           current-server-id (:id (get (:servers s) (:selected-server-index s)))
           agent-ids (clj->js (map identity (:selected-agents s)))]
       (do
-        (dispatch (show-message-action-creator trigger-message cursor))
+        (r/dispatch (show-message-action-creator trigger-message cursor))
         (ajax/POST url
             {:params {"serverId" current-server-id
                       "agentIds" agent-ids}
              :format (ajax/json-request-format)
              :handler (fn [response]
-                        (dispatch (show-message-action-creator completed-message
+                        (r/dispatch (show-message-action-creator completed-message
                                                                cursor)))
              :error-handler (fn [response] (println response))})))))
 
@@ -259,19 +259,19 @@
 
 (defn select-current-problems-page [server page cursor]
   (r/dispatch
-   (fn [dispatch get-state]
-     (dispatch {:type :on-select-current-problems-page
+   (fn [get-state]
+     (r/dispatch {:type :on-select-current-problems-page
                 :cursor cursor
                 :page page})
-     (dispatch (get-current-problems-action-creator server cursor)))))
+     (r/dispatch (get-current-problems-action-creator server cursor)))))
 
 (defn toggle-stack-traces [server cursor show-stack-traces]
   (r/dispatch
-   (fn [dispatch get-state]
-     (dispatch {:type :on-toggle-stack-traces
+   (fn [get-state]
+     (r/dispatch {:type :on-toggle-stack-traces
                 :cursor cursor
                 :value show-stack-traces})
-     (dispatch (get-current-problems-action-creator server cursor)))))
+     (r/dispatch (get-current-problems-action-creator server cursor)))))
 
 (defn expand-stack-trace [test-name cursor]
   (r/dispatch {:type :expand-stack-trace
