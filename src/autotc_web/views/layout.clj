@@ -146,6 +146,14 @@ function updateFixedInLocalStorage(key, data) {
 $(document).ready(function () {
     var localStorageKey = $('.lskey').text();
 
+    var already_fixed = getFixedFromLocalStorage(localStorageKey);
+    for (var i = 0; i < already_fixed.length; ++i) {
+        var index = already_fixed[i];
+        $('.markasfixed:eq(' + index + ')').each(function (i, element) {
+          $(element).click();
+        });
+    }
+
     $('.test').click(function(e) {
         var testLink = $(e.target);
         testLink.parent().find('.stack').toggle();
@@ -175,13 +183,5 @@ $(document).ready(function () {
         stackElement.hide();
         return false;
     });
-
-    var already_fixed = getFixedFromLocalStorage(localStorageKey);
-    for (var i = 0; i < already_fixed.length; ++i) {
-        var index = already_fixed[i];
-        $('.markasfixed:eq(' + index + ')').each(function (i, element) {
-          $(element).click();
-        });
-    }
 });
 "]]))
