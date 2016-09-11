@@ -68,6 +68,9 @@
                    "color: black;"
                    "text-decoration: none;"
                    "}"
+                   ".hidden {"
+                   "display: none;"
+                   "}"
                    "-->"])]]
    [:body
     [:div nil
@@ -99,6 +102,8 @@
                       :class "stack"}
                 (html-escape (:details problem))]]])
            problems)]]
+    [:span {:class "hidden lskey"}
+     (format "autotc-checked-%s" (.toString (java.util.UUID/randomUUID)))]
     [:script {:type "text/javascript"}
      "
     function copy (element) {
@@ -118,16 +123,44 @@
     selection.removeAllRanges();
 }
 
+function toggleItem(arr, targetItem, add) {
+   var patched = $.grep(arr, function (index, item) {
+     return item != targetItem;
+   });
+   if (add)
+     patched.push(targetItem);
+   return patched;
+}
+
+function getFixedFromLocalStorage(key) {
+   var result = localStorage.getItem(key);
+   if (result === undefined || result === null)
+     return [];
+   return $.parseJSON(result);
+}
+
+function updateFixedInLocalStorage(key, data) {
+   localStorage.setItem(key, JSON.stringify(data));
+}
+
 $(document).ready(function () {
+    var localStorageKey = $('.lskey').text();
+
     $('.test').click(function(e) {
         var testLink = $(e.target);
         testLink.parent().find('.stack').toggle();
         copy(testLink.get(0));
         return false;
     });
-    $('.markasfixed').change(function(e) {
-       var fixed = $(this).is(':checked');
-       $(e.target).parent().find('.test').toggleClass('fixed', fixed);
+    $('.markasfixed').each(function(index) {
+       var el = $(this);
+       el.change(function(e) {
+          var fixed = $(this).is(':checked');
+          $(e.target).parent().find('.test').toggleClass('fixed', fixed);
+          var oldFixed = getFixedFromLocalStorage(localStorageKey);
+          var newFixed = toggleItem(oldFixed, index, fixed);
+          updateFixedInLocalStorage(localStorageKey, newFixed);
+       });
     });
     $('.copy-test-name').click(function(e) {
         var testLink = $(e.target).parent().siblings('.test').get(0);
@@ -142,5 +175,13 @@ $(document).ready(function () {
         stackElement.hide();
         return false;
     });
+
+    var already_fixed = getFixedFromLocalStorage(localStorageKey);
+    for (var i = 0; i < already_fixed.length; ++i) {
+        var index = already_fixed[i];
+        $('.markasfixed:eq(' + index + ')').each(function (i, element) {
+          $(element).click();
+        });
+    }
 });
 "]]))
