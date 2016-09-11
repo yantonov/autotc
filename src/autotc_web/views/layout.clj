@@ -124,7 +124,7 @@
 }
 
 function toggleItem(arr, targetItem, add) {
-   var patched = $.grep(arr, function (index, item) {
+   var patched = $.grep(arr, function (item, index) {
      return item != targetItem;
    });
    if (add)
