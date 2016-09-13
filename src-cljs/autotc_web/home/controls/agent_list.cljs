@@ -45,12 +45,11 @@
   [:img {:src (str "/img/statuses/" (get-image status running))
          :alt (str status (if running "in progress" "completed"))}])
 
-(defn agent-list-item [{:keys [key
-                               agent
+(defn agent-list-item [{:keys [agent
                                selected
                                on-change]} data]
   [ListGroupItem
-   {:key key
+   {:key (:name agent)
     :class-name "agent-container"}
    [:div {:on-click (fn [] (on-change (not selected)))
           :class-name "agent__row"}
@@ -101,28 +100,23 @@
       [select-all-element {:visible (> (count agents) 0)
                            :on-change on-select-all
                            :checked (= (count agents) (count selected-agents))}]
-      (for [[a i] (map vector
-                       (filter (fn [a]
-                                 (cond
-                                   (nil? filter-value)
-                                   true
+      (for [agent (filter (fn [a]
+                            (cond
+                              (nil? filter-value)
+                              true
 
-                                   (= filter-value :all)
-                                   true
+                              (= filter-value :all)
+                              true
 
-                                   (= filter-value :selected)
-                                   (is-agent-selected? selected-agents a)
+                              (= filter-value :selected)
+                              (is-agent-selected? selected-agents a)
 
-                                   :else
-                                   (not (is-agent-selected? selected-agents
-                                                            a))))
-                               agents)
-                       (iterate inc 0))]
-        [agent-list-item {:key
-                          i
-
-                          :agent
-                          a
+                              :else
+                              (not (is-agent-selected? selected-agents
+                                                       a))))
+                          agents)]
+        [agent-list-item {:agent
+                          agent
 
                           :selected
                           (is-agent-selected? selected-agents a)

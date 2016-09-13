@@ -21,12 +21,11 @@
 (def ModalFooter (r/adapt-react-class js/ReactBootstrap.Modal.Footer))
 (def Modal (r/adapt-react-class js/ReactBootstrap.Modal.Dialog))
 
-(defn server-element [{:keys [key
-                              index
+(defn server-element [{:keys [index
                               server
                               on-delete]} data]
   [:tr
-   {:key index}
+   {:key (:alias server)}
    [:td nil (inc index)]
    [:td nil (:alias server)]
    [:td nil (str (:host server) ":" (:port server))]
@@ -58,9 +57,8 @@
      [:th "Project"]
      [:th "Actions"]]]
    [:tbody
-    (for [[svr index] (map vector servers (iterate inc 0))]
-      [server-element {:key index
-                       :index index
+    (for [[svr index] (map vector servers (iterate inc 1))]
+      [server-element {:index index
                        :server svr
                        :on-delete (fn [] (on-delete svr))}])]])
 
