@@ -119,7 +119,7 @@
                           agent
 
                           :selected
-                          (is-agent-selected? selected-agents a)
+                          (is-agent-selected? selected-agents agent)
 
                           :on-change
-                          (fn [checked] (on-select-agent a checked))}])]]))
+                          (fn [checked] (on-select-agent agent checked))}])]]))
