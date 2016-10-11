@@ -6,7 +6,7 @@
 (defn define-reducers []
   (r/reducer-for-type :init-page
                       (fn [state action]
-                        (c/update-state (:cursor action)
+                        (c/set-state (:cursor action)
                                         state
                                         {:show-list true
                                          :servers []})))
@@ -33,6 +33,6 @@
                       (fn [state action]
                         (let [cursor (:cursor action)
                               value (:value action) ]
-                          (c/update-state cursor
-                                          state
-                                          value)))))
+                          (c/set-state cursor
+                                       state
+                                       value)))))
