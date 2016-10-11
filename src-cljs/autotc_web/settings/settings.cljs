@@ -151,7 +151,7 @@
                       servers
                       server-to-delete]} (r/state this)
               show-confirm-delete-dialog? (not (nil? server-to-delete))]
-          (if (not show-list)
+          (if show-list
             [:div nil
              [add-server-form (fn [] (a/begin-add-server cursor))]
              [:br]
