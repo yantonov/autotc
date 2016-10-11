@@ -11,13 +11,13 @@
     (sql/db-do-commands
      t-conn
      (sql/create-table-ddl :servers
-                           [:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
-                           [:alias "TEXT"]
-                           [:host "TEXT"]
-                           [:port "INTEGER"]
-                           [:project "TEXT"]
-                           [:username "TEXT"]
-                           [:password "TEXT"]))))
+                           [[:id "INTEGER PRIMARY KEY AUTOINCREMENT"]
+                            [:alias "TEXT"]
+                            [:host "TEXT"]
+                            [:port "INTEGER"]
+                            [:project "TEXT"]
+                            [:username "TEXT"]
+                            [:password "TEXT"]]))))
 
 (defn read-servers-internal []
   (sql/with-db-transaction [t-conn db]
