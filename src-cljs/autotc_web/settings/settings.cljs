@@ -25,7 +25,6 @@
                               server
                               on-delete]} data]
   [:tr
-   {:key (:alias server)}
    [:td nil (inc index)]
    [:td nil (:alias server)]
    [:td nil (str (:host server) ":" (:port server))]
@@ -58,7 +57,8 @@
      [:th "Actions"]]]
    [:tbody
     (for [[svr index] (map vector servers (iterate inc 1))]
-      [server-element {:index index
+      [server-element {:key (:alias svr)
+                       :index index
                        :server svr
                        :on-delete (fn [] (on-delete svr))}])]])
 
