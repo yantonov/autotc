@@ -49,7 +49,8 @@
                    (try
                      {:info (retrieve-data-fn)}
                      (catch Exception e
-                       {:error (exception/pretty-print-exception e)})))))
+                       {:exception e
+                        :error (exception/pretty-print-exception e)})))))
        (ProjectInfo. a)))))
 
 (defn get-now []

@@ -53,7 +53,7 @@
               :last-build-webUrl (:webUrl last-build))))
 
 (defn- build-types-for-server [server-id]
-  (let [{:keys [info error]}
+  (let [{:keys [info error exception]}
         (.get-value
          (chc/cached
           (keyword (str "project-info-" server-id))
@@ -62,6 +62,9 @@
         build-types (:build-types info)
         branches (:branches info)
         project (:project info)]
+    (if (not (nil? exception))
+      (log/error exception
+                 (str "cant get project info for server id = " server-id)))
     (rur/response {:project
                    project
 
@@ -90,7 +93,7 @@
                :cache-seconds 30)))
 
 (defn- current-problems [server-id requested-page show-stacktraces]
-  (let [{:keys [info error]}
+  (let [{:keys [info error exception]}
         (all-current-problems server-id)
 
         problems
@@ -108,6 +111,9 @@
                  (<= requested-page total-pages))
           requested-page
           1)]
+    (if-not (nil? exception)
+      (log/error exception
+                 (str "cant get problem list for server id = " server-id)))
     (if-not (nil? problems)
       (rur/response {:current-problems
                      (let [problems-page (->> problems
