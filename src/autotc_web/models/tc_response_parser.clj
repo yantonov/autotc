@@ -1,4 +1,5 @@
-(ns autotc-web.models.tc-response-parser)
+(ns autotc-web.models.tc-response-parser
+  (:require [autotc-web.log :as log]))
 
 (defn- tag? [tag-name]
   #(= tag-name (:tag %)))
@@ -10,7 +11,7 @@
   (->> projects
        :content
        (filter (fn [project]
-                 (= name (get-in project [:attrs :name]))))
+                 (.equalsIgnoreCase name (get-in project [:attrs :name]))))
        first
        :attrs))
 
@@ -24,7 +25,10 @@
 
 (defn parse-project-domain [project]
   (let [project-web-url (:webUrl project)
-        project-parsed-url (java.net.URL. project-web-url)
+        project-parsed-url
+        (try (java.net.URL. project-web-url)
+             (catch Exception e
+               (log/error e (str "cant parse url = " project-web-url))))
         host (.getHost project-parsed-url)
         port (let [port-number (.getPort project-parsed-url)]
                (if (= -1 port-number)
