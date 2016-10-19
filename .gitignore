@@ -20,3 +20,6 @@
 .lein-failures
 .lein-plugins
 .lein-env
+
+# temporary ide files
+.\#*
