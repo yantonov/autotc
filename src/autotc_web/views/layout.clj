@@ -19,9 +19,9 @@
     (include-css "/css/gh-fork-ribbon.ie.css")
     (include-css "/css/style.css")
     (include-js "/js/lib/jquery-2.1.3.min.js")
-    (include-js "/js/lib/react-0.14.5.min.js")
-    (include-js "/js/lib/react-dom-0.14.5.min.js")
-    (include-js "/js/lib/react-bootstrap-0.28.1.min.js")
+    (include-js "/js/lib/react-15.3.2.min.js")
+    (include-js "/js/lib/react-dom-15.3.2.min.js")
+    (include-js "/js/lib/react-bootstrap-0.30.5.min.js")
     (include-js "/js/lib/halogen.0.1.2.min.js")
     [:link {:rel "shortcut icon"
             :href "/img/favicon.ico"}]]

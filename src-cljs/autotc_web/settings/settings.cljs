@@ -11,7 +11,9 @@
 (def Table (r/adapt-react-class js/ReactBootstrap.Table))
 (def Button (r/adapt-react-class js/ReactBootstrap.Button))
 (def ButtonToolbar (r/adapt-react-class js/ReactBootstrap.ButtonToolbar))
-(def Input (r/adapt-react-class js/ReactBootstrap.Input))
+(def FormGroup (r/adapt-react-class js/ReactBootstrap.FormGroup))
+(def ControlLabel (r/adapt-react-class js/ReactBootstrap.ControlLabel))
+(def Input (r/adapt-react-class js/ReactBootstrap.FormControl))
 (def Grid (r/adapt-react-class js/ReactBootstrap.Grid))
 (def Row (r/adapt-react-class js/ReactBootstrap.Row))
 (def Col (r/adapt-react-class js/ReactBootstrap.Col))
@@ -99,30 +101,42 @@
       [Row
        [Col {:xs 12
              :md 6}
-        [Input {:type "text"
-                :label "Alias"
-                :placeholder "Enter text"
-                :on-change (update-fn :alias)}]
-        [Input {:type "text"
-                :label "Host"
-                :placeholder "Enter text"
-                :on-change (update-fn :host)}]
-        [Input {:type "text"
-                :label "Port"
-                :placeholder "Enter text"
-                :on-change (update-fn :port)}]
-        [Input {:type "text"
-                :label "Project"
-                :placeholder "Enter text"
-                :on-change (update-fn :project)}]
-        [Input {:type "text"
-                :label "Username"
-                :placeholder "Enter text"
-                :on-change (update-fn :username)}]
-        [Input {:type "password"
-                :label "Password"
-                :placeholder "Enter text"
-                :on-change (update-fn :password)}]
+        [FormGroup nil
+         [ControlLabel nil "Alias"]
+         [Input {:type "text"
+                 :label "Alias"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :alias)}]]
+        [FormGroup nil
+         [ControlLabel nil "Host"]
+         [Input {:type "text"
+                 :label "Host"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :host)}]]
+        [FormGroup nil
+         [ControlLabel nil "Port"]
+         [Input {:type "text"
+                 :label "Port"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :port)}]]
+        [FormGroup nil
+         [ControlLabel nil "Project"]
+         [Input {:type "text"
+                 :label "Project"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :project)}]]
+        [FormGroup nil
+         [ControlLabel nil "User name"]
+         [Input {:type "text"
+                 :label "Username"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :username)}]]
+        [FormGroup nil
+         [ControlLabel nil "Password"]
+         [Input {:type "password"
+                 :label "Password"
+                 :placeholder "Enter text"
+                 :on-change (update-fn :password)}]]
         [ButtonToolbar
          [Button {:type "submit"
                   :bs-style "success"}

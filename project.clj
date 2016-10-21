@@ -7,13 +7,13 @@
                  [ring/ring-defaults "0.2.1"]
                  [hiccup "1.0.5"]
                  [org.clojure/java.jdbc "0.6.1"]
-                 [org.xerial/sqlite-jdbc "3.8.11.2"]
+                 [org.xerial/sqlite-jdbc "3.14.2.1"]
                  [ring/ring-json "0.4.0"]
                  [ch.qos.logback/logback-classic "1.1.7"] ;logging
                  ;; cljs
-                 [org.clojure/clojurescript "1.9.229"]
-                 [reagent "0.6.0-alpha" :exclusions [cljsjs/react]]
-                 [cljsjs/react-bootstrap "0.28.1-0" :exclusions
+                 [org.clojure/clojurescript "1.9.293"]
+                 [reagent "0.6.0" :exclusions [cljsjs/react]]
+                 [cljsjs/react-bootstrap "0.30.2-0" :exclusions
                   [[org.webjars.bower/jquery]
                    [cljsjs/react-bootstrap]]]
                  [cljs-ajax "0.5.8"]
@@ -51,4 +51,5 @@
                 :source-map "resources/public/cljs/dev/autotc-web.js.map"
                 :externs ["externs/externs.js"]
                 :optimizations :whitespace
+
                 :pretty-print true}}}})

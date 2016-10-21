@@ -49,8 +49,7 @@
                                selected
                                on-change]} data]
   [ListGroupItem
-   {:key (:name agent)
-    :class-name "agent-container"}
+   {:class-name "agent-container"}
    [:div {:on-click (fn [] (on-change (not selected)))
           :class-name "agent__row"}
     [:input {:type "checkbox"
@@ -117,6 +116,9 @@
                           agents)]
         [agent-list-item {:agent
                           agent
+
+                          :key
+                          (:name agent)
 
                           :selected
                           (is-agent-selected? selected-agents agent)

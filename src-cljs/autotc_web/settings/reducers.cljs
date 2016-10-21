@@ -7,9 +7,9 @@
   (r/reducer-for-type :init-page
                       (fn [state action]
                         (c/set-state (:cursor action)
-                                        state
-                                        {:show-list true
-                                         :servers []})))
+                                     state
+                                     {:show-list true
+                                      :servers []})))
 
   (r/reducer-for-type :server-list-loaded
                       (fn [state action]
