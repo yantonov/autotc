@@ -27,7 +27,7 @@
                               server
                               on-delete]} data]
   [:tr
-   [:td nil (inc index)]
+   [:td nil index]
    [:td nil (:alias server)]
    [:td nil (str (:host server) ":" (:port server))]
    [:td nil (:project server)]
