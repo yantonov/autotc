@@ -32,8 +32,7 @@
 (defn other-server-selected? [state load-agents-for-server]
   (if (nil? load-agents-for-server)
     true
-    (let [selected-server-index (:selected-server-index state)
-          selected-server (get (:servers state) selected-server-index)]
+    (let [selected-server (:selected-server state)]
       (and (not (nil? selected-server))
            (not (= (:id selected-server)
                    (:id load-agents-for-server)))))))
@@ -109,38 +108,39 @@
              :error-handler (fn [response]
                               (println response))})))))
 
-(defn select-server-action-creator [server-index cursor]
+(defn select-server-action-creator [selected? cursor]
   (fn [dispatch get-state]
-    (let [state (cur/get-state cursor (get-state))]
-      (if (= server-index
-             (:selected-server-index state))
+    (let [state (cur/get-state cursor (get-state))
+          current (:selected-server state)]
+      (if (and (not (nil? current))
+               (selected? current))
         nil
-        (do
+        (let [selected-server (or (->> (:servers state)
+                                       (filter selected?)
+                                       (first))
+                                  (first (:servers state)))
+              p (poller/create-poller
+                 (fn []
+                   (dispatch
+                    (load-agents-action-creator selected-server cursor))
+                   (dispatch
+                    (get-current-problems-action-creator selected-server cursor)))
+
+                 3000
+                 60000)]
+          (aset js/window "location" (str "#" (:alias selected-server)))
           (dispatch {:type :init-load-agent-list
                      :cursor cursor
-                     :server-index server-index})
+                     :selected selected-server})
           (dispatch (reset-timer-action-creator cursor))
-          (let [current-server (get (:servers state) server-index)
-                p (poller/create-poller
-                   (fn []
-                     (dispatch
-                      (load-agents-action-creator current-server cursor))
-                     (dispatch
-                      (get-current-problems-action-creator current-server
-                                                           cursor)))
-
-                   3000
-                   60000)]
-            (do
-              (dispatch (load-agents-action-creator current-server cursor))
-              (dispatch (get-current-problems-action-creator current-server
-                                                             cursor))
-              (poller/start p)
-              ;; TODO: do not add not serializable data into model
-              ;; (add timer descriptor, not timer itself)
-              (dispatch {:type :attach-poll-agent-timer
-                         :cursor cursor
-                         :poll-agent-timer p}))))))))
+          (dispatch (load-agents-action-creator selected-server cursor))
+          (dispatch (get-current-problems-action-creator selected-server cursor))
+          (poller/start p)
+          ;; TODO: do not add not serializable data into model
+          ;; (add timer descriptor, not timer itself)
+          (dispatch {:type :attach-poll-agent-timer
+                     :cursor cursor
+                     :poll-agent-timer p}))))))
 
 (defn get-server-list-action-creator [cursor]
   (fn [dispatch get-state]
@@ -158,7 +158,14 @@
                           :cursor cursor
                           :servers servers})
                (if has-any-server?
-                 (dispatch (select-server-action-creator 0 cursor))))))})))
+                 (dispatch (select-server-action-creator (fn [s]
+                                                           (let [anchor (->> js/window
+                                                                             (.-location)
+                                                                             (.-hash))]
+                                                             (and (not (nil? anchor))
+                                                                  (= (.substring anchor 1)
+                                                                     (:alias s)))))
+                                                         cursor))))))})))
 
 (defn exec-action-for-agents-action-creator [cursor
                                              url
@@ -166,7 +173,7 @@
                                              completed-message]
   (fn [dispatch get-store]
     (let [s (cur/get-state cursor (get-store))
-          current-server-id (:id (get (:servers s) (:selected-server-index s)))
+          current-server-id (-> s :selected-server :id)
           agent-ids (clj->js (map identity (:selected-agents s)))]
       (do
         (dispatch (show-message-action-creator trigger-message cursor))
@@ -190,8 +197,8 @@
 (defn load-server-list [cursor]
   (r/dispatch (get-server-list-action-creator cursor)))
 
-(defn on-server-selected [server-index cursor]
-  (r/dispatch (select-server-action-creator server-index cursor)))
+(defn on-server-selected [server cursor]
+  (r/dispatch (select-server-action-creator (fn [s] (= (:id server) (:id s))) cursor)))
 
 (defn on-agent-selected [agent selected? cursor]
   (r/dispatch {:type :agent-selected

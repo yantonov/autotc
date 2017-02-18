@@ -40,7 +40,7 @@
       :render
       (fn [this]
         (let [{:keys [servers
-                      selected-server-index
+                      selected-server
                       message
                       selected-agents
                       project
@@ -54,14 +54,13 @@
                       tests-with-copy-stack-hint
                       test-names-inside-clipboard]
                :or {:show-agent-list-loader false}}
-              (r/state this)
-              selected-server (get servers selected-server-index)]
+              (r/state this)]
           [:div nil
            [autotc-web.home.controls.info-message/info-message message]
            [autotc-web.home.controls.server-list/server-list
             servers
-            selected-server-index
-            (fn [server-index] (actions/on-server-selected server-index cursor))]
+            selected-server
+            (fn [server] (actions/on-server-selected server cursor))]
            [:div {:style {:padding-left "0px"}}
             [Row {:class-name "agent-list"}
              [Col {:xs 12

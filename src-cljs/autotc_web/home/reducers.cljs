@@ -108,7 +108,7 @@
      (h/merge-state state
                     (:cursor action)
                     {:show-agent-list-loader true
-                     :selected-server-index (:server-index action)
+                     :selected-server (:selected action)
                      :selected-agents #{}
                      :manually-selected-agents #{}
                      :agents []
