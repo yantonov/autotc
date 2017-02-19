@@ -3,11 +3,21 @@
 DEVELOPMENT_BIN=~/Development/bin
 TEAMCITY_HOME=$DEVELOPMENT_BIN/teamcity
 
-mkdir -p $TEAMCITY_HOME
+if [ ! -d "$TEAMCITY_HOME" ];
+then
+    mkdir -p $TEAMCITY_HOME
+fi
 cd $TEAMCITY_HOME
 
-mkdir data
-mkdir logs
+if [ ! -d "$TEAMCITY_HOME/data" ];
+then
+    mkdir data
+fi
+
+if [ ! -d "$TEAMCITY_HOME/logs" ];
+then
+    mkdir logs
+fi
 
 docker run -d -it --name teamcity-server-instance  \
     -v $TEAMCITY_HOME/data:/data/teamcity_server/datadir \
