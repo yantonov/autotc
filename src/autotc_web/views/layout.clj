@@ -103,7 +103,7 @@
                 (html-escape (:details problem))]]])
            problems)]]
     [:span {:class "hidden lskey"}
-     (format "autotc-checked-%s" (.toString (java.util.UUID/randomUUID)))]
+     (format "autotc-checked-%s" (str (java.util.UUID/randomUUID)))]
     [:script {:type "text/javascript"}
      "
     function copy (element) {

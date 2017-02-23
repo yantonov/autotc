@@ -130,7 +130,7 @@
                                        (map #(get-in % [:build :branchName]))
                                        (concat)
                                        (filter #(and (not (nil? %))
-                                                     (> (.length  %) 0)))
+                                                     (pos? (.length  %))))
                                        (distinct)
                                        (count)
                                        (= 1)))
